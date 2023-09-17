@@ -1,0 +1,6 @@
+anthropic
+langchain
+langsmith
+openai
+streamlit
+tiktoken

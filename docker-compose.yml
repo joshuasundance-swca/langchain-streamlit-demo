@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  streamlit-chat:
+    image: streamlit-chat:latest
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+        - .:/home/appuser/app:rw
+    working_dir: /home/appuser/app/
+    entrypoint: ["streamlit", "run", "${APP}", "-w"]

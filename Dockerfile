@@ -1,7 +1,7 @@
 FROM python:3.11-slim-buster
 
-RUN adduser --uid 1001 --disabled-password --gecos '' appuser
-USER 1001
+RUN adduser --uid 1000 --disabled-password --gecos '' appuser
+USER 1000
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

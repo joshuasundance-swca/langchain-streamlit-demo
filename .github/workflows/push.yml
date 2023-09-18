@@ -27,7 +27,6 @@ jobs:
       run: docker push joshuasundance/langchain-streamlit-demo:latest
 
   push-to-huggingface:
-    needs: build-and-push-docker
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

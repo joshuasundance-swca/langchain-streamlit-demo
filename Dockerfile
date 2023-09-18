@@ -7,13 +7,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/home/appuser/.local/bin:$PATH"
 
-RUN pip install --user --upgrade pip
+RUN pip install --user --no-cache-dir --upgrade pip
 COPY ./requirements.txt /home/appuser/requirements.txt
-RUN pip install --user -r /home/appuser/requirements.txt
+RUN pip install --user --no-cache-dir  -r /home/appuser/requirements.txt
 
 COPY ./langchain-streamlit-demo/* /home/appuser/langchain-streamlit-demo/
 
 WORKDIR /home/appuser/langchain-streamlit-demo
 EXPOSE 7860
 
-CMD ["python", "-m", "streamlit", "run", "/home/appuser/langchain-streamlit-demo/app.py", "--server.port", "7860", "--server.address", "0.0.0.0"]
+CMD ["streamlit", "run", "/home/appuser/langchain-streamlit-demo/app.py", "--server.port", "7860", "--server.address", "0.0.0.0"]

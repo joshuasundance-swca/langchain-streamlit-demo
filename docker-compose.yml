@@ -5,14 +5,11 @@ services:
     image: streamlit-chat:latest
     build: .
     ports:
-      - "8000:8000"
-    volumes:
-      - .:/home/appuser/app:rw
-    working_dir: /home/appuser/app/
+      - "${APP_PORT:-7860}:${APP_PORT:-7860}"
     command: [
       "python", "-m",
       "streamlit", "run",
-      "/home/appuser/app/langchain-streamlit-demo/app.py",
-      "--server.port", "8000",
+      "/home/appuser/langchain-streamlit-demo/app.py",
+      "--server.port", "${APP_PORT:-7860}",
       "--server.address", "0.0.0.0"
     ]

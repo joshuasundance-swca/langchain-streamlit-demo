@@ -7,7 +7,6 @@ services:
     ports:
       - "${APP_PORT:-7860}:${APP_PORT:-7860}"
     command: [
-      "python", "-m",
       "streamlit", "run",
       "/home/appuser/langchain-streamlit-demo/app.py",
       "--server.port", "${APP_PORT:-7860}",

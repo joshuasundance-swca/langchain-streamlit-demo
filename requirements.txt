@@ -2,6 +2,6 @@ anthropic
 langchain
 langsmith
 openai
-streamlit
+streamlit==1.26.0
 streamlit-feedback
 tiktoken

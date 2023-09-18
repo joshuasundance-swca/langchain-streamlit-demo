@@ -32,4 +32,4 @@ jobs:
           .
 
     - name: Push to Docker Hub
-      run: docker push joshuasundance/langchain-streamlit-demo
+      run: docker push -a joshuasundance/langchain-streamlit-demo

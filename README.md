@@ -2,10 +2,11 @@
 title: langchain-streamlit-demo
 emoji: 🦜
 colorFrom: green
-colorTo: blue
+colorTo: red
 sdk: docker
 app_port: 7860
-pinned: true
+pinned:
+tags: [langchain, streamlit, docker]
 ---
 
 # langchain-streamlit-demo
@@ -18,11 +19,6 @@ pinned: true
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 
-
-[![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
-
-[Docker Hub](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
-
-`docker pull joshuasundance/langchain-streamlit-demo`
-
-or `docker compose up`
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&logo=docker&logoColor=white)](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/joshuasundance/langchain-streamlit-demo/latest)](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
+[![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)

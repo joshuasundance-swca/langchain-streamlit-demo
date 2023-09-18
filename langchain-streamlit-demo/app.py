@@ -35,9 +35,25 @@ st.sidebar.markdown(
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 st.session_state.openai_api_key = openai_api_key
 
-langsmith_api_key = st.sidebar.text_input("LangSmith API Key", type="password")
+langsmith_api_key = st.sidebar.text_input(
+    "LangSmith API Key (optional)",
+    type="password",
+)
 st.session_state.langsmith_api_key = langsmith_api_key
+if st.session_state.langsmith_api_key.startswith("ls__"):
+    langsmith_project = st.sidebar.text_input(
+        "LangSmith Project Name",
+        value="langchain-streamlit-demo",
+    )
+    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+    os.environ["LANGCHAIN_API_KEY"] = st.session_state.langsmith_api_key
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_PROJECT"] = langsmith_project
 
+    client = get_langsmith_client()
+else:
+    langsmith_project = None
+    client = None
 
 if st.session_state.openai_api_key.startswith("sk-"):
     system_prompt = (
@@ -62,21 +78,6 @@ if st.session_state.openai_api_key.startswith("sk-"):
     memory = get_memory()
 
     chain = get_llm_chain(memory, system_prompt, temperature)
-
-    if st.session_state.langsmith_api_key.startswith("ls__"):
-        langsmith_project = st.sidebar.text_input(
-            "LangSmith Project Name",
-            value="langchain-streamlit-demo",
-        )
-        os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-        os.environ["LANGCHAIN_API_KEY"] = st.session_state.langsmith_api_key
-        os.environ["LANGCHAIN_TRACING_V2"] = "true"
-        os.environ["LANGCHAIN_PROJECT"] = langsmith_project
-
-        client = get_langsmith_client()
-    else:
-        langsmith_project = None
-        client = None
 
     run_collector = RunCollectorCallbackHandler()
 

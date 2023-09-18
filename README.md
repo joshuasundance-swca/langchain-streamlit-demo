@@ -5,7 +5,7 @@ colorFrom: green
 colorTo: red
 sdk: docker
 app_port: 7860
-pinned:
+pinned: true
 tags: [langchain, streamlit, docker]
 ---
 

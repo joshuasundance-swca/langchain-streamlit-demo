@@ -22,3 +22,52 @@ tags: [langchain, streamlit, docker]
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&logo=docker&logoColor=white)](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/joshuasundance/langchain-streamlit-demo/latest)](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
 [![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
+
+
+This project shows how to build a simple chatbot UI with [Streamlit](https://streamlit.io) and [LangChain](https://langchain.com).
+
+This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2), an LLM from [Anthropic](https://www.anthropic.com/).
+
+# Features
+- Chat interface for talking to AI assistant
+- Streaming output of assistant responses
+- Leverages LangChain for dialogue management
+- Integrates with [LangSmith](https://smith.langchain.com) for tracing conversations
+- Allows giving feedback on assistant's responses
+
+# Usage
+## With Docker (pull from Docker Hub)
+1. Run in terminal: `docker run -p 7860:7860 joshuasundance/langchain-streamlit-demo:latest`
+2. Open http://localhost:7860 in your browser.
+
+## Docker Compose
+1. Clone the repo. Navigate to cloned repo directory.
+2. Run in terminal: `docker-compose up`
+3. Then open http://localhost:7860 in your browser.
+
+# Configuration
+- Enter your OpenAI API key to power the assistant
+- Optionally enter a LangSmith API key to enable conversation tracing
+- Customize the assistant prompt and temperature
+
+# Code Overview
+- `app.py` - Main Streamlit app definition
+- `llm_stuff.py` - LangChain helper functions
+
+# Deployment
+The app is packaged as a Docker image for easy deployment. It is published to Docker Hub and Hugging Face Spaces:
+
+- [DockerHub](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
+- [HuggingFace Spaces](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
+
+CI workflows in `.github/workflows` handle building and publishing the image.
+
+# Links
+- [Streamlit](https://streamlit.io)
+- [LangChain](https://langchain.com)
+- [LangSmith](https://smith.langchain.com)
+
+# TODO
+1. Let user choose between `gpt-3.5-turbo` and `gpt-4`
+2. Add support for Anthropic and Anyscale chat models
+3. More customization / parameterization in sidebar

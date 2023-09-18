@@ -19,7 +19,7 @@ pinned: true
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 
 
-[![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/blob/main/open-in-hf-spaces-xl.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
+[![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
 
 [Docker Hub](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
 

@@ -68,5 +68,6 @@ CI workflows in `.github/workflows` handle building and publishing the image.
 - [LangSmith](https://smith.langchain.com)
 
 # TODO
-1. Add support for Anthropic and Anyscale chat models
-2. More customization / parameterization in sidebar
+1. Let user choose between `gpt-3.5-turbo` and `gpt-4`
+2. Add support for Anthropic and Anyscale chat models
+3. More customization / parameterization in sidebar

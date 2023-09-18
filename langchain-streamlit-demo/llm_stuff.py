@@ -6,14 +6,16 @@ from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from streamlit_feedback import streamlit_feedback
 from langsmith.client import Client
+from streamlit_feedback import streamlit_feedback
 
 _DEFAULT_SYSTEM_PROMPT = "You are a helpful chatbot."
 
 
 def get_langsmith_client():
-    return Client()
+    return Client(
+        api_key=st.session_state.langsmith_api_key,
+    )
 
 
 def get_memory() -> ConversationBufferMemory:
@@ -27,6 +29,7 @@ def get_memory() -> ConversationBufferMemory:
 def get_llm_chain(
     memory: ConversationBufferMemory,
     system_prompt: str = _DEFAULT_SYSTEM_PROMPT,
+    temperature: float = 0.7,
 ) -> LLMChain:
     """Return a basic LLMChain with memory."""
     prompt = ChatPromptTemplate.from_messages(
@@ -39,7 +42,11 @@ def get_llm_chain(
             ("human", "{input}"),
         ],
     ).partial(time=lambda: str(datetime.now()))
-    llm = ChatOpenAI(temperature=0.7, streaming=True)
+    llm = ChatOpenAI(
+        temperature=temperature,
+        streaming=True,
+        openai_api_key=st.session_state.openai_api_key,
+    )
     return LLMChain(prompt=prompt, llm=llm, memory=memory or get_memory())
 
 

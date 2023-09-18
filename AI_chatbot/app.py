@@ -138,66 +138,56 @@ if prompt := st.chat_input(placeholder="Ask me a question!"):
 # Simple feedback section
 # Optionally add a thumbs up/down button for feedback
 if st.session_state.get("run_id"):
+    # feedback = streamlit_feedback(
+    #     feedback_type="thumbs",
+    #     key=f"feedback_{st.session_state.run_id}",
+    # )
+    # scores = {"👍": 1, "👎": 0}
+    scores = {"😀": 1, "🙂": 0.75, "😐": 0.5, "🙁": 0.25, "😞": 0}
     feedback = streamlit_feedback(
-        feedback_type="thumbs",
+        feedback_type="faces",
+        optional_text_label="[Optional] Please provide an explanation",
         key=f"feedback_{st.session_state.run_id}",
     )
-    scores = {"👍": 1, "👎": 0}
     if feedback:
         score = scores[feedback["score"]]
         feedback = client.create_feedback(
             st.session_state.run_id,
-            "user_score",
+            feedback["type"],
             score=score,
+            comment=feedback.get("text", None),
         )
         st.session_state.feedback = {"feedback_id": str(feedback.id), "score": score}
+        st.toast("Feedback recorded!", icon="📝")
 
-# Prompt for more information, if feedback was submitted
-if st.session_state.get("feedback"):
-    feedback = st.session_state.get("feedback")
-    feedback_id = feedback["feedback_id"]
-    score = feedback["score"]
-    if score == 0:
-        if correction := st.text_input(
-            label="What would the correct or preferred response have been?",
-            key=f"correction_{feedback_id}",
-        ):
-            st.session_state.feedback_update = {
-                "correction": {"desired": correction},
-                "feedback_id": feedback_id,
-            }
-    elif score == 1:
-        if comment := st.text_input(
-            label="Anything else you'd like to add about this response?",
-            key=f"comment_{feedback_id}",
-        ):
-            st.session_state.feedback_update = {
-                "comment": comment,
-                "feedback_id": feedback_id,
-            }
-# Update the feedback if additional information was provided
-if st.session_state.get("feedback_update"):
-    feedback_update = st.session_state.get("feedback_update")
-    feedback_id = feedback_update.pop("feedback_id")
-    client.update_feedback(feedback_id, **feedback_update)
-    # Clear the comment or correction box
-    _reset_feedback()
 
-# # Feedback section
-# if st.session_state.get("last_run"):
-#     run_url = client.read_run(st.session_state.last_run).url
-#     st.sidebar.markdown(f"[Latest Trace: 🛠️]({run_url})")
-#     feedback = streamlit_feedback(
-#         feedback_type="faces",
-#         optional_text_label="[Optional] Please provide an explanation",
-#         key=f"feedback_{st.session_state.last_run}",
-#     )
-#     if feedback:
-#         scores = {"😀": 1, "🙂": 0.75, "😐": 0.5, "🙁": 0.25, "😞": 0}
-#         client.create_feedback(
-#             st.session_state.last_run,
-#             feedback["type"],
-#             score=scores[feedback["score"]],
-#             comment=feedback.get("text", None),
-#         )
-#         st.toast("Feedback recorded!", icon="📝")
+# # Prompt for more information, if feedback was submitted
+# if st.session_state.get("feedback"):
+#     feedback = st.session_state.get("feedback")
+#     feedback_id = feedback["feedback_id"]
+#     score = feedback["score"]
+#     if score == 0:
+#         if correction := st.text_input(
+#             label="What would the correct or preferred response have been?",
+#             key=f"correction_{feedback_id}",
+#         ):
+#             st.session_state.feedback_update = {
+#                 "correction": {"desired": correction},
+#                 "feedback_id": feedback_id,
+#             }
+#     elif score == 1:
+#         if comment := st.text_input(
+#             label="Anything else you'd like to add about this response?",
+#             key=f"comment_{feedback_id}",
+#         ):
+#             st.session_state.feedback_update = {
+#                 "comment": comment,
+#                 "feedback_id": feedback_id,
+#             }
+# # Update the feedback if additional information was provided
+# if st.session_state.get("feedback_update"):
+#     feedback_update = st.session_state.get("feedback_update")
+#     feedback_id = feedback_update.pop("feedback_id")
+#     client.update_feedback(feedback_id, **feedback_update)
+#     # Clear the comment or correction box
+#     _reset_feedback()

@@ -1,7 +1,7 @@
-anthropic
-langchain
-langsmith
-openai
+anthropic==0.3.11
+langchain==0.0.293
+langsmith==0.0.38
+openai==0.28.0
 streamlit==1.26.0
-streamlit-feedback
-tiktoken
+streamlit-feedback==0.1.2
+tiktoken==0.5.1

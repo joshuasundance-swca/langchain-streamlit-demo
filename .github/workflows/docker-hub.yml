@@ -1,0 +1,35 @@
+name: Push to Docker Hub
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.WORKFLOW_GIT_ACCESS_TOKEN }}
+
+    - name: Store SHA
+      id: vars
+      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: joshuasundance
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Docker image
+      run: |
+        docker build \
+          -t joshuasundance/langchain-streamlit-demo:${{ steps.vars.outputs.sha_short }} \
+          -t joshuasundance/langchain-streamlit-demo:latest \
+          .
+
+    - name: Push to Docker Hub
+      run: docker push joshuasundance/langchain-streamlit-demo

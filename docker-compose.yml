@@ -11,4 +11,4 @@ services:
     volumes:
         - .:/home/appuser/app:rw
     working_dir: /home/appuser/app/
-    entrypoint: ["streamlit", "run", "${APP}", "-w"]
+    entrypoint: ["python", "-m", "streamlit", "run", "${APP}", "--server.port", "8000", "--server.enableCORS", "false", "--server.address", "0.0.0.0"]

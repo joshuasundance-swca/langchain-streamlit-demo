@@ -4,7 +4,8 @@ RUN adduser --uid 1001 --disabled-password --gecos '' appuser
 USER 1001
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PATH="/home/appuser/.local/bin:$PATH"
 
 RUN pip install --user --upgrade pip
 COPY ./requirements.txt /home/appuser/app/requirements.txt

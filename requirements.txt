@@ -3,4 +3,5 @@ langchain
 langsmith
 openai
 streamlit
+streamlit-feedback
 tiktoken

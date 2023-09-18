@@ -9,6 +9,12 @@ services:
     ports:
       - "8000:8000"
     volumes:
-        - .:/home/appuser/app:rw
+      - .:/home/appuser/app:rw
     working_dir: /home/appuser/app/
-    entrypoint: ["python", "-m", "streamlit", "run", "${APP}", "--server.port", "8000", "--server.enableCORS", "false", "--server.address", "0.0.0.0"]
+    command: [
+      "python", "-m",
+      "streamlit", "run",
+      "/home/appuser/app/langchain-streamlit-demo/app.py",
+      "--server.port", "8000",
+      "--server.address", "0.0.0.0"
+    ]

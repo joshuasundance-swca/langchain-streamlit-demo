@@ -3,19 +3,12 @@ from datetime import datetime
 import streamlit as st
 from langchain import LLMChain
 from langchain.callbacks.base import BaseCallbackHandler
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
 _DEFAULT_SYSTEM_PROMPT = "You are a helpful chatbot."
-
-
-def get_langsmith_client():
-    return Client(
-        api_key=st.session_state.langsmith_api_key,
-    )
 
 
 def get_memory() -> ConversationBufferMemory:
@@ -26,8 +19,39 @@ def get_memory() -> ConversationBufferMemory:
     )
 
 
+def get_llm(
+    model: str,
+    provider_api_key: str,
+    temperature,
+):
+    if model.startswith("gpt"):
+        return ChatOpenAI(
+            model=model,
+            openai_api_key=provider_api_key,
+            temperature=temperature,
+            streaming=True,
+        )
+    elif model.startswith("claude"):
+        return ChatAnthropic(
+            model_name=model,
+            anthropic_api_key=provider_api_key,
+            temperature=temperature,
+            streaming=True,
+        )
+    elif model.startswith("meta-llama"):
+        return ChatAnyscale(
+            model=model,
+            anyscale_api_key=provider_api_key,
+            temperature=temperature,
+            streaming=True,
+        )
+    else:
+        raise NotImplementedError(f"Unknown model {model}")
+
+
 def get_llm_chain(
-    memory: ConversationBufferMemory,
+    model: str,
+    provider_api_key: str,
     system_prompt: str = _DEFAULT_SYSTEM_PROMPT,
     temperature: float = 0.7,
 ) -> LLMChain:
@@ -42,11 +66,8 @@ def get_llm_chain(
             ("human", "{input}"),
         ],
     ).partial(time=lambda: str(datetime.now()))
-    llm = ChatOpenAI(
-        temperature=temperature,
-        streaming=True,
-        openai_api_key=st.session_state.openai_api_key,
-    )
+    memory = get_memory()
+    llm = get_llm(model, provider_api_key, temperature)
     return LLMChain(prompt=prompt, llm=llm, memory=memory or get_memory())
 
 

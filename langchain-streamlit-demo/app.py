@@ -10,7 +10,16 @@ from langchain.schema.runnable import RunnableConfig
 from langsmith.client import Client
 
 from llm_stuff import (
+    _MODEL_DICT,
+    _SUPPORTED_MODELS,
+    _DEFAULT_MODEL,
     _DEFAULT_SYSTEM_PROMPT,
+    _DEFAULT_TEMPERATURE,
+    _MIN_TEMPERATURE,
+    _MAX_TEMPERATURE,
+    _DEFAULT_MAX_TOKENS,
+    _MIN_TOKENS,
+    _MAX_TOKENS,
     get_llm_chain,
     StreamHandler,
     feedback_component,
@@ -21,60 +30,40 @@ st.set_page_config(
     page_icon="🦜",
 )
 
+st.sidebar.markdown("# Menu")
+
 # Initialize State
 if "trace_link" not in st.session_state:
     st.session_state.trace_link = None
 if "run_id" not in st.session_state:
     st.session_state.run_id = None
 
-st.sidebar.markdown("# Menu")
-models = [
-    "gpt-3.5-turbo",
-    "gpt-4",
-    "claude-instant-v1",
-    "claude-2",
-    "meta-llama/Llama-2-7b-chat-hf",
-    "meta-llama/Llama-2-13b-chat-hf",
-    "meta-llama/Llama-2-70b-chat-hf",
-]
-model = st.sidebar.selectbox(label="Chat Model", options=models, index=0)
-
-if model.startswith("gpt"):
-    provider = "OpenAI"
-elif model.startswith("claude"):
-    provider = "Anthropic"
-elif model.startswith("meta-llama"):
-    provider = "Anyscale"
-else:
-    st.stop()
-
-if not model:
-    st.error("Please select a model and provide an API key.", icon="❌")
-    st.stop()
-
-provider_api_key = st.sidebar.text_input(f"{provider} API key", type="password")
-
-langsmith_api_key = st.sidebar.text_input(
-    "LangSmith API Key (optional)",
-    type="password",
+model = st.sidebar.selectbox(
+    label="Chat Model",
+    options=_SUPPORTED_MODELS,
+    index=_SUPPORTED_MODELS.index(_DEFAULT_MODEL),
 )
+provider = _MODEL_DICT[model]
 
-if langsmith_api_key.startswith("ls__"):
-    langsmith_project = st.sidebar.text_input(
-        "LangSmith Project Name",
-        value="langchain-streamlit-demo",
-    )
-    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-    os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
-    os.environ["LANGCHAIN_TRACING_V2"] = "true"
-    os.environ["LANGCHAIN_PROJECT"] = langsmith_project
+if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="password"):
+    if langsmith_api_key := st.sidebar.text_input(
+        "LangSmith API Key (optional)",
+        type="password",
+    ):
+        langsmith_project = st.sidebar.text_input(
+            "LangSmith Project Name",
+            value="langchain-streamlit-demo",
+        )
+        os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+        os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_PROJECT"] = langsmith_project
 
-    client = Client(api_key=langsmith_api_key)
-else:
-    langsmith_project = None
-    client = None
+        client = Client(api_key=langsmith_api_key)
+    else:
+        langsmith_project = None
+        client = None
 
-if provider_api_key:
     system_prompt = (
         st.sidebar.text_area(
             "Custom Instructions",
@@ -88,17 +77,17 @@ if provider_api_key:
 
     temperature = st.sidebar.slider(
         "Temperature",
-        min_value=0.0,
-        max_value=1.0,
-        value=0.7,
+        min_value=_MIN_TEMPERATURE,
+        max_value=_MAX_TEMPERATURE,
+        value=_DEFAULT_TEMPERATURE,
         help="Higher values give more random results.",
     )
 
     max_tokens = st.sidebar.slider(
         "Max Tokens",
-        min_value=0,
-        max_value=8000,
-        value=1000,
+        min_value=_MIN_TOKENS,
+        max_value=_MAX_TOKENS,
+        value=_DEFAULT_MAX_TOKENS,
         help="Higher values give longer results.",
     )
 

@@ -12,6 +12,26 @@ from streamlit_feedback import streamlit_feedback
 
 _DEFAULT_SYSTEM_PROMPT = "You are a helpful chatbot."
 
+_MODEL_DICT = {
+    "gpt-3.5-turbo": "OpenAI",
+    "gpt-4": "OpenAI",
+    "claude-instant-v1": "Anthropic",
+    "claude-2": "Anthropic",
+    "meta-llama/Llama-2-7b-chat-hf": "Anyscale Endpoints",
+    "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
+    "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
+}
+_SUPPORTED_MODELS = list(_MODEL_DICT.keys())
+_DEFAULT_MODEL = "gpt-3.5-turbo"
+
+_DEFAULT_TEMPERATURE = 0.7
+_MIN_TEMPERATURE = 0.0
+_MAX_TEMPERATURE = 1.0
+
+_DEFAULT_MAX_TOKENS = 1000
+_MIN_TOKENS = 1
+_MAX_TOKENS = 100000
+
 
 def get_memory() -> BaseChatMemory:
     return ConversationBufferMemory(
@@ -25,9 +45,9 @@ def get_llm(
     model: str,
     provider_api_key: str,
     temperature: float,
-    max_tokens: int = 1000,
+    max_tokens: int = _DEFAULT_MAX_TOKENS,
 ) -> BaseChatModel:
-    if model.startswith("gpt"):
+    if _MODEL_DICT[model] == "OpenAI":
         return ChatOpenAI(
             model=model,
             openai_api_key=provider_api_key,
@@ -35,7 +55,7 @@ def get_llm(
             streaming=True,
             max_tokens=max_tokens,
         )
-    elif model.startswith("claude"):
+    elif _MODEL_DICT[model] == "Anthropic":
         return ChatAnthropic(
             model_name=model,
             anthropic_api_key=provider_api_key,
@@ -43,7 +63,7 @@ def get_llm(
             streaming=True,
             max_tokens_to_sample=max_tokens,
         )
-    elif model.startswith("meta-llama"):
+    elif _MODEL_DICT[model] == "Anyscale Endpoints":
         return ChatAnyscale(
             model=model,
             anyscale_api_key=provider_api_key,
@@ -59,8 +79,8 @@ def get_llm_chain(
     model: str,
     provider_api_key: str,
     system_prompt: str = _DEFAULT_SYSTEM_PROMPT,
-    temperature: float = 0.7,
-    max_tokens: int = 1000,
+    temperature: float = _DEFAULT_TEMPERATURE,
+    max_tokens: int = _DEFAULT_MAX_TOKENS,
 ) -> LLMChain:
     """Return a basic LLMChain with memory."""
     prompt = ChatPromptTemplate.from_messages(
@@ -89,7 +109,7 @@ class StreamHandler(BaseCallbackHandler):
 
 
 def feedback_component(client):
-    scores = {"😀": 1, "🙂": 0.75, "😐": 0.5, "🙁": 0.25, "😞": 0}
+    scores = {"😀": 1, "🙂": 0.0, "😐": 0.5, "🙁": 0.25, "😞": 0}
     if feedback := streamlit_feedback(
         feedback_type="faces",
         optional_text_label="[Optional] Please provide an explanation",

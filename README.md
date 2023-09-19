@@ -30,12 +30,26 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 
 # Features
 - Chat interface for talking to AI assistant
+- Supports models from:
+  - [OpenAI](https://openai.com/)
+    - `gpt-3.5-turbo`
+    - `gpt-4`
+  - [Anthropic](https://www.anthropic.com/)
+    - `claude-instant-v1`
+    - `claude-2`
+  - [Anyscale Endpoints](https://endpoints.anyscale.com/)
+    - `meta-llama/Llama-2-7b-chat-hf`
+    - `meta-llama/Llama-2-13b-chat-hf`
+    - `meta-llama/Llama-2-70b-chat-hf`
 - Streaming output of assistant responses
 - Leverages LangChain for dialogue management
 - Integrates with [LangSmith](https://smith.langchain.com) for tracing conversations
 - Allows giving feedback on assistant's responses
 
 # Usage
+# Run on HuggingFace Spaces
+[![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
+
 ## With Docker (pull from Docker Hub)
 1. Run in terminal: `docker run -p 7860:7860 joshuasundance/langchain-streamlit-demo:latest`
 2. Open http://localhost:7860 in your browser.
@@ -46,7 +60,8 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 3. Then open http://localhost:7860 in your browser.
 
 # Configuration
-- Enter your OpenAI API key to power the assistant
+- Select a model from the dropdown
+- Enter an API key for the relevant provider
 - Optionally enter a LangSmith API key to enable conversation tracing
 - Customize the assistant prompt and temperature
 
@@ -66,8 +81,9 @@ CI workflows in `.github/workflows` handle building and publishing the image.
 - [Streamlit](https://streamlit.io)
 - [LangChain](https://langchain.com)
 - [LangSmith](https://smith.langchain.com)
+- [OpenAI](https://openai.com/)
+- [Anthropic](https://www.anthropic.com/)
+- [Anyscale Endpoints](https://endpoints.anyscale.com/)
 
 # TODO
-1. Let user choose between `gpt-3.5-turbo` and `gpt-4`
-2. Add support for Anthropic and Anyscale chat models
-3. More customization / parameterization in sidebar
+1. More customization / parameterization in sidebar

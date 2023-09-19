@@ -4,58 +4,76 @@ from langchain.callbacks.manager import tracing_v2_enabled
 from langchain.callbacks.tracers.langchain import wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.schema.runnable import RunnableConfig
-from openai.error import AuthenticationError
+import openai
+import anthropic
+from langsmith.client import Client
 
 from llm_stuff import (
     _DEFAULT_SYSTEM_PROMPT,
-    get_memory,
     get_llm_chain,
     StreamHandler,
     feedback_component,
-    get_langsmith_client,
 )
 
 st.set_page_config(
-    page_title="Chat LangSmith",
+    page_title="langchain-streamlit-demo",
     page_icon="🦜",
 )
 
-# "# Chat🦜🛠️"
 # Initialize State
 if "trace_link" not in st.session_state:
     st.session_state.trace_link = None
 if "run_id" not in st.session_state:
     st.session_state.run_id = None
-st.sidebar.markdown(
-    """
-# Menu
-""",
-)
 
-openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
-st.session_state.openai_api_key = openai_api_key
+st.sidebar.markdown("# Menu")
+models = [
+    "gpt-3.5-turbo",
+    "gpt-4",
+    "claude-instant-v1",
+    "claude-2",
+    "meta-llama/Llama-2-7b-chat-hf",
+    "meta-llama/Llama-2-13b-chat-hf",
+    "meta-llama/Llama-2-70b-chat-hf",
+]
+model = st.sidebar.selectbox(label="Chat Model", options=models, index=0)
+
+if model.startswith("gpt"):
+    provider = "OpenAI"
+elif model.startswith("claude"):
+    provider = "Anthropic"
+elif model.startswith("meta-llama"):
+    provider = "Anyscale"
+else:
+    st.stop()
+
+if not model:
+    st.error("Please select a model and provide an API key.", icon="❌")
+    st.stop()
+
+provider_api_key = st.sidebar.text_input(f"{provider} API key", type="password")
 
 langsmith_api_key = st.sidebar.text_input(
     "LangSmith API Key (optional)",
     type="password",
 )
-st.session_state.langsmith_api_key = langsmith_api_key
-if st.session_state.langsmith_api_key.startswith("ls__"):
+
+if langsmith_api_key.startswith("ls__"):
     langsmith_project = st.sidebar.text_input(
         "LangSmith Project Name",
         value="langchain-streamlit-demo",
     )
     os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-    os.environ["LANGCHAIN_API_KEY"] = st.session_state.langsmith_api_key
+    os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
     os.environ["LANGCHAIN_TRACING_V2"] = "true"
     os.environ["LANGCHAIN_PROJECT"] = langsmith_project
 
-    client = get_langsmith_client()
+    client = Client(api_key=langsmith_api_key)
 else:
     langsmith_project = None
     client = None
 
-if st.session_state.openai_api_key.startswith("sk-"):
+if provider_api_key:
     system_prompt = (
         st.sidebar.text_area(
             "Custom Instructions",
@@ -75,15 +93,13 @@ if st.session_state.openai_api_key.startswith("sk-"):
         help="Higher values give more random results.",
     )
 
-    memory = get_memory()
-
-    chain = get_llm_chain(memory, system_prompt, temperature)
+    chain = get_llm_chain(model, provider_api_key, system_prompt, temperature)
 
     run_collector = RunCollectorCallbackHandler()
 
     if st.sidebar.button("Clear message history"):
         print("Clearing message history")
-        memory.clear()
+        chain.memory.clear()
         st.session_state.trace_link = None
         st.session_state.run_id = None
 
@@ -103,7 +119,7 @@ if st.session_state.openai_api_key.startswith("sk-"):
         with st.chat_message(streamlit_type, avatar=avatar):
             st.markdown(msg.content)
 
-    if st.session_state.trace_link:
+    if client and st.session_state.trace_link:
         st.sidebar.markdown(
             f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
             unsafe_allow_html=True,
@@ -136,8 +152,8 @@ if st.session_state.openai_api_key.startswith("sk-"):
                         {"input": prompt},
                         config=runnable_config,
                     )["text"]
-            except AuthenticationError:
-                st.error("Please enter a valid OpenAI API key.", icon="❌")
+            except (openai.error.AuthenticationError, anthropic.AuthenticationError):
+                st.error("Please enter a valid {provider} API key.", icon="❌")
                 st.stop()
             message_placeholder.markdown(full_response)
 
@@ -153,5 +169,5 @@ if st.session_state.openai_api_key.startswith("sk-"):
         feedback_component(client)
 
 else:
-    st.error("Please enter a valid OpenAI API key.", icon="❌")
+    st.error(f"Please enter a valid {provider} API key.", icon="❌")
     st.stop()

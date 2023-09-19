@@ -111,12 +111,6 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
         with st.chat_message(msg.type, avatar="🦜" if msg.type == "assistant" else None):
             st.markdown(msg.content)
 
-    if client and st.session_state.trace_link:
-        st.sidebar.markdown(
-            f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
-            unsafe_allow_html=True,
-        )
-
     def _reset_feedback():
         st.session_state.feedback_update = None
         st.session_state.feedback = None
@@ -157,8 +151,15 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
                 url = client.read_run(run.id).url
                 st.session_state.trace_link = url
 
-    if client and st.session_state.get("run_id"):
-        feedback_component(client)
+    if client:
+        if st.session_state.get("run_id"):
+            feedback_component(client)
+        if st.session_state.trace_link:
+            st.sidebar.markdown(
+                f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
+                unsafe_allow_html=True,
+            )
+
 
 else:
     st.error(f"Please enter a valid {provider} API key.", icon="❌")

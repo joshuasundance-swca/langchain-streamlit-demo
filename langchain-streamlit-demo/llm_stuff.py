@@ -4,14 +4,16 @@ import streamlit as st
 from langchain import LLMChain
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
+from langchain.chat_models.base import BaseChatModel
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
+from langchain.memory.chat_memory import BaseChatMemory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from streamlit_feedback import streamlit_feedback
 
 _DEFAULT_SYSTEM_PROMPT = "You are a helpful chatbot."
 
 
-def get_memory() -> ConversationBufferMemory:
+def get_memory() -> BaseChatMemory:
     return ConversationBufferMemory(
         chat_memory=StreamlitChatMessageHistory(key="langchain_messages"),
         return_messages=True,
@@ -24,7 +26,7 @@ def get_llm(
     provider_api_key: str,
     temperature: float,
     max_tokens: int = 1000,
-):
+) -> BaseChatModel:
     if model.startswith("gpt"):
         return ChatOpenAI(
             model=model,

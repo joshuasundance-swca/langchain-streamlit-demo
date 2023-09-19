@@ -108,7 +108,10 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
         st.session_state.run_id = None
 
     for msg in st.session_state.langchain_messages:
-        with st.chat_message(msg.type, avatar="🦜" if msg.type == "assistant" else None):
+        with st.chat_message(
+            msg.type,
+            avatar="🦜" if msg.type in ("ai", "assistant") else None,
+        ):
             st.markdown(msg.content)
 
     def _reset_feedback():

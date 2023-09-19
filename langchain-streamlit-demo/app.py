@@ -94,7 +94,21 @@ if provider_api_key:
         help="Higher values give more random results.",
     )
 
-    chain = get_llm_chain(model, provider_api_key, system_prompt, temperature)
+    max_tokens = st.sidebar.slider(
+        "Max Tokens",
+        min_value=0,
+        max_value=8000,
+        value=1000,
+        help="Higher values give longer results.",
+    )
+
+    chain = get_llm_chain(
+        model,
+        provider_api_key,
+        system_prompt,
+        temperature,
+        max_tokens,
+    )
 
     run_collector = RunCollectorCallbackHandler()
 

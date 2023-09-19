@@ -22,7 +22,8 @@ def get_memory() -> ConversationBufferMemory:
 def get_llm(
     model: str,
     provider_api_key: str,
-    temperature,
+    temperature: float,
+    max_tokens: int = 1000,
 ):
     if model.startswith("gpt"):
         return ChatOpenAI(
@@ -30,6 +31,7 @@ def get_llm(
             openai_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
+            max_tokens=max_tokens,
         )
     elif model.startswith("claude"):
         return ChatAnthropic(
@@ -37,6 +39,7 @@ def get_llm(
             anthropic_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
+            max_tokens_to_sample=max_tokens,
         )
     elif model.startswith("meta-llama"):
         return ChatAnyscale(
@@ -44,6 +47,7 @@ def get_llm(
             anyscale_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
+            max_tokens=max_tokens,
         )
     else:
         raise NotImplementedError(f"Unknown model {model}")
@@ -54,6 +58,7 @@ def get_llm_chain(
     provider_api_key: str,
     system_prompt: str = _DEFAULT_SYSTEM_PROMPT,
     temperature: float = 0.7,
+    max_tokens: int = 1000,
 ) -> LLMChain:
     """Return a basic LLMChain with memory."""
     prompt = ChatPromptTemplate.from_messages(
@@ -67,7 +72,7 @@ def get_llm_chain(
         ],
     ).partial(time=lambda: str(datetime.now()))
     memory = get_memory()
-    llm = get_llm(model, provider_api_key, temperature)
+    llm = get_llm(model, provider_api_key, temperature, max_tokens)
     return LLMChain(prompt=prompt, llm=llm, memory=memory or get_memory())
 
 

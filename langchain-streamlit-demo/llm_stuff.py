@@ -109,7 +109,7 @@ class StreamHandler(BaseCallbackHandler):
 
 
 def feedback_component(client):
-    scores = {"😀": 1, "🙂": 0.0, "😐": 0.5, "🙁": 0.25, "😞": 0}
+    scores = {"😀": 1, "🙂": 0.75, "😐": 0.5, "🙁": 0.25, "😞": 0}
     if feedback := streamlit_feedback(
         feedback_type="faces",
         optional_text_label="[Optional] Please provide an explanation",

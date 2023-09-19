@@ -107,20 +107,8 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
         st.session_state.trace_link = None
         st.session_state.run_id = None
 
-    # Display chat messages from history on app rerun
-    # NOTE: This won't be necessary for Streamlit 1.26+, you can just pass the type directly
-    # https://github.com/streamlit/streamlit/pull/7094
-    def _get_openai_type(msg):
-        if msg.type == "human":
-            return "user"
-        if msg.type == "ai":
-            return "assistant"
-        return msg.role if msg.type == "chat" else msg.type
-
     for msg in st.session_state.langchain_messages:
-        streamlit_type = _get_openai_type(msg)
-        avatar = "🦜" if streamlit_type == "assistant" else None
-        with st.chat_message(streamlit_type, avatar=avatar):
+        with st.chat_message(msg.type, avatar="🦜" if msg.type == "assistant" else None):
             st.markdown(msg.content)
 
     if client and st.session_state.trace_link:

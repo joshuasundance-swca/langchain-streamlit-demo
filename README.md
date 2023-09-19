@@ -56,7 +56,7 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 
 ## Docker Compose
 1. Clone the repo. Navigate to cloned repo directory.
-2. Run in terminal: `docker-compose up`
+2. Run in terminal: `docker compose up`
 3. Then open http://localhost:7860 in your browser.
 
 # Configuration

@@ -157,7 +157,7 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
                         config=runnable_config,
                     )["text"]
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
-                st.error("Please enter a valid {provider} API key.", icon="❌")
+                st.error(f"Please enter a valid {provider} API key.", icon="❌")
                 st.stop()
             message_placeholder.markdown(full_response)
 

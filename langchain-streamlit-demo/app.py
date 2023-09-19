@@ -150,15 +150,11 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
                 wait_for_all_tracers()
                 url = client.read_run(run.id).url
                 st.session_state.trace_link = url
-
-    if client:
-        if st.session_state.get("run_id"):
-            feedback_component(client)
-        if st.session_state.trace_link:
-            st.sidebar.markdown(
-                f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
-                unsafe_allow_html=True,
-            )
+                feedback_component(client)
+                st.sidebar.markdown(
+                    f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
+                    unsafe_allow_html=True,
+                )
 
 
 else:

@@ -47,6 +47,9 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 - Allows giving feedback on assistant's responses
 
 # Usage
+# Run on HuggingFace Spaces
+[![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
+
 ## With Docker (pull from Docker Hub)
 1. Run in terminal: `docker run -p 7860:7860 joshuasundance/langchain-streamlit-demo:latest`
 2. Open http://localhost:7860 in your browser.
@@ -57,7 +60,8 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 3. Then open http://localhost:7860 in your browser.
 
 # Configuration
-- Enter your OpenAI API key to power the assistant
+- Select a model from the dropdown
+- Enter an API key for the relevant provider
 - Optionally enter a LangSmith API key to enable conversation tracing
 - Customize the assistant prompt and temperature
 

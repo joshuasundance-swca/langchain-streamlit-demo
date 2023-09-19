@@ -1,11 +1,12 @@
 import os
+
+import anthropic
+import openai
 import streamlit as st
 from langchain.callbacks.manager import tracing_v2_enabled
 from langchain.callbacks.tracers.langchain import wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.schema.runnable import RunnableConfig
-import openai
-import anthropic
 from langsmith.client import Client
 
 from llm_stuff import (

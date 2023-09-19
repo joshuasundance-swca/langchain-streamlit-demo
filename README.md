@@ -30,7 +30,7 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 
 # Features
 - Chat interface for talking to AI assistant
-- Supports models from:
+- Supports models from
   - [OpenAI](https://openai.com/)
     - `gpt-3.5-turbo`
     - `gpt-4`
@@ -47,7 +47,7 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 - Allows giving feedback on assistant's responses
 
 # Usage
-# Run on HuggingFace Spaces
+## Run on HuggingFace Spaces
 [![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
 
 ## With Docker (pull from Docker Hub)

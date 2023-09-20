@@ -12,8 +12,8 @@ else
   echo "Secret 'langchain-streamlit-demo-secret' does not exist. Creating."
 fi
 
-kubectl create secret generic langchain-streamlit-demo-secret --from-env-file=../.env
+kubectl create secret generic langchain-streamlit-demo-secret --from-env-file=.env
 
 
 # Deploy to Kubernetes
-kubectl apply -f resources.yaml
+kubectl apply -f kubernetes/resources.yaml

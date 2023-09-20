@@ -84,14 +84,14 @@ or
 
 or
 
-`docker compose up --env-file env`
+`docker compose up --env-file .env`
 
 4. Open http://localhost:7860 in your browser
 
 ## Kubernetes
 1. Clone the repo. Navigate to cloned repo directory
 2. Create a `.env` file based on `.env-example`
-3. Run in terminal: `cd kubernetes && kubectl apply -f resources.yaml`
+3. Run bash script: `/bin/bash ./kubernetes/deploy.sh`
 4. Get the IP address for your new service: `kubectl get service langchain-streamlit-demo`
 
 # Links

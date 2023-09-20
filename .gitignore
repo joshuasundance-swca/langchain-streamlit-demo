@@ -21,7 +21,6 @@
 .coverage
 .coverage.*
 .dmypy.json
-.dockerignore
 .eggs/
 .env
 .hypothesis/

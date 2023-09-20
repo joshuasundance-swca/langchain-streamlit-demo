@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import streamlit as st
@@ -16,7 +17,10 @@ _MEMORY = ConversationBufferMemory(
     memory_key="chat_history",
 )
 
-_DEFAULT_SYSTEM_PROMPT = "You are a helpful chatbot."
+_DEFAULT_SYSTEM_PROMPT = os.environ.get(
+    "DEFAULT_SYSTEM_PROMPT",
+    "You are a helpful chatbot.",
+)
 
 _MODEL_DICT = {
     "gpt-3.5-turbo": "OpenAI",
@@ -28,15 +32,15 @@ _MODEL_DICT = {
     "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
 }
 _SUPPORTED_MODELS = list(_MODEL_DICT.keys())
-_DEFAULT_MODEL = "gpt-3.5-turbo"
+_DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "gpt-3.5-turbo")
 
-_DEFAULT_TEMPERATURE = 0.7
-_MIN_TEMPERATURE = 0.0
-_MAX_TEMPERATURE = 1.0
+_DEFAULT_TEMPERATURE = float(os.environ.get("DEFAULT_TEMPERATURE", 0.7))
+_MIN_TEMPERATURE = float(os.environ.get("MIN_TEMPERATURE", 0.0))
+_MAX_TEMPERATURE = float(os.environ.get("MAX_TEMPERATURE", 1.0))
 
-_DEFAULT_MAX_TOKENS = 1000
-_MIN_TOKENS = 1
-_MAX_TOKENS = 100000
+_DEFAULT_MAX_TOKENS = int(os.environ.get("DEFAULT_MAX_TOKENS", 1000))
+_MIN_TOKENS = int(os.environ.get("MIN_MAX_TOKENS", 1))
+_MAX_TOKENS = int(os.environ.get("MAX_MAX_TOKENS", 100000))
 
 
 def get_llm(

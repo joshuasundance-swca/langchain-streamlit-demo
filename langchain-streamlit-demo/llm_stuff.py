@@ -6,11 +6,15 @@ from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
 from langchain.chat_models.base import BaseChatModel
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
-from langchain.memory.chat_memory import BaseChatMemory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from streamlit_feedback import streamlit_feedback
 
-_MEMORY = StreamlitChatMessageHistory(key="langchain_messages")
+_STMEMORY = StreamlitChatMessageHistory(key="langchain_messages")
+_MEMORY = ConversationBufferMemory(
+    chat_memory=_STMEMORY,
+    return_messages=True,
+    memory_key="chat_history",
+)
 
 _DEFAULT_SYSTEM_PROMPT = "You are a helpful chatbot."
 
@@ -33,14 +37,6 @@ _MAX_TEMPERATURE = 1.0
 _DEFAULT_MAX_TOKENS = 1000
 _MIN_TOKENS = 1
 _MAX_TOKENS = 100000
-
-
-def get_memory() -> BaseChatMemory:
-    return ConversationBufferMemory(
-        chat_memory=_MEMORY,
-        return_messages=True,
-        memory_key="chat_history",
-    )
 
 
 def get_llm(
@@ -95,9 +91,8 @@ def get_llm_chain(
             ("human", "{input}"),
         ],
     ).partial(time=lambda: str(datetime.now()))
-    memory = get_memory()
     llm = get_llm(model, provider_api_key, temperature, max_tokens)
-    return LLMChain(prompt=prompt, llm=llm, memory=memory or get_memory())
+    return LLMChain(prompt=prompt, llm=llm, memory=_MEMORY)
 
 
 class StreamHandler(BaseCallbackHandler):

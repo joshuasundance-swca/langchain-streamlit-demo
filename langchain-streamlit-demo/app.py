@@ -3,13 +3,13 @@ import os
 import anthropic
 import openai
 import streamlit as st
-from langchain.callbacks.manager import tracing_v2_enabled
 from langchain.callbacks.tracers.langchain import wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.schema.runnable import RunnableConfig
 from langsmith.client import Client
 
 from llm_stuff import (
+    _MEMORY,
     _MODEL_DICT,
     _SUPPORTED_MODELS,
     _DEFAULT_MODEL,
@@ -45,52 +45,54 @@ model = st.sidebar.selectbox(
 )
 provider = _MODEL_DICT[model]
 
-if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="password"):
-    if langsmith_api_key := st.sidebar.text_input(
-        "LangSmith API Key (optional)",
-        type="password",
-    ):
-        langsmith_project = st.sidebar.text_input(
-            "LangSmith Project Name",
-            value="langchain-streamlit-demo",
-        )
-        os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-        os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
-        os.environ["LANGCHAIN_TRACING_V2"] = "true"
-        os.environ["LANGCHAIN_PROJECT"] = langsmith_project
-
-        client = Client(api_key=langsmith_api_key)
-    else:
-        langsmith_project = None
-        client = None
-
-    system_prompt = (
-        st.sidebar.text_area(
-            "Custom Instructions",
-            _DEFAULT_SYSTEM_PROMPT,
-            help="Custom instructions to provide the language model to determine style, personality, etc.",
-        )
-        .strip()
-        .replace("{", "{{")
-        .replace("}", "}}")
+provider_api_key = st.sidebar.text_input(f"{provider} API key", type="password")
+langsmith_api_key = st.sidebar.text_input(
+    "LangSmith API Key (optional)",
+    type="password",
+)
+if langsmith_api_key:
+    langsmith_project = st.sidebar.text_input(
+        "LangSmith Project Name",
+        value="langchain-streamlit-demo",
     )
+    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+    os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_PROJECT"] = langsmith_project
 
-    temperature = st.sidebar.slider(
-        "Temperature",
-        min_value=_MIN_TEMPERATURE,
-        max_value=_MAX_TEMPERATURE,
-        value=_DEFAULT_TEMPERATURE,
-        help="Higher values give more random results.",
+    client = Client(api_key=langsmith_api_key)
+else:
+    langsmith_project = None
+    client = None
+
+system_prompt = (
+    st.sidebar.text_area(
+        "Custom Instructions",
+        _DEFAULT_SYSTEM_PROMPT,
+        help="Custom instructions to provide the language model to determine style, personality, etc.",
     )
+    .strip()
+    .replace("{", "{{")
+    .replace("}", "}}")
+)
 
-    max_tokens = st.sidebar.slider(
-        "Max Tokens",
-        min_value=_MIN_TOKENS,
-        max_value=_MAX_TOKENS,
-        value=_DEFAULT_MAX_TOKENS,
-        help="Higher values give longer results.",
-    )
+temperature = st.sidebar.slider(
+    "Temperature",
+    min_value=_MIN_TEMPERATURE,
+    max_value=_MAX_TEMPERATURE,
+    value=_DEFAULT_TEMPERATURE,
+    help="Higher values give more random results.",
+)
 
+max_tokens = st.sidebar.slider(
+    "Max Tokens",
+    min_value=_MIN_TOKENS,
+    max_value=_MAX_TOKENS,
+    value=_DEFAULT_MAX_TOKENS,
+    help="Higher values give longer results.",
+)
+chain = None
+if provider_api_key:
     chain = get_llm_chain(
         model,
         provider_api_key,
@@ -99,29 +101,30 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
         max_tokens,
     )
 
-    run_collector = RunCollectorCallbackHandler()
+run_collector = RunCollectorCallbackHandler()
 
-    if st.sidebar.button("Clear message history"):
-        print("Clearing message history")
-        chain.memory.clear()
-        st.session_state.trace_link = None
-        st.session_state.run_id = None
+if st.sidebar.button("Clear message history"):
+    print("Clearing message history")
+    st.session_state["langchain_messages"].memory.clear()
+    st.session_state.trace_link = None
+    st.session_state.run_id = None
 
-    for msg in st.session_state.langchain_messages:
-        with st.chat_message(msg.type, avatar="🦜" if msg.type == "assistant" else None):
-            st.markdown(msg.content)
+for msg in _MEMORY.messages:
+    with st.chat_message(
+        msg.type,
+        avatar="🦜" if msg.type in ("ai", "assistant") else None,
+    ):
+        st.markdown(msg.content)
 
-    if client and st.session_state.trace_link:
-        st.sidebar.markdown(
-            f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
-            unsafe_allow_html=True,
-        )
 
-    def _reset_feedback():
-        st.session_state.feedback_update = None
-        st.session_state.feedback = None
+def _reset_feedback():
+    st.session_state.feedback_update = None
+    st.session_state.feedback = None
 
-    if prompt := st.chat_input(placeholder="Ask me a question!"):
+
+if chain:
+    prompt = st.chat_input(placeholder="Ask me a question!")
+    if prompt:
         st.chat_message("user").write(prompt)
         _reset_feedback()
 
@@ -133,17 +136,10 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
                 tags=["Streamlit Chat"],
             )
             try:
-                if client and langsmith_project:
-                    with tracing_v2_enabled(project_name=langsmith_project):
-                        full_response = chain.invoke(
-                            {"input": prompt},
-                            config=runnable_config,
-                        )["text"]
-                else:
-                    full_response = chain.invoke(
-                        {"input": prompt},
-                        config=runnable_config,
-                    )["text"]
+                full_response = chain.invoke(
+                    {"input": prompt},
+                    config=runnable_config,
+                )["text"]
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(f"Please enter a valid {provider} API key.", icon="❌")
                 st.stop()
@@ -156,10 +152,14 @@ if provider_api_key := st.sidebar.text_input(f"{provider} API key", type="passwo
                 wait_for_all_tracers()
                 url = client.read_run(run.id).url
                 st.session_state.trace_link = url
-
     if client and st.session_state.get("run_id"):
         feedback_component(client)
 
 else:
     st.error(f"Please enter a valid {provider} API key.", icon="❌")
-    st.stop()
+
+if client and st.session_state.get("trace_link"):
+    st.sidebar.markdown(
+        f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
+        unsafe_allow_html=True,
+    )

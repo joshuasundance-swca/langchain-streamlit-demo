@@ -10,6 +10,8 @@ from langchain.memory.chat_memory import BaseChatMemory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from streamlit_feedback import streamlit_feedback
 
+_MEMORY = StreamlitChatMessageHistory(key="langchain_messages")
+
 _DEFAULT_SYSTEM_PROMPT = "You are a helpful chatbot."
 
 _MODEL_DICT = {
@@ -35,7 +37,7 @@ _MAX_TOKENS = 100000
 
 def get_memory() -> BaseChatMemory:
     return ConversationBufferMemory(
-        chat_memory=StreamlitChatMessageHistory(key="langchain_messages"),
+        chat_memory=_MEMORY,
         return_messages=True,
         memory_key="chat_history",
     )
@@ -109,7 +111,7 @@ class StreamHandler(BaseCallbackHandler):
 
 
 def feedback_component(client):
-    scores = {"😀": 1, "🙂": 0.0, "😐": 0.5, "🙁": 0.25, "😞": 0}
+    scores = {"😀": 1, "🙂": 0.75, "😐": 0.5, "🙁": 0.25, "😞": 0}
     if feedback := streamlit_feedback(
         feedback_type="faces",
         optional_text_label="[Optional] Please provide an explanation",

@@ -9,7 +9,7 @@ from langchain.schema.runnable import RunnableConfig
 from langsmith.client import Client
 
 from llm_stuff import (
-    _MEMORY,
+    _STMEMORY,
     _MODEL_DICT,
     _SUPPORTED_MODELS,
     _DEFAULT_MODEL,
@@ -37,6 +37,14 @@ if "trace_link" not in st.session_state:
     st.session_state.trace_link = None
 if "run_id" not in st.session_state:
     st.session_state.run_id = None
+if len(_STMEMORY.messages) == 0:
+    _STMEMORY.add_ai_message("Hello! I'm a helpful AI chatbot. Ask me a question!")
+
+for msg in _STMEMORY.messages:
+    st.chat_message(
+        msg.type,
+        avatar="🦜" if msg.type in ("ai", "assistant") else None,
+    ).write(msg.content)
 
 model = st.sidebar.selectbox(
     label="Chat Model",
@@ -76,6 +84,12 @@ system_prompt = (
     .replace("}", "}}")
 )
 
+if st.sidebar.button("Clear message history"):
+    print("Clearing message history")
+    _STMEMORY.clear()
+    st.session_state.trace_link = None
+    st.session_state.run_id = None
+
 temperature = st.sidebar.slider(
     "Temperature",
     min_value=_MIN_TEMPERATURE,
@@ -102,19 +116,6 @@ if provider_api_key:
     )
 
 run_collector = RunCollectorCallbackHandler()
-
-if st.sidebar.button("Clear message history"):
-    print("Clearing message history")
-    st.session_state["langchain_messages"].memory.clear()
-    st.session_state.trace_link = None
-    st.session_state.run_id = None
-
-for msg in _MEMORY.messages:
-    with st.chat_message(
-        msg.type,
-        avatar="🦜" if msg.type in ("ai", "assistant") else None,
-    ):
-        st.markdown(msg.content)
 
 
 def _reset_feedback():

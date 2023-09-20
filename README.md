@@ -46,12 +46,24 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
 - Integrates with [LangSmith](https://smith.langchain.com) for tracing conversations
 - Allows giving feedback on assistant's responses
 - Tries reading API keys and default values from environment variables
+- Parameters in sidebar can be customized
 
-# Usage
+# Code Overview
+- `langchain-streamlit-demo/app.py` - Main Streamlit app definition
+- `langchain-streamlit-demo/llm_stuff.py` - LangChain helper functions
+- `Dockerfile`, `docker-compose.yml`: Docker deployment
+- `kubernetes/`: Kubernetes deployment files
+- `.github/workflows/`: CI/CD workflows
+
+# Deployment
+`langchain-streamlit-demo` is deployed as a [Docker image](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo) based on the [`python:3.11-slim-bookworm`](https://github.com/docker-library/python/blob/81b6e5f0643965618d633cd6b811bf0879dee360/3.11/slim-bookworm/Dockerfile) image.
+CI/CD workflows in `.github/workflows` handle building and publishing the image as well as pushing it to Hugging Face.
+
 ## Run on HuggingFace Spaces
 [![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
 
 ## With Docker (pull from Docker Hub)
+
 1. _Optional_: Create a `.env` file based on `.env-example`
 2. Run in terminal:
 
@@ -61,9 +73,9 @@ or
 
 `docker run -p 7860:7860  --env-file .env joshuasundance/langchain-streamlit-demo:latest`
 
-5. Open http://localhost:7860 in your browser
+3. Open http://localhost:7860 in your browser
 
-## Docker Compose
+## Docker Compose (build locally)
 1. Clone the repo. Navigate to cloned repo directory
 2. _Optional_: Create a `.env` file based on `.env-example`
 3. Run in terminal:
@@ -74,36 +86,13 @@ or
 
 `docker compose up --env-file env`
 
-4. Run in terminal: `docker compose up`
-5. Open http://localhost:7860 in your browser
+4. Open http://localhost:7860 in your browser
 
 ## Kubernetes
 1. Clone the repo. Navigate to cloned repo directory
 2. Create a `.env` file based on `.env-example`
 3. Run in terminal: `cd kubernetes && kubectl apply -f resources.yaml`
 4. Get the IP address for your new service: `kubectl get service langchain-streamlit-demo`
-
-# Configuration
-- Select a model from the dropdown
-- _Optional_: Create a `.env` file based on `.env-example`, or
-  - Enter an API key for the relevant provider
-  - Optionally enter a LangSmith API key to enable conversation tracing
-- Customize the assistant prompt and temperature
-
-# Code Overview
-- `langchain-streamlit-demo/app.py` - Main Streamlit app definition
-- `langchain-streamlit-demo/llm_stuff.py` - LangChain helper functions
-- `Dockerfile`, `docker-compose.yml`: Docker deployment
-- `kubernetes/`: Kubernetes deployment files
-- `.github/workflows/`: CI/CD workflows
-
-# Deployment
-The app is packaged as a Docker image for easy deployment. It is published to Docker Hub and Hugging Face Spaces:
-
-- [DockerHub](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
-- [HuggingFace Spaces](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
-
-CI/CD workflows in `.github/workflows` handle building and publishing the image.
 
 # Links
 - [Streamlit](https://streamlit.io)
@@ -112,6 +101,3 @@ CI/CD workflows in `.github/workflows` handle building and publishing the image.
 - [OpenAI](https://openai.com/)
 - [Anthropic](https://www.anthropic.com/)
 - [Anyscale Endpoints](https://endpoints.anyscale.com/)
-
-# TODO
-1. More customization / parameterization in sidebar

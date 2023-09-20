@@ -77,7 +77,7 @@ langsmith_api_key = api_key_from_env("LANGSMITH") or st.sidebar.text_input(
     type="password",
 )
 if langsmith_api_key:
-    langsmith_project = os.environ["LANGCHAIN_PROJECT"] or st.sidebar.text_input(
+    langsmith_project = os.environ.get("LANGCHAIN_PROJECT") or st.sidebar.text_input(
         "LangSmith Project Name",
         value="langchain-streamlit-demo",
     )

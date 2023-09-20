@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 import anthropic
 import openai
@@ -53,8 +54,25 @@ model = st.sidebar.selectbox(
 )
 provider = _MODEL_DICT[model]
 
-provider_api_key = st.sidebar.text_input(f"{provider} API key", type="password")
-langsmith_api_key = st.sidebar.text_input(
+
+def api_key_from_env(_provider: str) -> Union[str, None]:
+    if _provider == "OpenAI":
+        return os.environ.get("OPENAI_API_KEY")
+    elif _provider == "Anthropic":
+        return os.environ.get("ANTHROPIC_API_KEY")
+    elif _provider == "Anyscale Endpoints":
+        return os.environ.get("ANYSCALE_API_KEY")
+    elif _provider == "LANGSMITH":
+        return os.environ.get("LANGCHAIN_API_KEY")
+    else:
+        return None
+
+
+provider_api_key = api_key_from_env(provider) or st.sidebar.text_input(
+    f"{provider} API key",
+    type="password",
+)
+langsmith_api_key = api_key_from_env("LANGSMITH") or st.sidebar.text_input(
     "LangSmith API Key (optional)",
     type="password",
 )

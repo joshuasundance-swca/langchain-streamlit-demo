@@ -152,13 +152,13 @@ if chain:
                 wait_for_all_tracers()
                 url = client.read_run(run.id).url
                 st.session_state.trace_link = url
-    if client and st.session_state.run_id:
+    if client and st.session_state.get("run_id"):
         feedback_component(client)
 
 else:
     st.error(f"Please enter a valid {provider} API key.", icon="❌")
 
-if client and st.session_state.trace_link:
+if client and st.session_state.get("trace_link"):
     st.sidebar.markdown(
         f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
         unsafe_allow_html=True,

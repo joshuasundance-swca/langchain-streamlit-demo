@@ -4,8 +4,6 @@ services:
   langchain-streamlit-demo:
     image: langchain-streamlit-demo:latest
     build: .
-    env_file:
-      - .env
     ports:
       - "${APP_PORT:-7860}:${APP_PORT:-7860}"
     command: [

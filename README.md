@@ -42,32 +42,60 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
     - `meta-llama/Llama-2-13b-chat-hf`
     - `meta-llama/Llama-2-70b-chat-hf`
 - Streaming output of assistant responses
-- Leverages LangChain for dialogue management
+- Leverages LangChain for dialogue and memory management
 - Integrates with [LangSmith](https://smith.langchain.com) for tracing conversations
 - Allows giving feedback on assistant's responses
+- Tries reading API keys and default values from environment variables
 
 # Usage
 ## Run on HuggingFace Spaces
 [![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
 
 ## With Docker (pull from Docker Hub)
-1. Run in terminal: `docker run -p 7860:7860 joshuasundance/langchain-streamlit-demo:latest`
-2. Open http://localhost:7860 in your browser.
+1. _Optional_: Create a `.env` file based on `.env-example`
+2. Run in terminal:
+
+`docker run -p 7860:7860 joshuasundance/langchain-streamlit-demo:latest`
+
+or
+
+`docker run -p 7860:7860  --env-file .env joshuasundance/langchain-streamlit-demo:latest`
+
+5. Open http://localhost:7860 in your browser
 
 ## Docker Compose
-1. Clone the repo. Navigate to cloned repo directory.
-2. Run in terminal: `docker compose up`
-3. Then open http://localhost:7860 in your browser.
+1. Clone the repo. Navigate to cloned repo directory
+2. _Optional_: Create a `.env` file based on `.env-example`
+3. Run in terminal:
+
+`docker compose up`
+
+or
+
+`docker compose up --env-file env`
+
+4. Run in terminal: `docker compose up`
+5. Open http://localhost:7860 in your browser
+
+## Kubernetes
+1. Clone the repo. Navigate to cloned repo directory
+2. Create a `.env` file based on `.env-example`
+3. Run in terminal: `cd kubernetes && kubectl apply -f resources.yaml`
+4. Get the IP address for your new service: `kubectl get service langchain-streamlit-demo`
 
 # Configuration
 - Select a model from the dropdown
-- Enter an API key for the relevant provider
-- Optionally enter a LangSmith API key to enable conversation tracing
+- _Optional_: Create a `.env` file based on `.env-example`, or
+  - Enter an API key for the relevant provider
+  - Optionally enter a LangSmith API key to enable conversation tracing
 - Customize the assistant prompt and temperature
 
 # Code Overview
-- `app.py` - Main Streamlit app definition
-- `llm_stuff.py` - LangChain helper functions
+- `langchain-streamlit-demo/app.py` - Main Streamlit app definition
+- `langchain-streamlit-demo/llm_stuff.py` - LangChain helper functions
+- `Dockerfile`, `docker-compose.yml`: Docker deployment
+- `kubernetes/`: Kubernetes deployment files
+- `.github/workflows/`: CI/CD workflows
 
 # Deployment
 The app is packaged as a Docker image for easy deployment. It is published to Docker Hub and Hugging Face Spaces:
@@ -75,7 +103,7 @@ The app is packaged as a Docker image for easy deployment. It is published to Do
 - [DockerHub](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
 - [HuggingFace Spaces](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
 
-CI workflows in `.github/workflows` handle building and publishing the image.
+CI/CD workflows in `.github/workflows` handle building and publishing the image.
 
 # Links
 - [Streamlit](https://streamlit.io)

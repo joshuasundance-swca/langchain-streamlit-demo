@@ -40,6 +40,7 @@ st_init_null(
     "chain",
     "client",
     "doc_chain",
+    "document_chat_chain_type",
     "llm",
     "ls_tracer",
     "retriever",
@@ -105,16 +106,31 @@ PROVIDER_KEY_DICT = {
 }
 OPENAI_API_KEY = PROVIDER_KEY_DICT["OpenAI"]
 
+MIN_CHUNK_SIZE = 1
+MAX_CHUNK_SIZE = 10000
+DEFAULT_CHUNK_SIZE = 1000
+
+MIN_CHUNK_OVERLAP = 0
+MAX_CHUNK_OVERLAP = 10000
+DEFAULT_CHUNK_OVERLAP = 0
+
 
 @st.cache_data
-def get_retriever(uploaded_file_bytes: bytes) -> BaseRetriever:
+def get_retriever(
+    uploaded_file_bytes: bytes,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
+) -> BaseRetriever:
     with NamedTemporaryFile() as temp_file:
         temp_file.write(uploaded_file_bytes)
         temp_file.seek(0)
 
         loader = PyPDFLoader(temp_file.name)
         documents = loader.load()
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        text_splitter = CharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
         texts = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         db = FAISS.from_documents(texts, embeddings)
@@ -139,33 +155,77 @@ with sidebar:
         type="password",
     )
 
-    uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
-
-    openai_api_key = (
-        provider_api_key
-        if provider == "OpenAI"
-        else OPENAI_API_KEY
-        or st.sidebar.text_input("OpenAI API Key: ", type="password")
-    )
-
-    if uploaded_file:
-        if openai_api_key:
-            st.session_state.retriever = get_retriever(
-                uploaded_file_bytes=uploaded_file.getvalue(),
-            )
-        else:
-            st.error("Please enter a valid OpenAI API key.", icon="❌")
-
-    document_chat = st.checkbox(
-        "Document Chat",
-        value=False,
-        help="Uploaded document will provide context for the chat.",
-    )
-
     if st.button("Clear message history"):
         STMEMORY.clear()
         st.session_state.trace_link = None
         st.session_state.run_id = None
+
+    # --- Document Chat Options ---
+    with st.expander("Document Chat", expanded=False):
+        uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
+
+        openai_api_key = (
+            provider_api_key
+            if provider == "OpenAI"
+            else OPENAI_API_KEY
+            or st.sidebar.text_input("OpenAI API Key: ", type="password")
+        )
+
+        document_chat = st.checkbox(
+            "Document Chat",
+            value=False,
+            help="Uploaded document will provide context for the chat.",
+        )
+
+        chunk_size = st.slider(
+            label="chunk_size",
+            help="Size of each chunk of text",
+            min_value=MIN_CHUNK_SIZE,
+            max_value=MAX_CHUNK_SIZE,
+            value=DEFAULT_CHUNK_SIZE,
+        )
+        chunk_overlap = st.slider(
+            label="chunk_overlap",
+            help="Number of characters to overlap between chunks",
+            min_value=MIN_CHUNK_OVERLAP,
+            max_value=MAX_CHUNK_OVERLAP,
+            value=DEFAULT_CHUNK_OVERLAP,
+        )
+
+        chain_type_help_root = (
+            "https://python.langchain.com/docs/modules/chains/document/"
+        )
+        chain_type_help_dict = {
+            chain_type_name: f"{chain_type_help_root}/{chain_type_name}"
+            for chain_type_name in (
+                "stuff",
+                "refine",
+                "map_reduce",
+                "map_rerank",
+            )
+        }
+
+        chain_type_help = "\n".join(
+            f"- [{k}]({v})" for k, v in chain_type_help_dict.items()
+        )
+
+        document_chat_chain_type = st.selectbox(
+            label="Document Chat Chain Type",
+            options=["stuff", "refine", "map_reduce", "map_rerank"],
+            index=0,
+            help=chain_type_help,
+            disabled=not document_chat,
+        )
+
+        if uploaded_file:
+            if openai_api_key:
+                st.session_state.retriever = get_retriever(
+                    uploaded_file_bytes=uploaded_file.getvalue(),
+                    chunk_size=chunk_size,
+                    chunk_overlap=chunk_overlap,
+                )
+            else:
+                st.error("Please enter a valid OpenAI API key.", icon="❌")
 
     # --- Advanced Options ---
     with st.expander("Advanced Options", expanded=False):
@@ -270,7 +330,7 @@ if st.session_state.llm:
 
         st.session_state.doc_chain = RetrievalQA.from_chain_type(
             llm=st.session_state.llm,
-            chain_type="stuff",
+            chain_type=document_chat_chain_type,
             retriever=st.session_state.retriever,
             memory=MEMORY,
         )

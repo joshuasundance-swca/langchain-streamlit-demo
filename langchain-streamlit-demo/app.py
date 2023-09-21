@@ -1,17 +1,25 @@
 import os
 from datetime import datetime
+from tempfile import NamedTemporaryFile
 from typing import Union
 
 import anthropic
 import openai
 import streamlit as st
 from langchain import LLMChain
+from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
+from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
+from langchain.document_loaders import PyPDFLoader
+from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.schema.retriever import BaseRetriever
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
@@ -31,8 +39,10 @@ def st_init_null(*variable_names) -> None:
 st_init_null(
     "chain",
     "client",
+    "doc_chain",
     "llm",
     "ls_tracer",
+    "retriever",
     "run",
     "run_id",
     "trace_link",
@@ -93,6 +103,22 @@ PROVIDER_KEY_DICT = {
     "Anyscale Endpoints": os.environ.get("ANYSCALE_API_KEY", ""),
     "LANGSMITH": os.environ.get("LANGCHAIN_API_KEY", ""),
 }
+OPENAI_API_KEY = PROVIDER_KEY_DICT["OpenAI"]
+
+
+@st.cache_data
+def get_retriever(uploaded_file_bytes: bytes) -> BaseRetriever:
+    with NamedTemporaryFile() as temp_file:
+        temp_file.write(uploaded_file_bytes)
+        temp_file.seek(0)
+
+        loader = PyPDFLoader(temp_file.name)
+        documents = loader.load()
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        texts = text_splitter.split_documents(documents)
+        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        db = FAISS.from_documents(texts, embeddings)
+        return db.as_retriever()
 
 
 # --- Sidebar ---
@@ -106,11 +132,35 @@ with sidebar:
         index=SUPPORTED_MODELS.index(DEFAULT_MODEL),
     )
 
-    # document_chat = st.checkbox(
-    #     "Document Chat",
-    #     value=False,
-    #     help="Upload a document",
-    # )
+    provider = MODEL_DICT[model]
+
+    provider_api_key = PROVIDER_KEY_DICT.get(provider) or st.text_input(
+        f"{provider} API key",
+        type="password",
+    )
+
+    uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
+
+    openai_api_key = (
+        provider_api_key
+        if provider == "OpenAI"
+        else OPENAI_API_KEY
+        or st.sidebar.text_input("OpenAI API Key: ", type="password")
+    )
+
+    if uploaded_file:
+        if openai_api_key:
+            st.session_state.retriever = get_retriever(
+                uploaded_file_bytes=uploaded_file.getvalue(),
+            )
+        else:
+            st.error("Please enter a valid OpenAI API key.", icon="❌")
+
+    document_chat = st.checkbox(
+        "Document Chat",
+        value=False,
+        help="Uploaded document will provide context for the chat.",
+    )
 
     if st.button("Clear message history"):
         STMEMORY.clear()
@@ -150,13 +200,6 @@ with sidebar:
         )
 
         # --- API Keys ---
-        provider = MODEL_DICT[model]
-
-        provider_api_key = PROVIDER_KEY_DICT.get(provider) or st.text_input(
-            f"{provider} API key",
-            type="password",
-        )
-
         LANGSMITH_API_KEY = PROVIDER_KEY_DICT.get("LANGSMITH") or st.text_input(
             "LangSmith API Key (optional)",
             type="password",
@@ -217,30 +260,38 @@ for msg in STMEMORY.messages:
 
 # --- Current Chat ---
 if st.session_state.llm:
-    # if isinstance(retriever, BaseRetriever):
-    #     # --- Document Chat ---
-    #     chain = ConversationalRetrievalChain.from_llm(
-    #         st.session_state.llm,
-    #         retriever,
-    #         memory=_MEMORY,
-    #     )
-    # else:
-    # --- Regular Chat ---
-    chat_prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                system_prompt + "\nIt's currently {time}.",
-            ),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}"),
-        ],
-    ).partial(time=lambda: str(datetime.now()))
-    st.session_state.chain = LLMChain(
-        prompt=chat_prompt,
-        llm=st.session_state.llm,
-        memory=MEMORY,
-    )
+    # --- Document Chat ---
+    if st.session_state.retriever:
+        # st.session_state.doc_chain = ConversationalRetrievalChain.from_llm(
+        #     st.session_state.llm,
+        #     st.session_state.retriever,
+        #     memory=MEMORY,
+        # )
+
+        st.session_state.doc_chain = RetrievalQA.from_chain_type(
+            llm=st.session_state.llm,
+            chain_type="stuff",
+            retriever=st.session_state.retriever,
+            memory=MEMORY,
+        )
+
+    else:
+        # --- Regular Chat ---
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    system_prompt + "\nIt's currently {time}.",
+                ),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{query}"),
+            ],
+        ).partial(time=lambda: str(datetime.now()))
+        st.session_state.chain = LLMChain(
+            prompt=chat_prompt,
+            llm=st.session_state.llm,
+            memory=MEMORY,
+        )
 
     # --- Chat Input ---
     prompt = st.chat_input(placeholder="Ask me a question!")
@@ -251,18 +302,42 @@ if st.session_state.llm:
 
         # --- Chat Output ---
         with st.chat_message("assistant", avatar="🦜"):
-            message_placeholder = st.empty()
-            stream_handler = StreamHandler(message_placeholder)
-            callbacks = [RUN_COLLECTOR, stream_handler]
+            callbacks = [RUN_COLLECTOR]
+
             if st.session_state.ls_tracer:
                 callbacks.append(st.session_state.ls_tracer)
 
+            use_document_chat = all(
+                [
+                    document_chat,
+                    st.session_state.doc_chain,
+                    st.session_state.retriever,
+                ],
+            )
+
             try:
-                full_response = st.session_state.chain(
-                    {"input": prompt},
-                    callbacks=callbacks,
-                    tags=["Streamlit Chat"],
-                )["text"]
+                if use_document_chat:
+                    st_handler = StreamlitCallbackHandler(st.container())
+                    callbacks.append(st_handler)
+                    full_response = st.session_state.doc_chain(
+                        {"query": prompt},
+                        callbacks=callbacks,
+                        tags=["Streamlit Chat"],
+                        return_only_outputs=True,
+                    )[st.session_state.doc_chain.output_key]
+                    st_handler._complete_current_thought()
+                    st.markdown(full_response)
+                else:
+                    message_placeholder = st.empty()
+                    stream_handler = StreamHandler(message_placeholder)
+                    callbacks.append(stream_handler)
+                    full_response = st.session_state.chain(
+                        {"query": prompt},
+                        callbacks=callbacks,
+                        tags=["Streamlit Chat"],
+                        return_only_outputs=True,
+                    )[st.session_state.chain.output_key]
+                    message_placeholder.markdown(full_response)
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(
                     f"Please enter a valid {provider} API key.",
@@ -270,8 +345,6 @@ if st.session_state.llm:
                 )
                 full_response = None
             if full_response:
-                message_placeholder.markdown(full_response)
-
                 # --- Tracing ---
                 if st.session_state.client:
                     st.session_state.run = RUN_COLLECTOR.traced_runs[0]

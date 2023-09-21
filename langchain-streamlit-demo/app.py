@@ -1,119 +1,63 @@
 import os
 from datetime import datetime
+from tempfile import NamedTemporaryFile
 from typing import Union
 
 import anthropic
 import openai
 import streamlit as st
 from langchain import LLMChain
+from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
-from langchain.callbacks.tracers.langchain import wait_for_all_tracers
+from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
+from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
-from langchain.chat_models.base import BaseChatModel
+from langchain.document_loaders import PyPDFLoader
+from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema.runnable import RunnableConfig
+from langchain.schema.retriever import BaseRetriever
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
+# --- Initialization ---
 st.set_page_config(
     page_title="langchain-streamlit-demo",
     page_icon="🦜",
 )
 
-st.sidebar.markdown("# Menu")
+
+def st_init_null(*variable_names) -> None:
+    for variable_name in variable_names:
+        if variable_name not in st.session_state:
+            st.session_state[variable_name] = None
 
 
-_STMEMORY = StreamlitChatMessageHistory(key="langchain_messages")
-_MEMORY = ConversationBufferMemory(
-    chat_memory=_STMEMORY,
+st_init_null(
+    "chain",
+    "client",
+    "doc_chain",
+    "llm",
+    "ls_tracer",
+    "retriever",
+    "run",
+    "run_id",
+    "trace_link",
+)
+
+# --- Memory ---
+STMEMORY = StreamlitChatMessageHistory(key="langchain_messages")
+MEMORY = ConversationBufferMemory(
+    chat_memory=STMEMORY,
     return_messages=True,
     memory_key="chat_history",
 )
 
-_DEFAULT_SYSTEM_PROMPT = os.environ.get(
-    "DEFAULT_SYSTEM_PROMPT",
-    "You are a helpful chatbot.",
-)
 
-_MODEL_DICT = {
-    "gpt-3.5-turbo": "OpenAI",
-    "gpt-4": "OpenAI",
-    "claude-instant-v1": "Anthropic",
-    "claude-2": "Anthropic",
-    "meta-llama/Llama-2-7b-chat-hf": "Anyscale Endpoints",
-    "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
-    "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
-}
-_SUPPORTED_MODELS = list(_MODEL_DICT.keys())
-_DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "gpt-3.5-turbo")
-
-_DEFAULT_TEMPERATURE = float(os.environ.get("DEFAULT_TEMPERATURE", 0.7))
-_MIN_TEMPERATURE = float(os.environ.get("MIN_TEMPERATURE", 0.0))
-_MAX_TEMPERATURE = float(os.environ.get("MAX_TEMPERATURE", 1.0))
-
-_DEFAULT_MAX_TOKENS = int(os.environ.get("DEFAULT_MAX_TOKENS", 1000))
-_MIN_TOKENS = int(os.environ.get("MIN_MAX_TOKENS", 1))
-_MAX_TOKENS = int(os.environ.get("MAX_MAX_TOKENS", 100000))
-
-
-def get_llm(
-    model: str,
-    provider_api_key: str,
-    temperature: float,
-    max_tokens: int = _DEFAULT_MAX_TOKENS,
-) -> BaseChatModel:
-    if _MODEL_DICT[model] == "OpenAI":
-        return ChatOpenAI(
-            model=model,
-            openai_api_key=provider_api_key,
-            temperature=temperature,
-            streaming=True,
-            max_tokens=max_tokens,
-        )
-    elif _MODEL_DICT[model] == "Anthropic":
-        return ChatAnthropic(
-            model_name=model,
-            anthropic_api_key=provider_api_key,
-            temperature=temperature,
-            streaming=True,
-            max_tokens_to_sample=max_tokens,
-        )
-    elif _MODEL_DICT[model] == "Anyscale Endpoints":
-        return ChatAnyscale(
-            model=model,
-            anyscale_api_key=provider_api_key,
-            temperature=temperature,
-            streaming=True,
-            max_tokens=max_tokens,
-        )
-    else:
-        raise NotImplementedError(f"Unknown model {model}")
-
-
-def get_llm_chain(
-    model: str,
-    provider_api_key: str,
-    system_prompt: str = _DEFAULT_SYSTEM_PROMPT,
-    temperature: float = _DEFAULT_TEMPERATURE,
-    max_tokens: int = _DEFAULT_MAX_TOKENS,
-) -> LLMChain:
-    """Return a basic LLMChain with memory."""
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                system_prompt + "\nIt's currently {time}.",
-            ),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}"),
-        ],
-    ).partial(time=lambda: str(datetime.now()))
-    llm = get_llm(model, provider_api_key, temperature, max_tokens)
-    return LLMChain(prompt=prompt, llm=llm, memory=_MEMORY)
-
-
+# --- Callbacks ---
 class StreamHandler(BaseCallbackHandler):
     def __init__(self, container, initial_text=""):
         self.container = container
@@ -124,170 +68,342 @@ class StreamHandler(BaseCallbackHandler):
         self.container.markdown(self.text)
 
 
-def feedback_component(client):
-    scores = {"😀": 1, "🙂": 0.75, "😐": 0.5, "🙁": 0.25, "😞": 0}
-    if feedback := streamlit_feedback(
-        feedback_type="faces",
-        optional_text_label="[Optional] Please provide an explanation",
-        key=f"feedback_{st.session_state.run_id}",
-    ):
-        score = scores[feedback["score"]]
-        feedback = client.create_feedback(
-            st.session_state.run_id,
-            feedback["type"],
-            score=score,
-            comment=feedback.get("text", None),
+RUN_COLLECTOR = RunCollectorCallbackHandler()
+
+
+# --- Model Selection Helpers ---
+MODEL_DICT = {
+    "gpt-3.5-turbo": "OpenAI",
+    "gpt-4": "OpenAI",
+    "claude-instant-v1": "Anthropic",
+    "claude-2": "Anthropic",
+    "meta-llama/Llama-2-7b-chat-hf": "Anyscale Endpoints",
+    "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
+    "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
+}
+SUPPORTED_MODELS = list(MODEL_DICT.keys())
+
+
+# --- Constants from Environment Variables ---
+DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "gpt-3.5-turbo")
+DEFAULT_SYSTEM_PROMPT = os.environ.get(
+    "DEFAULT_SYSTEM_PROMPT",
+    "You are a helpful chatbot.",
+)
+MIN_TEMP = float(os.environ.get("MIN_TEMPERATURE", 0.0))
+MAX_TEMP = float(os.environ.get("MAX_TEMPERATURE", 1.0))
+DEFAULT_TEMP = float(os.environ.get("DEFAULT_TEMPERATURE", 0.7))
+MIN_MAX_TOKENS = int(os.environ.get("MIN_MAX_TOKENS", 1))
+MAX_MAX_TOKENS = int(os.environ.get("MAX_MAX_TOKENS", 100000))
+DEFAULT_MAX_TOKENS = int(os.environ.get("DEFAULT_MAX_TOKENS", 1000))
+DEFAULT_LANGSMITH_PROJECT = os.environ.get("LANGCHAIN_PROJECT")
+PROVIDER_KEY_DICT = {
+    "OpenAI": os.environ.get("OPENAI_API_KEY", ""),
+    "Anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
+    "Anyscale Endpoints": os.environ.get("ANYSCALE_API_KEY", ""),
+    "LANGSMITH": os.environ.get("LANGCHAIN_API_KEY", ""),
+}
+OPENAI_API_KEY = PROVIDER_KEY_DICT["OpenAI"]
+
+
+@st.cache_data
+def get_retriever(uploaded_file_bytes: bytes) -> BaseRetriever:
+    with NamedTemporaryFile() as temp_file:
+        temp_file.write(uploaded_file_bytes)
+        temp_file.seek(0)
+
+        loader = PyPDFLoader(temp_file.name)
+        documents = loader.load()
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        texts = text_splitter.split_documents(documents)
+        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        db = FAISS.from_documents(texts, embeddings)
+        return db.as_retriever()
+
+
+# --- Sidebar ---
+sidebar = st.sidebar
+with sidebar:
+    st.markdown("# Menu")
+
+    model = st.selectbox(
+        label="Chat Model",
+        options=SUPPORTED_MODELS,
+        index=SUPPORTED_MODELS.index(DEFAULT_MODEL),
+    )
+
+    provider = MODEL_DICT[model]
+
+    provider_api_key = PROVIDER_KEY_DICT.get(provider) or st.text_input(
+        f"{provider} API key",
+        type="password",
+    )
+
+    uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
+
+    openai_api_key = (
+        provider_api_key
+        if provider == "OpenAI"
+        else OPENAI_API_KEY
+        or st.sidebar.text_input("OpenAI API Key: ", type="password")
+    )
+
+    if uploaded_file:
+        if openai_api_key:
+            st.session_state.retriever = get_retriever(
+                uploaded_file_bytes=uploaded_file.getvalue(),
+            )
+        else:
+            st.error("Please enter a valid OpenAI API key.", icon="❌")
+
+    document_chat = st.checkbox(
+        "Document Chat",
+        value=False,
+        help="Uploaded document will provide context for the chat.",
+    )
+
+    if st.button("Clear message history"):
+        STMEMORY.clear()
+        st.session_state.trace_link = None
+        st.session_state.run_id = None
+
+    # --- Advanced Options ---
+    with st.expander("Advanced Options", expanded=False):
+        st.markdown("## Feedback Scale")
+        use_faces = st.toggle(label="`Thumbs` ⇄ `Faces`", value=False)
+        feedback_option = "faces" if use_faces else "thumbs"
+
+        system_prompt = (
+            st.text_area(
+                "Custom Instructions",
+                DEFAULT_SYSTEM_PROMPT,
+                help="Custom instructions to provide the language model to determine style, personality, etc.",
+            )
+            .strip()
+            .replace("{", "{{")
+            .replace("}", "}}")
         )
-        st.session_state.feedback = {"feedback_id": str(feedback.id), "score": score}
-        st.toast("Feedback recorded!", icon="📝")
+        temperature = st.slider(
+            "Temperature",
+            min_value=MIN_TEMP,
+            max_value=MAX_TEMP,
+            value=DEFAULT_TEMP,
+            help="Higher values give more random results.",
+        )
+
+        max_tokens = st.slider(
+            "Max Tokens",
+            min_value=MIN_MAX_TOKENS,
+            max_value=MAX_MAX_TOKENS,
+            value=DEFAULT_MAX_TOKENS,
+            help="Higher values give longer results.",
+        )
+
+        # --- API Keys ---
+        LANGSMITH_API_KEY = PROVIDER_KEY_DICT.get("LANGSMITH") or st.text_input(
+            "LangSmith API Key (optional)",
+            type="password",
+        )
+        LANGSMITH_PROJECT = DEFAULT_LANGSMITH_PROJECT or st.text_input(
+            "LangSmith Project Name",
+            value="langchain-streamlit-demo",
+        )
+        if st.session_state.client is None and LANGSMITH_API_KEY:
+            st.session_state.client = Client(
+                api_url="https://api.smith.langchain.com",
+                api_key=LANGSMITH_API_KEY,
+            )
+            st.session_state.ls_tracer = LangChainTracer(
+                project_name=LANGSMITH_PROJECT,
+                client=st.session_state.client,
+            )
 
 
-# Initialize State
-if "trace_link" not in st.session_state:
-    st.session_state.trace_link = None
-if "run_id" not in st.session_state:
-    st.session_state.run_id = None
-if len(_STMEMORY.messages) == 0:
-    _STMEMORY.add_ai_message("Hello! I'm a helpful AI chatbot. Ask me a question!")
+# --- LLM Instantiation ---
+if provider_api_key:
+    if provider == "OpenAI":
+        st.session_state.llm = ChatOpenAI(
+            model=model,
+            openai_api_key=provider_api_key,
+            temperature=temperature,
+            streaming=True,
+            max_tokens=max_tokens,
+        )
+    elif provider == "Anthropic":
+        st.session_state.llm = ChatAnthropic(
+            model_name=model,
+            anthropic_api_key=provider_api_key,
+            temperature=temperature,
+            streaming=True,
+            max_tokens_to_sample=max_tokens,
+        )
+    elif provider == "Anyscale Endpoints":
+        st.session_state.llm = ChatAnyscale(
+            model=model,
+            anyscale_api_key=provider_api_key,
+            temperature=temperature,
+            streaming=True,
+            max_tokens=max_tokens,
+        )
 
-for msg in _STMEMORY.messages:
+
+# --- Chat History ---
+if len(STMEMORY.messages) == 0:
+    STMEMORY.add_ai_message("Hello! I'm a helpful AI chatbot. Ask me a question!")
+
+for msg in STMEMORY.messages:
     st.chat_message(
         msg.type,
         avatar="🦜" if msg.type in ("ai", "assistant") else None,
     ).write(msg.content)
 
-model = st.sidebar.selectbox(
-    label="Chat Model",
-    options=_SUPPORTED_MODELS,
-    index=_SUPPORTED_MODELS.index(_DEFAULT_MODEL),
-)
-provider = _MODEL_DICT[model]
 
+# --- Current Chat ---
+if st.session_state.llm:
+    # --- Document Chat ---
+    if st.session_state.retriever:
+        # st.session_state.doc_chain = ConversationalRetrievalChain.from_llm(
+        #     st.session_state.llm,
+        #     st.session_state.retriever,
+        #     memory=MEMORY,
+        # )
 
-def api_key_from_env(_provider: str) -> Union[str, None]:
-    if _provider == "OpenAI":
-        return os.environ.get("OPENAI_API_KEY")
-    elif _provider == "Anthropic":
-        return os.environ.get("ANTHROPIC_API_KEY")
-    elif _provider == "Anyscale Endpoints":
-        return os.environ.get("ANYSCALE_API_KEY")
-    elif _provider == "LANGSMITH":
-        return os.environ.get("LANGCHAIN_API_KEY")
+        st.session_state.doc_chain = RetrievalQA.from_chain_type(
+            llm=st.session_state.llm,
+            chain_type="stuff",
+            retriever=st.session_state.retriever,
+            memory=MEMORY,
+        )
+
     else:
-        return None
+        # --- Regular Chat ---
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    system_prompt + "\nIt's currently {time}.",
+                ),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{query}"),
+            ],
+        ).partial(time=lambda: str(datetime.now()))
+        st.session_state.chain = LLMChain(
+            prompt=chat_prompt,
+            llm=st.session_state.llm,
+            memory=MEMORY,
+        )
 
-
-provider_api_key = api_key_from_env(provider) or st.sidebar.text_input(
-    f"{provider} API key",
-    type="password",
-)
-langsmith_api_key = api_key_from_env("LANGSMITH") or st.sidebar.text_input(
-    "LangSmith API Key (optional)",
-    type="password",
-)
-if langsmith_api_key:
-    langsmith_project = os.environ.get("LANGCHAIN_PROJECT") or st.sidebar.text_input(
-        "LangSmith Project Name",
-        value="langchain-streamlit-demo",
-    )
-    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-    os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
-    os.environ["LANGCHAIN_TRACING_V2"] = "true"
-    os.environ["LANGCHAIN_PROJECT"] = langsmith_project
-
-    client = Client(api_key=langsmith_api_key)
-else:
-    langsmith_project = None
-    client = None
-
-system_prompt = (
-    st.sidebar.text_area(
-        "Custom Instructions",
-        _DEFAULT_SYSTEM_PROMPT,
-        help="Custom instructions to provide the language model to determine style, personality, etc.",
-    )
-    .strip()
-    .replace("{", "{{")
-    .replace("}", "}}")
-)
-
-if st.sidebar.button("Clear message history"):
-    print("Clearing message history")
-    _STMEMORY.clear()
-    st.session_state.trace_link = None
-    st.session_state.run_id = None
-
-temperature = st.sidebar.slider(
-    "Temperature",
-    min_value=_MIN_TEMPERATURE,
-    max_value=_MAX_TEMPERATURE,
-    value=_DEFAULT_TEMPERATURE,
-    help="Higher values give more random results.",
-)
-
-max_tokens = st.sidebar.slider(
-    "Max Tokens",
-    min_value=_MIN_TOKENS,
-    max_value=_MAX_TOKENS,
-    value=_DEFAULT_MAX_TOKENS,
-    help="Higher values give longer results.",
-)
-chain = None
-if provider_api_key:
-    chain = get_llm_chain(
-        model,
-        provider_api_key,
-        system_prompt,
-        temperature,
-        max_tokens,
-    )
-
-run_collector = RunCollectorCallbackHandler()
-
-
-def _reset_feedback():
-    st.session_state.feedback_update = None
-    st.session_state.feedback = None
-
-
-if chain:
+    # --- Chat Input ---
     prompt = st.chat_input(placeholder="Ask me a question!")
     if prompt:
         st.chat_message("user").write(prompt)
-        _reset_feedback()
+        feedback_update = None
+        feedback = None
 
+        # --- Chat Output ---
         with st.chat_message("assistant", avatar="🦜"):
-            message_placeholder = st.empty()
-            stream_handler = StreamHandler(message_placeholder)
-            runnable_config = RunnableConfig(
-                callbacks=[run_collector, stream_handler],
-                tags=["Streamlit Chat"],
-            )
-            try:
-                full_response = chain.invoke(
-                    {"input": prompt},
-                    config=runnable_config,
-                )["text"]
-            except (openai.error.AuthenticationError, anthropic.AuthenticationError):
-                st.error(f"Please enter a valid {provider} API key.", icon="❌")
-                st.stop()
-            message_placeholder.markdown(full_response)
+            callbacks = [RUN_COLLECTOR]
 
-            if client:
-                run = run_collector.traced_runs[0]
-                run_collector.traced_runs = []
-                st.session_state.run_id = run.id
-                wait_for_all_tracers()
-                url = client.read_run(run.id).url
-                st.session_state.trace_link = url
-    if client and st.session_state.get("run_id"):
-        feedback_component(client)
+            if st.session_state.ls_tracer:
+                callbacks.append(st.session_state.ls_tracer)
+
+            use_document_chat = all(
+                [
+                    document_chat,
+                    st.session_state.doc_chain,
+                    st.session_state.retriever,
+                ],
+            )
+
+            try:
+                if use_document_chat:
+                    st_handler = StreamlitCallbackHandler(st.container())
+                    callbacks.append(st_handler)
+                    full_response = st.session_state.doc_chain(
+                        {"query": prompt},
+                        callbacks=callbacks,
+                        tags=["Streamlit Chat"],
+                        return_only_outputs=True,
+                    )[st.session_state.doc_chain.output_key]
+                    st_handler._complete_current_thought()
+                    st.markdown(full_response)
+                else:
+                    message_placeholder = st.empty()
+                    stream_handler = StreamHandler(message_placeholder)
+                    callbacks.append(stream_handler)
+                    full_response = st.session_state.chain(
+                        {"query": prompt},
+                        callbacks=callbacks,
+                        tags=["Streamlit Chat"],
+                        return_only_outputs=True,
+                    )[st.session_state.chain.output_key]
+                    message_placeholder.markdown(full_response)
+            except (openai.error.AuthenticationError, anthropic.AuthenticationError):
+                st.error(
+                    f"Please enter a valid {provider} API key.",
+                    icon="❌",
+                )
+                full_response = None
+            if full_response:
+                # --- Tracing ---
+                if st.session_state.client:
+                    st.session_state.run = RUN_COLLECTOR.traced_runs[0]
+                    st.session_state.run_id = st.session_state.run.id
+                    RUN_COLLECTOR.traced_runs = []
+                    wait_for_all_tracers()
+                    st.session_state.trace_link = st.session_state.client.read_run(
+                        st.session_state.run_id,
+                    ).url
+    if st.session_state.trace_link:
+        with sidebar:
+            st.markdown(
+                f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
+                unsafe_allow_html=True,
+            )
+
+    # --- Feedback ---
+    if st.session_state.client and st.session_state.run_id:
+        feedback = streamlit_feedback(
+            feedback_type=feedback_option,
+            optional_text_label="[Optional] Please provide an explanation",
+            key=f"feedback_{st.session_state.run_id}",
+        )
+
+        # Define score mappings for both "thumbs" and "faces" feedback systems
+        score_mappings: dict[str, dict[str, Union[int, float]]] = {
+            "thumbs": {"👍": 1, "👎": 0},
+            "faces": {"😀": 1, "🙂": 0.75, "😐": 0.5, "🙁": 0.25, "😞": 0},
+        }
+
+        # Get the score mapping based on the selected feedback option
+        scores = score_mappings[feedback_option]
+
+        if feedback:
+            # Get the score from the selected feedback option's score mapping
+            score = scores.get(
+                feedback["score"],
+            )
+
+            if score is not None:
+                # Formulate feedback type string incorporating the feedback option
+                # and score value
+                feedback_type_str = f"{feedback_option} {feedback['score']}"
+
+                # Record the feedback with the formulated feedback type string
+                # and optional comment
+                feedback_record = st.session_state.client.create_feedback(
+                    st.session_state.run_id,
+                    feedback_type_str,
+                    score=score,
+                    comment=feedback.get("text"),
+                )
+                # feedback = {
+                #     "feedback_id": str(feedback_record.id),
+                #     "score": score,
+                # }
+                st.toast("Feedback recorded!", icon="📝")
+            else:
+                st.warning("Invalid feedback score.")
 
 else:
     st.error(f"Please enter a valid {provider} API key.", icon="❌")
-
-if client and st.session_state.get("trace_link"):
-    st.sidebar.markdown(
-        f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
-        unsafe_allow_html=True,
-    )

@@ -7,7 +7,7 @@ import openai
 import streamlit as st
 from langchain import LLMChain
 from langchain.callbacks.base import BaseCallbackHandler
-from langchain.callbacks.tracers.langchain import wait_for_all_tracers
+from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
@@ -39,6 +39,7 @@ st_init_null(
     "feedback_update",
     "full_response",
     "llm",
+    "ls_tracer",
     "model",
     "prompt",
     "provider",
@@ -54,9 +55,9 @@ st_init_null(
 )
 
 # --- Memory ---
-_STMEMORY = StreamlitChatMessageHistory(key="langchain_messages")
-_MEMORY = ConversationBufferMemory(
-    chat_memory=_STMEMORY,
+STMEMORY = StreamlitChatMessageHistory(key="langchain_messages")
+MEMORY = ConversationBufferMemory(
+    chat_memory=STMEMORY,
     return_messages=True,
     memory_key="chat_history",
 )
@@ -73,11 +74,11 @@ class StreamHandler(BaseCallbackHandler):
         self.container.markdown(self.text)
 
 
-st.session_state.run_collector = RunCollectorCallbackHandler()
+RUN_COLLECTOR = RunCollectorCallbackHandler()
 
 
 # --- Model Selection Helpers ---
-_MODEL_DICT = {
+MODEL_DICT = {
     "gpt-3.5-turbo": "OpenAI",
     "gpt-4": "OpenAI",
     "claude-instant-v1": "Anthropic",
@@ -86,20 +87,31 @@ _MODEL_DICT = {
     "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
 }
-_SUPPORTED_MODELS = list(_MODEL_DICT.keys())
+SUPPORTED_MODELS = list(MODEL_DICT.keys())
 
 
-def api_key_from_env(provider_name: str) -> Union[str, None]:
-    if provider_name == "OpenAI":
-        return os.environ.get("OPENAI_API_KEY")
-    elif provider_name == "Anthropic":
-        return os.environ.get("ANTHROPIC_API_KEY")
-    elif provider_name == "Anyscale Endpoints":
-        return os.environ.get("ANYSCALE_API_KEY")
-    elif provider_name == "LANGSMITH":
-        return os.environ.get("LANGCHAIN_API_KEY")
-    else:
-        return None
+# --- Constants from Environment Variables ---
+DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "gpt-3.5-turbo")
+DEFAULT_SYSTEM_PROMPT = os.environ.get(
+    "DEFAULT_SYSTEM_PROMPT",
+    "You are a helpful chatbot.",
+)
+MIN_TEMP = float(os.environ.get("MIN_TEMPERATURE", 0.0))
+MAX_TEMP = float(os.environ.get("MAX_TEMPERATURE", 1.0))
+DEFAULT_TEMP = float(os.environ.get("DEFAULT_TEMPERATURE", 0.7))
+MIN_MAX_TOKENS = int(os.environ.get("MIN_MAX_TOKENS", 1))
+MAX_MAX_TOKENS = int(os.environ.get("MAX_MAX_TOKENS", 100000))
+DEFAULT_MAX_TOKENS = int(os.environ.get("DEFAULT_MAX_TOKENS", 1000))
+DEFAULT_LANGSMITH_PROJECT = os.environ.get(
+    "LANGCHAIN_PROJECT",
+    "langchain-streamlit-demo",
+)
+PROVIDER_KEY_DICT = {
+    "OpenAI": os.environ.get("OPENAI_API_KEY", ""),
+    "Anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
+    "Anyscale Endpoints": os.environ.get("ANYSCALE_API_KEY", ""),
+    "LANGSMITH": os.environ.get("LANGCHAIN_API_KEY", ""),
+}
 
 
 # --- Sidebar ---
@@ -107,14 +119,10 @@ sidebar = st.sidebar
 with sidebar:
     st.markdown("# Menu")
 
-    st.session_state.model = st.selectbox(
+    model = st.selectbox(
         label="Chat Model",
-        options=_SUPPORTED_MODELS,
-        index=_SUPPORTED_MODELS.index(
-            st.session_state.model
-            or os.environ.get("DEFAULT_MODEL")
-            or "gpt-3.5-turbo",
-        ),
+        options=SUPPORTED_MODELS,
+        index=SUPPORTED_MODELS.index(DEFAULT_MODEL),
     )
 
     # document_chat = st.checkbox(
@@ -124,94 +132,91 @@ with sidebar:
     # )
 
     if st.button("Clear message history"):
-        _STMEMORY.clear()
+        STMEMORY.clear()
         st.session_state.trace_link = None
         st.session_state.run_id = None
 
     # --- Advanced Options ---
     with st.expander("Advanced Options", expanded=False):
         st.markdown("## Feedback Scale")
-        st.session_state.feedback_option = (
-            "faces" if st.toggle(label="`Faces` ⇄ `Thumbs`", value=False) else "thumbs"
-        )
+        use_faces = st.toggle(label="`Thumbs` ⇄ `Faces`", value=False)
+        feedback_option = "faces" if use_faces else "thumbs"
 
-        st.session_state.system_prompt = (
+        system_prompt = (
             st.text_area(
                 "Custom Instructions",
-                st.session_state.system_prompt
-                or os.environ.get("DEFAULT_SYSTEM_PROMPT")
-                or "You are a helpful chatbot.",
+                DEFAULT_SYSTEM_PROMPT,
                 help="Custom instructions to provide the language model to determine style, personality, etc.",
             )
             .strip()
             .replace("{", "{{")
             .replace("}", "}}")
         )
-
         temperature = st.slider(
             "Temperature",
-            min_value=float(os.environ.get("MIN_TEMPERATURE", 0.0)),
-            max_value=float(os.environ.get("MIN_TEMPERATURE", 1.0)),
-            value=float(os.environ.get("DEFAULT_TEMPERATURE", 0.7)),
+            min_value=MIN_TEMP,
+            max_value=MAX_TEMP,
+            value=DEFAULT_TEMP,
             help="Higher values give more random results.",
         )
 
         max_tokens = st.slider(
             "Max Tokens",
-            min_value=int(os.environ.get("MIN_MAX_TOKENS", 1)),
-            max_value=int(os.environ.get("MAX_MAX_TOKENS", 100000)),
-            value=int(os.environ.get("DEFAULT_MAX_TOKENS", 1000)),
+            min_value=MIN_MAX_TOKENS,
+            max_value=MAX_MAX_TOKENS,
+            value=DEFAULT_MAX_TOKENS,
             help="Higher values give longer results.",
         )
 
         # --- API Keys ---
-        st.session_state.provider = _MODEL_DICT[st.session_state.model]
+        provider = MODEL_DICT[model]
 
-        st.session_state.provider_api_key = st.text_input(
-            f"{st.session_state.provider} API key",
-            value=api_key_from_env(st.session_state.provider) or "",
+        provider_api_key = PROVIDER_KEY_DICT.get(provider) or st.text_input(
+            f"{provider} API key",
             type="password",
         )
 
-        langsmith_api_key = st.text_input(
+        LANGSMITH_API_KEY = PROVIDER_KEY_DICT.get("LANGSMITH") or st.text_input(
             "LangSmith API Key (optional)",
-            value=api_key_from_env("LANGSMITH") or "",
             type="password",
         )
-        langsmith_project = st.text_input(
+        LANGSMITH_PROJECT = DEFAULT_LANGSMITH_PROJECT or st.text_input(
             "LangSmith Project Name",
-            value=os.environ.get("LANGCHAIN_PROJECT") or "langchain-streamlit-demo",
+            value="langchain-streamlit-demo",
         )
-        if langsmith_api_key:
-            os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-            os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
-            os.environ["LANGCHAIN_TRACING_V2"] = "true"
-            os.environ["LANGCHAIN_PROJECT"] = langsmith_project
-            st.session_state.client = Client(api_key=langsmith_api_key)
+        if st.session_state.client is None and LANGSMITH_API_KEY:
+            st.session_state.client = Client(
+                api_url="https://api.smith.langchain.com",
+                api_key=LANGSMITH_API_KEY,
+            )
+            st.session_state.ls_tracer = LangChainTracer(
+                project_name=LANGSMITH_PROJECT,
+                client=st.session_state.client,
+            )
 
 
 # --- LLM Instantiation ---
-if st.session_state.provider_api_key:
-    if st.session_state.provider == "OpenAI":
+if provider_api_key:
+    if provider == "OpenAI":
         st.session_state.llm = ChatOpenAI(
-            model=st.session_state.model,
-            openai_api_key=st.session_state.provider_api_key,
+            model=model,
+            openai_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
             max_tokens=max_tokens,
         )
-    elif st.session_state.provider == "Anthropic":
+    elif provider == "Anthropic":
         st.session_state.llm = ChatAnthropic(
-            model_name=st.session_state.model,
-            anthropic_api_key=st.session_state.provider_api_key,
+            model_name=model,
+            anthropic_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
             max_tokens_to_sample=max_tokens,
         )
-    elif st.session_state.provider == "Anyscale Endpoints":
+    elif provider == "Anyscale Endpoints":
         st.session_state.llm = ChatAnyscale(
-            model=st.session_state.model,
-            anyscale_api_key=st.session_state.provider_api_key,
+            model=model,
+            anyscale_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
             max_tokens=max_tokens,
@@ -219,10 +224,10 @@ if st.session_state.provider_api_key:
 
 
 # --- Chat History ---
-if len(_STMEMORY.messages) == 0:
-    _STMEMORY.add_ai_message("Hello! I'm a helpful AI chatbot. Ask me a question!")
+if len(STMEMORY.messages) == 0:
+    STMEMORY.add_ai_message("Hello! I'm a helpful AI chatbot. Ask me a question!")
 
-for msg in _STMEMORY.messages:
+for msg in STMEMORY.messages:
     st.chat_message(
         msg.type,
         avatar="🦜" if msg.type in ("ai", "assistant") else None,
@@ -240,72 +245,75 @@ if st.session_state.llm:
     #     )
     # else:
     # --- Regular Chat ---
-    st.session_state.prompt = ChatPromptTemplate.from_messages(
+    chat_prompt = ChatPromptTemplate.from_messages(
         [
             (
                 "system",
-                st.session_state.system_prompt + "\nIt's currently {time}.",
+                system_prompt + "\nIt's currently {time}.",
             ),
             MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{input}"),
         ],
     ).partial(time=lambda: str(datetime.now()))
     st.session_state.chain = LLMChain(
-        prompt=st.session_state.prompt,
+        prompt=chat_prompt,
         llm=st.session_state.llm,
-        memory=_MEMORY,
+        memory=MEMORY,
     )
 
     # --- Chat Input ---
-    st.session_state.prompt = st.chat_input(placeholder="Ask me a question!")
-    if st.session_state.prompt:
-        st.chat_message("user").write(st.session_state.prompt)
-        st.session_state.feedback_update = None
-        st.session_state.feedback = None
+    prompt = st.chat_input(placeholder="Ask me a question!")
+    if prompt:
+        st.chat_message("user").write(prompt)
+        feedback_update = None
+        feedback = None
 
         # --- Chat Output ---
         with st.chat_message("assistant", avatar="🦜"):
             message_placeholder = st.empty()
-            st.session_state.stream_handler = StreamHandler(message_placeholder)
-            st.session_state.runnable_config = RunnableConfig(
-                callbacks=[
-                    st.session_state.run_collector,
-                    st.session_state.stream_handler,
-                ],
+            stream_handler = StreamHandler(message_placeholder)
+            callbacks = [RUN_COLLECTOR, stream_handler]
+            if st.session_state.ls_tracer:
+                callbacks.append(st.session_state.ls_tracer)
+
+            runnable_config = RunnableConfig(
+                callbacks=callbacks,
                 tags=["Streamlit Chat"],
             )
             try:
-                st.session_state.full_response = st.session_state.chain.invoke(
-                    {"input": st.session_state.prompt},
-                    config=st.session_state.runnable_config,
+                full_response = st.session_state.chain.invoke(
+                    {"input": prompt},
+                    config=runnable_config,
                 )["text"]
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(
-                    f"Please enter a valid {st.session_state.provider} API key.",
+                    f"Please enter a valid {provider} API key.",
                     icon="❌",
                 )
-                st.stop()
-            message_placeholder.markdown(st.session_state.full_response)
+                full_response = None
+            if full_response:
+                message_placeholder.markdown(full_response)
 
-            # --- Tracing ---
-            if st.session_state.client:
-                st.session_state.run = st.session_state.run_collector.traced_runs[0]
-                st.session_state.run_id = st.session_state.run.id
-                st.session_state.run_collector.traced_runs = []
-                wait_for_all_tracers()
-                st.session_state.trace_link = st.session_state.client.read_run(
-                    st.session_state.run_id,
-                ).url
-                with sidebar:
-                    st.markdown(
-                        f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
-                        unsafe_allow_html=True,
-                    )
+                # --- Tracing ---
+                if st.session_state.client:
+                    st.session_state.run = RUN_COLLECTOR.traced_runs[0]
+                    st.session_state.run_id = st.session_state.run.id
+                    RUN_COLLECTOR.traced_runs = []
+                    wait_for_all_tracers()
+                    st.session_state.trace_link = st.session_state.client.read_run(
+                        st.session_state.run_id,
+                    ).url
+    if st.session_state.trace_link:
+        with sidebar:
+            st.markdown(
+                f'<a href="{st.session_state.trace_link}" target="_blank"><button>Latest Trace: 🛠️</button></a>',
+                unsafe_allow_html=True,
+            )
 
     # --- Feedback ---
-    if st.session_state.client and st.session_state.get("run_id"):
-        st.session_state.feedback = streamlit_feedback(
-            feedback_type=st.session_state.feedback_option,
+    if st.session_state.client and st.session_state.run_id:
+        feedback = streamlit_feedback(
+            feedback_type=feedback_option,
             optional_text_label="[Optional] Please provide an explanation",
             key=f"feedback_{st.session_state.run_id}",
         )
@@ -317,36 +325,34 @@ if st.session_state.llm:
         }
 
         # Get the score mapping based on the selected feedback option
-        st.session_state.scores = score_mappings[st.session_state.feedback_option]
+        scores = score_mappings[feedback_option]
 
-        if st.session_state.feedback:
+        if feedback:
             # Get the score from the selected feedback option's score mapping
-            st.session_state.score = st.session_state.scores.get(
-                st.session_state.feedback["score"],
+            score = scores.get(
+                feedback["score"],
             )
 
-            if st.session_state.score is not None:
+            if score is not None:
                 # Formulate feedback type string incorporating the feedback option
                 # and score value
-                st.session_state.feedback_type_str = f"{st.session_state.feedback_option} {st.session_state.feedback['score']}"
+                feedback_type_str = f"{feedback_option} {feedback['score']}"
 
                 # Record the feedback with the formulated feedback type string
                 # and optional comment
-                st.session_state.feedback_record = (
-                    st.session_state.client.create_feedback(
-                        st.session_state.run_id,
-                        st.session_state.feedback_type_str,
-                        score=st.session_state.score,
-                        comment=st.session_state.feedback.get("text"),
-                    )
+                feedback_record = st.session_state.client.create_feedback(
+                    st.session_state.run_id,
+                    feedback_type_str,
+                    score=score,
+                    comment=feedback.get("text"),
                 )
-                st.session_state.feedback = {
-                    "feedback_id": str(st.session_state.feedback_record.id),
-                    "score": st.session_state.score,
-                }
+                # feedback = {
+                #     "feedback_id": str(feedback_record.id),
+                #     "score": score,
+                # }
                 st.toast("Feedback recorded!", icon="📝")
             else:
                 st.warning("Invalid feedback score.")
 
 else:
-    st.error(f"Please enter a valid {st.session_state.provider} API key.", icon="❌")
+    st.error(f"Please enter a valid {provider} API key.", icon="❌")

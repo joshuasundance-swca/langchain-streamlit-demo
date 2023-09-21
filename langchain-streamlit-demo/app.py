@@ -12,7 +12,6 @@ from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandle
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema.runnable import RunnableConfig
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
@@ -32,25 +31,10 @@ def st_init_null(*variable_names) -> None:
 st_init_null(
     "chain",
     "client",
-    "feedback",
-    "feedback_option",
-    "feedback_record",
-    "feedback_type_str",
-    "feedback_update",
-    "full_response",
     "llm",
     "ls_tracer",
-    "model",
-    "prompt",
-    "provider",
-    "provider_api_key",
-    "retriever",
-    "run_collector",
+    "run",
     "run_id",
-    "runnable_config",
-    "score",
-    "stream_handler",
-    "system_prompt",
     "trace_link",
 )
 
@@ -102,10 +86,7 @@ DEFAULT_TEMP = float(os.environ.get("DEFAULT_TEMPERATURE", 0.7))
 MIN_MAX_TOKENS = int(os.environ.get("MIN_MAX_TOKENS", 1))
 MAX_MAX_TOKENS = int(os.environ.get("MAX_MAX_TOKENS", 100000))
 DEFAULT_MAX_TOKENS = int(os.environ.get("DEFAULT_MAX_TOKENS", 1000))
-DEFAULT_LANGSMITH_PROJECT = os.environ.get(
-    "LANGCHAIN_PROJECT",
-    "langchain-streamlit-demo",
-)
+DEFAULT_LANGSMITH_PROJECT = os.environ.get("LANGCHAIN_PROJECT")
 PROVIDER_KEY_DICT = {
     "OpenAI": os.environ.get("OPENAI_API_KEY", ""),
     "Anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
@@ -276,14 +257,11 @@ if st.session_state.llm:
             if st.session_state.ls_tracer:
                 callbacks.append(st.session_state.ls_tracer)
 
-            runnable_config = RunnableConfig(
-                callbacks=callbacks,
-                tags=["Streamlit Chat"],
-            )
             try:
-                full_response = st.session_state.chain.invoke(
+                full_response = st.session_state.chain(
                     {"input": prompt},
-                    config=runnable_config,
+                    callbacks=callbacks,
+                    tags=["Streamlit Chat"],
                 )["text"]
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(

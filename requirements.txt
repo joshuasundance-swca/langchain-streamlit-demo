@@ -1,9 +1,9 @@
 anthropic==0.3.11
 faiss-cpu==1.7.4
-langchain==0.0.293
-langsmith==0.0.38
+langchain==0.0.301
+langsmith==0.0.40
 openai==0.28.0
-pypdf==3.16.1
+pypdf==3.16.2
 streamlit==1.27.0
 streamlit-feedback==0.1.2
 tiktoken==0.5.1

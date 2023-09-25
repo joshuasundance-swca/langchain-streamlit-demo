@@ -4,6 +4,7 @@ from tempfile import NamedTemporaryFile
 from typing import Union
 
 import anthropic
+import langsmith.utils
 import openai
 import streamlit as st
 from langchain import LLMChain
@@ -411,9 +412,12 @@ if st.session_state.llm:
                     st.session_state.run_id = st.session_state.run.id
                     RUN_COLLECTOR.traced_runs = []
                     wait_for_all_tracers()
-                    st.session_state.trace_link = st.session_state.client.read_run(
-                        st.session_state.run_id,
-                    ).url
+                    try:
+                        st.session_state.trace_link = st.session_state.client.read_run(
+                            st.session_state.run_id,
+                        ).url
+                    except langsmith.utils.LangSmithError:
+                        st.session_state.trace_link = None
     if st.session_state.trace_link:
         with sidebar:
             st.markdown(

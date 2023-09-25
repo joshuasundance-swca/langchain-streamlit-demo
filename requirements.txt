@@ -1,6 +1,6 @@
 anthropic==0.3.11
 faiss-cpu==1.7.4
-langchain==0.0.293
+langchain==0.0.300
 langsmith==0.0.38
 openai==0.28.0
 pypdf==3.16.2

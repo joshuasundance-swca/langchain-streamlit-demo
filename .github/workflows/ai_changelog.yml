@@ -1,0 +1,48 @@
+name: Update AI Changelog on Push to Main
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "AI_CHANGELOG.md"
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT }}
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+        cache: pip
+
+    - name: Install Python libraries
+      run: |
+        pip install --user ai_changelog==0.0.9
+
+    - name: Execute script and prepend to AI_CHANGELOG.md
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+        LANGCHAIN_PROJECT: ai-changelog-langchain-streamlit-demo
+        LANGCHAIN_ENDPOINT: https://api.smith.langchain.com
+        LANGCHAIN_TRACING_V2: true
+      run: ai_changelog origin/main^..origin/main
+
+    - name: Commit changes
+      with:
+        COMMIT_MESSAGE: "Update AI Changelog"
+        file_pattern: "AI_CHANGELOG.md"
+      uses: stefanzweifel/git-auto-commit-action@v4

@@ -3,8 +3,11 @@ name: Push to Docker Hub
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'requirements.txt'
+      - 'langchain_streamlit_demo/*'
 jobs:
   build-and-push-docker:
     runs-on: ubuntu-latest

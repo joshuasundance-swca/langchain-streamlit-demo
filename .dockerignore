@@ -11,3 +11,4 @@ Dockerfile
 kubernetes
 docker-compose.yml
 junk/
+kubernetes/

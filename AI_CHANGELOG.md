@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Updated page title to include version number](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/783c740fe52c44c3f3d9d5ad78b6c1784fa93e97)
+Wed Sep 27 10:46:57 2023 -0400
+- The page title of the Streamlit application was previously just the name of the application. The change now includes the version number in the title, which will make it easier to track and verify the version of the application in use.
+## [Added 'codellama/CodeLlama-34b-Instruct-hf' to Model Dictionary](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/68f6d34a4cefd91425cbc215f323fbd57dd6e4a7)
+Wed Sep 27 10:46:24 2023 -0400
+- The commit introduces a new model 'codellama/CodeLlama-34b-Instruct-hf' into the MODEL_DICT dictionary. This update extends the list of models supported by the 'Anyscale Endpoints'.
 ## [Bumped version from 0.0.1 to 0.0.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/9feadf73e8c66425a565c99ce3088249bc4699f1)
 Wed Sep 27 00:03:38 2023 -0400
 - Updated the version number in bumpver.toml, Kubernetes resources.yaml, and the app.py file of the langchain-streamlit-demo application. The new version is 0.0.2.

@@ -30,7 +30,7 @@ __version__ = "0.0.2"
 
 # --- Initialization ---
 st.set_page_config(
-    page_title="langchain-streamlit-demo",
+    page_title=f"langchain-streamlit-demo v{__version__}",
     page_icon="🦜",
 )
 
@@ -93,6 +93,7 @@ MODEL_DICT = {
     "meta-llama/Llama-2-7b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
+    "codellama/CodeLlama-34b-Instruct-hf": "Anyscale Endpoints",
 }
 SUPPORTED_MODELS = list(MODEL_DICT.keys())
 

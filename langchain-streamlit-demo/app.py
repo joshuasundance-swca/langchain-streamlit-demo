@@ -28,7 +28,7 @@ __version__ = "0.0.2"
 
 # --- Initialization ---
 st.set_page_config(
-    page_title="langchain-streamlit-demo",
+    page_title=f"langchain-streamlit-demo v{__version__}",
     page_icon="🦜",
 )
 

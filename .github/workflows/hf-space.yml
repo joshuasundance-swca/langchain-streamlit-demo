@@ -10,8 +10,6 @@ on:
 
 jobs:
   push-to-huggingface:
-    needs:
-      - update-changelog
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

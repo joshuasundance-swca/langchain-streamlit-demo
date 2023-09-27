@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated version number from 0.0.2 to 0.0.5](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/55fa7419137cf54127cbd03114c0c0284397cfd9)
+Wed Sep 27 10:56:40 2023 -0400
+- The version number in the bumpver configuration file has been updated from 0.0.2 to 0.0.5.
+- The image version in the Kubernetes resources file has been updated to match the new version number.
+- The __version__ variable in the langchain-streamlit-demo app has been updated to reflect the new version number.
 ## [Updated page title to include version number](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/783c740fe52c44c3f3d9d5ad78b6c1784fa93e97)
 Wed Sep 27 10:46:57 2023 -0400
 - The page title of the Streamlit application was previously just the name of the application. The change now includes the version number in the title, which will make it easier to track and verify the version of the application in use.

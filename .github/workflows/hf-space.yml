@@ -1,13 +1,17 @@
 name: Push to HuggingFace Space
 
 on:
-  push:
-    tags:
-      - '*.*.*'
+  workflow_run:
+    workflows: ["Update AI Changelog on Push to Main"]
+    branches: [main]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
   push-to-huggingface:
+    needs:
+      - update-changelog
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

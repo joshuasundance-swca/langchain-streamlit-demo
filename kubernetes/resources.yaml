@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: langchain-streamlit-demo
-        image: joshuasundance/langchain-streamlit-demo:latest
-        imagePullPolicy: Always  # get latest on restart
+        image: joshuasundance/langchain-streamlit-demo:0.0.1
+        imagePullPolicy: Always
         resources:
           requests:
             cpu: "100m"

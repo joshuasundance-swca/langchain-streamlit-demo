@@ -1,0 +1,18 @@
+[bumpver]
+current_version = "0.0.1"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "bump version {old_version} -> {new_version}"
+tag_message = "{new_version}"
+tag_scope = "default"
+pre_commit_hook = ""
+post_commit_hook = ""
+commit = true
+tag = true
+push = false
+
+[bumpver.file_patterns]
+"bumpver.toml" = [
+    'current_version = "{version}"',
+]
+"langchain-streamlit-demo/app.py" = ['__version__ = "{version}"']
+"kubernetes/resources.yaml" = ['        image: joshuasundance/langchain-streamlit-demo:{version}']

@@ -15,4 +15,4 @@ push = false
     'current_version = "{version}"',
 ]
 "langchain-streamlit-demo/app.py" = ['__version__ = "{version}"']
-"kubernetes/resources.yaml" = ['        image: joshuasundance/langchain-streamlit-demo:"{version}"']
+"kubernetes/resources.yaml" = ['        image: joshuasundance/langchain-streamlit-demo:{version}']

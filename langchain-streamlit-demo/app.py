@@ -19,8 +19,10 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema.retriever import BaseRetriever
+from langchain.schema.runnable import RunnableConfig
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
+from langchain_experimental.data_anonymizer import PresidioReversibleAnonymizer
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
@@ -40,6 +42,7 @@ def st_init_null(*variable_names) -> None:
 
 
 st_init_null(
+    "anonymizer",
     "chain",
     "client",
     "doc_chain",
@@ -50,7 +53,13 @@ st_init_null(
     "run",
     "run_id",
     "trace_link",
+    "use_presidio",
 )
+
+st.session_state.anonymizer = (
+    st.session_state.anonymizer or PresidioReversibleAnonymizer()
+)
+
 
 # --- Memory ---
 STMEMORY = StreamlitChatMessageHistory(key="langchain_messages")
@@ -152,6 +161,12 @@ with sidebar:
     )
 
     provider = MODEL_DICT[model]
+
+    st.session_state.use_presidio = st.checkbox(
+        "Experimental Private Mode",
+        value=False,
+        help="Use Microsoft Presidio to redact PII from chat messages.",
+    )
 
     provider_api_key = PROVIDER_KEY_DICT.get(provider) or st.text_input(
         f"{provider} API key",
@@ -365,10 +380,21 @@ if st.session_state.llm:
 
         # --- Chat Output ---
         with st.chat_message("assistant", avatar="🦜"):
+            inputs = {"query": prompt}
             callbacks = [RUN_COLLECTOR]
+            tags = ["Streamlit Chat"]
+            return_only_outputs = True
 
             if st.session_state.ls_tracer:
                 callbacks.append(st.session_state.ls_tracer)
+
+            config = RunnableConfig(
+                {
+                    "callbacks": callbacks,
+                    "tags": tags,
+                    "return_only_outputs": return_only_outputs,
+                },
+            )
 
             use_document_chat = all(
                 [
@@ -381,25 +407,40 @@ if st.session_state.llm:
             try:
                 if use_document_chat:
                     st_handler = StreamlitCallbackHandler(st.container())
-                    callbacks.append(st_handler)
-                    full_response = st.session_state.doc_chain(
-                        {"query": prompt},
-                        callbacks=callbacks,
-                        tags=["Streamlit Chat"],
-                        return_only_outputs=True,
-                    )[st.session_state.doc_chain.output_key]
-                    st_handler._complete_current_thought()
-                    st.markdown(full_response)
+                    config["callbacks"].append(st_handler)
+                    output_key = st.session_state.doc_chain.output_key
                 else:
                     message_placeholder = st.empty()
                     stream_handler = StreamHandler(message_placeholder)
-                    callbacks.append(stream_handler)
-                    full_response = st.session_state.chain(
-                        {"query": prompt},
-                        callbacks=callbacks,
-                        tags=["Streamlit Chat"],
-                        return_only_outputs=True,
-                    )[st.session_state.chain.output_key]
+                    config["callbacks"].append(stream_handler)
+                    output_key = st.session_state.chain.output_key
+
+                _chain = (
+                    st.session_state.doc_chain
+                    if use_document_chat
+                    else st.session_state.chain
+                )
+                chain = (
+                    (
+                        {"query": st.session_state.anonymizer.anonymize}
+                        | _chain
+                        | (
+                            lambda ai_message: {
+                                output_key: st.session_state.anonymizer.deanonymize(
+                                    ai_message[output_key],
+                                ),
+                            }
+                        )
+                    )
+                    if st.session_state.use_presidio
+                    else _chain
+                )
+                full_response = chain.invoke(prompt, config)[output_key]
+
+                if use_document_chat:
+                    st_handler._complete_current_thought()
+                    st.markdown(full_response)
+                else:
                     message_placeholder.markdown(full_response)
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(

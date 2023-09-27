@@ -9,3 +9,4 @@ streamlit==1.27.0
 streamlit-feedback==0.1.2
 tiktoken==0.5.1
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
+pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability

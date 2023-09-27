@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Bumped version from 0.0.1 to 0.0.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/9feadf73e8c66425a565c99ce3088249bc4699f1)
+Wed Sep 27 00:03:38 2023 -0400
+- Updated the version number in bumpver.toml, Kubernetes resources.yaml, and the app.py file of the langchain-streamlit-demo application. The new version is 0.0.2.
 ## [Updated app version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a1065bb282837cf191d30bcb45c638bd15c5b77a)
 Wed Sep 27 00:00:28 2023 -0400
 - The version number in langchain-streamlit-demo/app.py was updated from 0.0.0 to 0.0.1.

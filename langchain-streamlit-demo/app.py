@@ -24,7 +24,7 @@ from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 # --- Initialization ---
 st.set_page_config(

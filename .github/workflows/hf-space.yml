@@ -2,7 +2,8 @@ name: Push to HuggingFace Space
 
 on:
   push:
-    branches: [main]
+    tags:
+      - '*.*.*'
   workflow_dispatch:
 
 jobs:

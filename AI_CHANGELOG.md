@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Updated GitHub Action to Push to HuggingFace Space](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1db62d8280bc284dfdf6be1b477f620ec78d38d1)
+Wed Sep 27 13:04:22 2023 -0400
+- This commit modifies the triggering conditions for the GitHub Action workflow that pushes updates to HuggingFace Space. Previously, the workflow was triggered on each push with any tag. Now, it is triggered upon completion of the 'Update AI Changelog on Push to Main' workflow on the 'main' branch.
+- Additionally, the 'push-to-huggingface' job has been updated to depend on the completion of the 'update-changelog' job.
 ## [Updated version number from 0.0.2 to 0.0.5](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/55fa7419137cf54127cbd03114c0c0284397cfd9)
 Wed Sep 27 10:56:40 2023 -0400
 - The version number in the bumpver configuration file has been updated from 0.0.2 to 0.0.5.

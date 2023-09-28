@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Bumped version from 0.0.6 to 0.0.7](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d41f4a4356709af4dbd81982fdefb0a6dba21ef6)
+Thu Sep 28 19:56:12 2023 -0400
+- Updated the version number in bumpver.toml, resources.yaml, and app.py.
+- This commit includes changes to the version number in the bumpver configuration, the Docker image tag in the Kubernetes resources, and the version variable in the app.py file.
 ## [Added Summarization Feature to Streamlit App](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/47c2ffc283d1e1754c1f64ab5fb793694bc9f24f)
 Thu Sep 28 19:53:59 2023 -0400
 - This commit introduces a summarization feature to the Streamlit application. It does so by creating a new 'summarize.py' file and integrating it into the 'app.py' file.

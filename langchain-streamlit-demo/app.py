@@ -1,28 +1,32 @@
 import os
 from datetime import datetime
 from tempfile import NamedTemporaryFile
-from typing import Union
+from typing import Tuple, List, Dict, Any, Union
 
 import anthropic
 import langsmith.utils
 import openai
 import streamlit as st
-from langchain import LLMChain
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.chains import RetrievalQA
+from langchain.chains.llm import LLMChain
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.schema.document import Document
 from langchain.schema.retriever import BaseRetriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
+
+from qagen import get_qa_gen_chain, combine_qa_pair_lists
+from summarize import get_summarization_chain
 
 __version__ = "0.0.6"
 
@@ -46,6 +50,7 @@ st_init_null(
     "document_chat_chain_type",
     "llm",
     "ls_tracer",
+    "provider",
     "retriever",
     "run",
     "run_id",
@@ -120,11 +125,11 @@ DEFAULT_CHUNK_OVERLAP = 0
 
 
 @st.cache_data
-def get_retriever(
+def get_texts_and_retriever(
     uploaded_file_bytes: bytes,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
-) -> BaseRetriever:
+) -> Tuple[List[Document], BaseRetriever]:
     with NamedTemporaryFile() as temp_file:
         temp_file.write(uploaded_file_bytes)
         temp_file.seek(0)
@@ -138,7 +143,7 @@ def get_retriever(
         texts = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         db = FAISS.from_documents(texts, embeddings)
-        return db.as_retriever()
+        return texts, db.as_retriever()
 
 
 # --- Sidebar ---
@@ -152,10 +157,12 @@ with sidebar:
         index=SUPPORTED_MODELS.index(DEFAULT_MODEL),
     )
 
-    provider = MODEL_DICT[model]
+    st.session_state.provider = MODEL_DICT[model]
 
-    provider_api_key = PROVIDER_KEY_DICT.get(provider) or st.text_input(
-        f"{provider} API key",
+    provider_api_key = PROVIDER_KEY_DICT.get(
+        st.session_state.provider,
+    ) or st.text_input(
+        f"{st.session_state.provider} API key",
         type="password",
     )
 
@@ -170,7 +177,7 @@ with sidebar:
 
         openai_api_key = (
             provider_api_key
-            if provider == "OpenAI"
+            if st.session_state.provider == "OpenAI"
             else OPENAI_API_KEY
             or st.sidebar.text_input("OpenAI API Key: ", type="password")
         )
@@ -210,7 +217,14 @@ with sidebar:
         )
         document_chat_chain_type = st.selectbox(
             label="Document Chat Chain Type",
-            options=["stuff", "refine", "map_reduce", "map_rerank"],
+            options=[
+                "stuff",
+                "refine",
+                "map_reduce",
+                "map_rerank",
+                "Q&A Generation",
+                "Summarization",
+            ],
             index=0,
             help=chain_type_help,
             disabled=not document_chat,
@@ -218,7 +232,10 @@ with sidebar:
 
         if uploaded_file:
             if openai_api_key:
-                st.session_state.retriever = get_retriever(
+                (
+                    st.session_state.texts,
+                    st.session_state.retriever,
+                ) = get_texts_and_retriever(
                     uploaded_file_bytes=uploaded_file.getvalue(),
                     chunk_size=chunk_size,
                     chunk_overlap=chunk_overlap,
@@ -280,7 +297,7 @@ with sidebar:
 
 # --- LLM Instantiation ---
 if provider_api_key:
-    if provider == "OpenAI":
+    if st.session_state.provider == "OpenAI":
         st.session_state.llm = ChatOpenAI(
             model=model,
             openai_api_key=provider_api_key,
@@ -288,7 +305,7 @@ if provider_api_key:
             streaming=True,
             max_tokens=max_tokens,
         )
-    elif provider == "Anthropic":
+    elif st.session_state.provider == "Anthropic":
         st.session_state.llm = ChatAnthropic(
             model_name=model,
             anthropic_api_key=provider_api_key,
@@ -296,7 +313,7 @@ if provider_api_key:
             streaming=True,
             max_tokens_to_sample=max_tokens,
         )
-    elif provider == "Anyscale Endpoints":
+    elif st.session_state.provider == "Anyscale Endpoints":
         st.session_state.llm = ChatAnyscale(
             model=model,
             anyscale_api_key=provider_api_key,
@@ -321,18 +338,18 @@ for msg in STMEMORY.messages:
 if st.session_state.llm:
     # --- Document Chat ---
     if st.session_state.retriever:
-        # st.session_state.doc_chain = ConversationalRetrievalChain.from_llm(
-        #     st.session_state.llm,
-        #     st.session_state.retriever,
-        #     memory=MEMORY,
-        # )
+        if document_chat_chain_type == "Summarization":
+            st.session_state.doc_chain = "summarization"
+        elif document_chat_chain_type == "Q&A Generation":
+            st.session_state.doc_chain = get_qa_gen_chain(st.session_state.llm)
 
-        st.session_state.doc_chain = RetrievalQA.from_chain_type(
-            llm=st.session_state.llm,
-            chain_type=document_chat_chain_type,
-            retriever=st.session_state.retriever,
-            memory=MEMORY,
-        )
+        else:
+            st.session_state.doc_chain = RetrievalQA.from_chain_type(
+                llm=st.session_state.llm,
+                chain_type=document_chat_chain_type,
+                retriever=st.session_state.retriever,
+                memory=MEMORY,
+            )
 
     else:
         # --- Regular Chat ---
@@ -375,17 +392,62 @@ if st.session_state.llm:
             )
 
             try:
+                full_response: Union[str, None]
                 if use_document_chat:
-                    st_handler = StreamlitCallbackHandler(st.container())
-                    callbacks.append(st_handler)
-                    full_response = st.session_state.doc_chain(
-                        {"query": prompt},
-                        callbacks=callbacks,
-                        tags=["Streamlit Chat"],
-                        return_only_outputs=True,
-                    )[st.session_state.doc_chain.output_key]
-                    st_handler._complete_current_thought()
-                    st.markdown(full_response)
+                    if document_chat_chain_type == "Summarization":
+                        st.session_state.doc_chain = get_summarization_chain(
+                            st.session_state.llm,
+                            prompt,
+                        )
+                        full_response = st.session_state.doc_chain.run(
+                            st.session_state.texts,
+                            callbacks=callbacks,
+                            tags=["Streamlit Chat"],
+                        )
+
+                        st.markdown(full_response)
+                    elif document_chat_chain_type == "Q&A Generation":
+                        config: Dict[str, Any] = dict(
+                            callbacks=callbacks,
+                            tags=["Streamlit Chat"],
+                        )
+                        if st.session_state.provider == "Anthropic":
+                            config["max_concurrency"] = 5
+                        raw_results = st.session_state.doc_chain.batch(
+                            [
+                                {"input": doc.page_content, "prompt": prompt}
+                                for doc in st.session_state.texts
+                            ],
+                            config,
+                        )
+                        results = combine_qa_pair_lists(raw_results).QuestionAnswerPairs
+
+                        def _to_str(idx, qap):
+                            question_piece = f"{idx}. **Q:** {qap.question}"
+                            whitespace = " " * (len(str(idx)) + 2)
+                            answer_piece = f"{whitespace}**A:** {qap.answer}"
+                            return f"{question_piece}\n{answer_piece}"
+
+                        output_text = "\n\n".join(
+                            [
+                                _to_str(idx, qap)
+                                for idx, qap in enumerate(results, start=1)
+                            ],
+                        )
+
+                        st.markdown(output_text)
+
+                    else:
+                        st_handler = StreamlitCallbackHandler(st.container())
+                        callbacks.append(st_handler)
+                        full_response = st.session_state.doc_chain(
+                            {"query": prompt},
+                            callbacks=callbacks,
+                            tags=["Streamlit Chat"],
+                            return_only_outputs=True,
+                        )[st.session_state.doc_chain.output_key]
+                        st_handler._complete_current_thought()
+                        st.markdown(full_response)
                 else:
                     message_placeholder = st.empty()
                     stream_handler = StreamHandler(message_placeholder)
@@ -399,7 +461,7 @@ if st.session_state.llm:
                     message_placeholder.markdown(full_response)
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(
-                    f"Please enter a valid {provider} API key.",
+                    f"Please enter a valid {st.session_state.provider} API key.",
                     icon="❌",
                 )
                 full_response = None
@@ -468,4 +530,4 @@ if st.session_state.llm:
                 st.warning("Invalid feedback score.")
 
 else:
-    st.error(f"Please enter a valid {provider} API key.", icon="❌")
+    st.error(f"Please enter a valid {st.session_state.provider} API key.", icon="❌")

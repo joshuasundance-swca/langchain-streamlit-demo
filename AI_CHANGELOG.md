@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Bump version from 0.0.5 to 0.0.6](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f431ca56717b9e704226c3448a552fe31c90d77d)
+Thu Sep 28 14:42:31 2023 -0400
+- The version number in the 'bumpver.toml', 'kubernetes/resources.yaml', and 'langchain-streamlit-demo/app.py' files has been updated from 0.0.5 to 0.0.6. This indicates a new iteration of the software with potential minor changes or bug fixes.
 ## [Updated ruff-pre-commit version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/50b28c9ac810cf9ff1c58e0b98f4ca7dfe3f94f5)
 Wed Sep 27 20:58:22 2023 -0400
 - The ruff-pre-commit version in the pre-commit configuration file was updated from v0.0.290 to v0.0.291.

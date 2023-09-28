@@ -1,4 +1,15 @@
 # AI CHANGELOG
+## [Added Summarization Feature to Streamlit App](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/47c2ffc283d1e1754c1f64ab5fb793694bc9f24f)
+Thu Sep 28 19:53:59 2023 -0400
+- This commit introduces a summarization feature to the Streamlit application. It does so by creating a new 'summarize.py' file and integrating it into the 'app.py' file.
+- In 'app.py', the 'LLMChain' import has been moved and the 'get_summarization_chain' function has been imported from 'summarize.py'.
+- A new option 'Summarization' has been added to the 'Document Chat Chain Type' dropdown menu.
+- When 'Summarization' is selected from the dropdown, the 'get_summarization_chain' function is called to create a summarization chain.
+- The summarization chain is then used to generate a summary of the document, which is displayed in the Streamlit app.
+- In the 'summarize.py' file, a new summarization chain is defined using the 'load_summarize_chain' function from the 'langchain.chains.summarize' module. The chain uses two custom prompt templates for summarizing and refining the document text.
+## [Enhanced document chat functionality in langchain-streamlit-demo](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/622ac6610de2f89368031d57ebd148259e5d7fcc)
+Thu Sep 28 16:55:16 2023 -0400
+- This commit includes enhancements to the document chat functionality in the langchain-streamlit-demo application. It introduces a new document chat chain type 'Q&A Generation' and updates the provider variable to be stored in the session state. The commit also adds a new file 'qagen.py' which contains code for generating question and answer pairs from a given text.
 ## [Bump version from 0.0.5 to 0.0.6](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f431ca56717b9e704226c3448a552fe31c90d77d)
 Thu Sep 28 14:42:31 2023 -0400
 - The version number in the 'bumpver.toml', 'kubernetes/resources.yaml', and 'langchain-streamlit-demo/app.py' files has been updated from 0.0.5 to 0.0.6. This indicates a new iteration of the software with potential minor changes or bug fixes.

@@ -199,20 +199,15 @@ with sidebar:
         chain_type_help_root = (
             "https://python.langchain.com/docs/modules/chains/document/"
         )
-        chain_type_help_dict = {
-            chain_type_name: f"{chain_type_help_root}/{chain_type_name}"
+        chain_type_help = "\n".join(
+            f"- [{chain_type_name}]({chain_type_help_root}/{chain_type_name})"
             for chain_type_name in (
                 "stuff",
                 "refine",
                 "map_reduce",
                 "map_rerank",
             )
-        }
-
-        chain_type_help = "\n".join(
-            f"- [{k}]({v})" for k, v in chain_type_help_dict.items()
         )
-
         document_chat_chain_type = st.selectbox(
             label="Document Chat Chain Type",
             options=["stuff", "refine", "map_reduce", "map_rerank"],

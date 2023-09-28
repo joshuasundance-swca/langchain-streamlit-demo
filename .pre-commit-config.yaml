@@ -7,10 +7,10 @@
 #   I recommend running this until you pass all checks, and then commit.
 #   Fix what you need to and then let the pre-commit hooks resolve their conflicts.
 #   You may need to git add -u between runs.
-exclude: "(.idea)|(docs)"
+exclude: "AI_CHANGELOG.md"
 repos:
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.290"
+    rev: "v0.0.291"
     hooks:
     -   id: ruff
         args: [--fix, --exit-non-zero-on-fix, --ignore, E501]

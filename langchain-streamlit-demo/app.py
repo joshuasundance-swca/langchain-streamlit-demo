@@ -7,12 +7,12 @@ import anthropic
 import langsmith.utils
 import openai
 import streamlit as st
-from langchain import LLMChain
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.chains import RetrievalQA
+from langchain.chains.llm import LLMChain
 from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
@@ -26,6 +26,7 @@ from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
 from qagen import get_qa_gen_chain, combine_qa_pair_lists
+from summarize import get_summarization_chain
 
 __version__ = "0.0.6"
 
@@ -216,7 +217,14 @@ with sidebar:
         )
         document_chat_chain_type = st.selectbox(
             label="Document Chat Chain Type",
-            options=["stuff", "refine", "map_reduce", "map_rerank", "Q&A Generation"],
+            options=[
+                "stuff",
+                "refine",
+                "map_reduce",
+                "map_rerank",
+                "Q&A Generation",
+                "Summarization",
+            ],
             index=0,
             help=chain_type_help,
             disabled=not document_chat,
@@ -331,13 +339,7 @@ if st.session_state.llm:
     # --- Document Chat ---
     if st.session_state.retriever:
         if document_chat_chain_type == "Summarization":
-            raise NotImplementedError
-            # st.session_state.doc_chain = RetrievalQA.from_chain_type(
-            #     llm=st.session_state.llm,
-            #     chain_type=chain_type,
-            #     retriever=st.session_state.retriever,
-            #     memory=MEMORY,
-            # )
+            st.session_state.doc_chain = "summarization"
         elif document_chat_chain_type == "Q&A Generation":
             st.session_state.doc_chain = get_qa_gen_chain(st.session_state.llm)
 
@@ -393,7 +395,17 @@ if st.session_state.llm:
                 full_response: Union[str, None]
                 if use_document_chat:
                     if document_chat_chain_type == "Summarization":
-                        raise NotImplementedError
+                        st.session_state.doc_chain = get_summarization_chain(
+                            st.session_state.llm,
+                            prompt,
+                        )
+                        full_response = st.session_state.doc_chain.run(
+                            st.session_state.texts,
+                            callbacks=callbacks,
+                            tags=["Streamlit Chat"],
+                        )
+
+                        st.markdown(full_response)
                     elif document_chat_chain_type == "Q&A Generation":
                         config: Dict[str, Any] = dict(
                             callbacks=callbacks,
@@ -409,14 +421,21 @@ if st.session_state.llm:
                             config,
                         )
                         results = combine_qa_pair_lists(raw_results).QuestionAnswerPairs
-                        full_response = "\n".join(
-                            f"**Q:** {result.question}\n**A:** {result.answer}\n"
-                            for result in results
+
+                        def _to_str(idx, qap):
+                            question_piece = f"{idx}. **Q:** {qap.question}"
+                            whitespace = " " * (len(str(idx)) + 2)
+                            answer_piece = f"{whitespace}**A:** {qap.answer}"
+                            return f"{question_piece}\n{answer_piece}"
+
+                        output_text = "\n\n".join(
+                            [
+                                _to_str(idx, qap)
+                                for idx, qap in enumerate(results, start=1)
+                            ],
                         )
-                        for idx, result in enumerate(results, start=1):
-                            st.markdown(f"{idx}. **Q:** {result.question}")
-                            st.markdown(f"{idx}. **A:** {result.answer}")
-                            st.markdown("\n")
+
+                        st.markdown(output_text)
 
                     else:
                         st_handler = StreamlitCallbackHandler(st.container())

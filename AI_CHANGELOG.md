@@ -1,4 +1,14 @@
 # AI CHANGELOG
+## [Updated ruff-pre-commit version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/50b28c9ac810cf9ff1c58e0b98f4ca7dfe3f94f5)
+Wed Sep 27 20:58:22 2023 -0400
+- The ruff-pre-commit version in the pre-commit configuration file was updated from v0.0.290 to v0.0.291.
+## [Updated file exclusions in pre-commit config](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/c8b46036933d50ca6befc5d4fa43bcb29f05c75a)
+Wed Sep 27 20:57:54 2023 -0400
+- The pre-commit configuration has been updated to exclude the AI_CHANGELOG.md file. Previously, the configuration was set to exclude .idea and docs directories. The repository and hook details remain unchanged.
+## [Refactored chain_type_help in app.py and updated AI_CHANGELOG.md](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a1b0a6fd0b22021079e741929eb7671855192cb0)
+Wed Sep 27 20:56:47 2023 -0400
+- In app.py, the chain_type_help dictionary was refactored to directly generate a string with the help links for each chain_type_name, removing the need for a separate dictionary.
+- In AI_CHANGELOG.md, a newline was added at the end of the file and entries were made for the addition of numpy and tornado to requirements.txt and the update of the token used for code checkout in the GitHub workflow.
 ## [Updated GitHub Action to Push to HuggingFace Space](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/e95e574c846541fd959bd0d0355178fae542dd8e)
 Wed Sep 27 17:05:25 2023 +0000
 - This commit modifies the triggering conditions for the GitHub Action workflow that pushes updates to HuggingFace Space. Previously, the workflow was triggered on each push with any tag. Now, it is triggered upon completion of the 'Update AI Changelog on Push to Main' workflow on the 'main' branch.

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: langchain-streamlit-demo
-        image: joshuasundance/langchain-streamlit-demo:0.0.9
+        image: joshuasundance/langchain-streamlit-demo:0.0.10
         imagePullPolicy: Always
         resources:
           requests:

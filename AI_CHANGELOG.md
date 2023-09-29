@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Updated application version to 0.0.8](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/8c80fe821129d05b8b714beb56a4e0bbca6ce676)
+Thu Sep 28 20:36:46 2023 -0400
+- The application's version number has been updated from 0.0.7 to 0.0.8 in the following files: bumpver.toml, resources.yaml, and app.py.
+- In bumpver.toml, the current_version field was updated to reflect the new version.
+- In resources.yaml, the image tag for the langchain-streamlit-demo container was updated to use the new version.
+- In app.py, the __version__ variable was updated to the new version.
 ## [Refactor variable names in Streamlit app](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/9bf9004ce3ba4160e1c33f57e0c5e48c0ff4f628)
 Thu Sep 28 20:33:17 2023 -0400
 - The variable 'output_text' was renamed to 'full_response' in the Streamlit application to better reflect its purpose. This change improves code readability and understanding.

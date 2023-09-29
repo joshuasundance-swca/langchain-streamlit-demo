@@ -124,12 +124,15 @@ MIN_CHUNK_OVERLAP = 0
 MAX_CHUNK_OVERLAP = 10000
 DEFAULT_CHUNK_OVERLAP = 0
 
+DEFAULT_RETRIEVER_K = 4
+
 
 @st.cache_data
 def get_texts_and_retriever(
     uploaded_file_bytes: bytes,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
+    k: int = DEFAULT_RETRIEVER_K,
 ) -> Tuple[List[Document], BaseRetriever]:
     with NamedTemporaryFile() as temp_file:
         temp_file.write(uploaded_file_bytes)
@@ -145,10 +148,10 @@ def get_texts_and_retriever(
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
         bm25_retriever = BM25Retriever.from_documents(texts)
-        bm25_retriever.k = 4
+        bm25_retriever.k = k
 
         faiss_vectorstore = FAISS.from_documents(texts, embeddings)
-        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": 4})
+        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": k})
 
         ensemble_retriever = EnsembleRetriever(
             retrievers=[bm25_retriever, faiss_retriever],
@@ -198,6 +201,14 @@ with sidebar:
             "Document Chat",
             value=False,
             help="Uploaded document will provide context for the chat.",
+        )
+
+        k = st.slider(
+            label="Number of Chunks",
+            help="How many document chunks will be used for context?",
+            value=DEFAULT_RETRIEVER_K,
+            min_value=1,
+            max_value=10,
         )
 
         chunk_size = st.slider(
@@ -251,6 +262,7 @@ with sidebar:
                     uploaded_file_bytes=uploaded_file.getvalue(),
                     chunk_size=chunk_size,
                     chunk_overlap=chunk_overlap,
+                    k=k,
                 )
             else:
                 st.error("Please enter a valid OpenAI API key.", icon="❌")

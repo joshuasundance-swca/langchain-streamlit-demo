@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated the refine_template in summarize.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/736288ed897a6bf1b5c0be7c0481011598351395)
+Thu Sep 28 20:55:25 2023 -0400
+- The refine_template string in the summarize.py file has been updated. A newline character has been added after the 'User input: {query}' part of the string for better readability.
 ## [Updated application version to 0.0.9](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/40604bea7723c4c05b4c36289950e6d8a25b7690)
 Thu Sep 28 20:41:33 2023 -0400
 - The version number in the bumpver.toml file has been updated from 0.0.8 to 0.0.9.

@@ -64,10 +64,10 @@ def combine_qa_pair_lists(
     )
 
 
-def get_qa_gen_chain(llm: BaseLanguageModel) -> RunnableSequence:
-    return (
-        CHAT_PROMPT | llm | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
-    )
+# def get_qa_gen_chain(llm: BaseLanguageModel) -> RunnableSequence:
+#     return (
+#         CHAT_PROMPT | llm | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
+#     )
 
 
 def get_rag_qa_gen_chain(

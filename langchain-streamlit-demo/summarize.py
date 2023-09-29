@@ -13,7 +13,7 @@ CONCISE SUMMARY:"""
 
 refine_template = (
     "You are iteratively crafting a summary of the text below based on the user input\n"
-    "User input: {query}"
+    "User input: {query}\n"
     "We have provided an existing summary up to a certain point: {existing_answer}\n"
     "We have the opportunity to refine the existing summary"
     "(only if needed) with some more context below.\n"

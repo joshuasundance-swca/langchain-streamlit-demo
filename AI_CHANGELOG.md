@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated retriever logic and removed question validation](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/930d4126fe97dbb403fa498b5322e10815d06179)
+Fri Sep 29 11:17:45 2023 -0400
+- In the 'langchain-streamlit-demo/app.py' file, the logic to retrieve texts has been updated. The FAISS retriever has been replaced with an ensemble retriever that uses both the BM25 and FAISS retrievers. The BM25 retriever's 'k' parameter has been set to 4, and the FAISS retriever has been updated to use a vector store.
+- In the 'langchain-streamlit-demo/qagen.py' file, the field validator for the 'question' field in the 'QuestionAnswerPair' class has been removed. This means that questions no longer need to end with a question mark to be valid.
+- The 'requirements.txt' file has been updated to include the 'rank_bm25==0.2.2' package, and the 'streamlit' package has been updated to version '1.27.1'.
 ## [Updated the refine_template in summarize.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/736288ed897a6bf1b5c0be7c0481011598351395)
 Thu Sep 28 20:55:25 2023 -0400
 - The refine_template string in the summarize.py file has been updated. A newline character has been added after the 'User input: {query}' part of the string for better readability.

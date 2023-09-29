@@ -26,7 +26,7 @@ from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
-from qagen import combine_qa_pair_lists, get_rag_qa_gen_chain
+from qagen import get_rag_qa_gen_chain
 from summarize import get_summarization_chain
 
 __version__ = "0.0.10"
@@ -448,7 +448,9 @@ if st.session_state.llm:
                         #     config,
                         # )
                         raw_results = st.session_state.doc_chain.invoke(prompt, config)
-                        results = combine_qa_pair_lists(raw_results).QuestionAnswerPairs
+                        # print(raw_results)
+                        # results = combine_qa_pair_lists(raw_results).QuestionAnswerPairs
+                        results = raw_results.QuestionAnswerPairs
 
                         def _to_str(idx, qap):
                             question_piece = f"{idx}. **Q:** {qap.question}"

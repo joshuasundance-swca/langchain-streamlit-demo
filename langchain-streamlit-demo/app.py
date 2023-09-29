@@ -426,7 +426,7 @@ if st.session_state.llm:
                             question_piece = f"{idx}. **Q:** {qap.question}"
                             whitespace = " " * (len(str(idx)) + 2)
                             answer_piece = f"{whitespace}**A:** {qap.answer}"
-                            return f"{question_piece}\n{answer_piece}"
+                            return f"{question_piece}\n\n{answer_piece}"
 
                         full_response = "\n\n".join(
                             [

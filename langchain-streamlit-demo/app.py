@@ -354,7 +354,8 @@ if st.session_state.llm:
             st.session_state.doc_chain = "summarization"
         elif document_chat_chain_type == "Q&A Generation":
             st.session_state.doc_chain = get_qa_gen_chain(st.session_state.llm)
-
+            # from qagen import get_rag_qa_gen_chain
+            # st.session_state.doc_chain = get_rag_qa_gen_chain(st.session_state.retriever, st.session_state.llm)
         else:
             st.session_state.doc_chain = RetrievalQA.from_chain_type(
                 llm=st.session_state.llm,
@@ -432,6 +433,7 @@ if st.session_state.llm:
                             ],
                             config,
                         )
+                        # raw_results = st.session_state.doc_chain.invoke(prompt, config)
                         results = combine_qa_pair_lists(raw_results).QuestionAnswerPairs
 
                         def _to_str(idx, qap):

@@ -6,7 +6,8 @@ from langchain.prompts.chat import (
     ChatPromptTemplate,
 )
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.runnable import RunnableSequence
+from langchain.schema.retriever import BaseRetriever
+from langchain.schema.runnable import RunnablePassthrough, RunnableSequence
 from pydantic import BaseModel, Field
 
 
@@ -66,4 +67,17 @@ def combine_qa_pair_lists(
 def get_qa_gen_chain(llm: BaseLanguageModel) -> RunnableSequence:
     return (
         CHAT_PROMPT | llm | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
+    )
+
+
+def get_rag_qa_gen_chain(
+    retriever: BaseRetriever,
+    llm: BaseLanguageModel,
+    input_key: str = "prompt",
+) -> RunnableSequence:
+    return (
+        {"context": retriever, input_key: RunnablePassthrough()}
+        | CHAT_PROMPT
+        | llm
+        | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
     )

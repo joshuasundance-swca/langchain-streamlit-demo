@@ -442,7 +442,7 @@ if st.session_state.llm:
                             config["max_concurrency"] = 5
                         # raw_results = st.session_state.doc_chain.batch(
                         #     [
-                        #         {"input": doc.page_content, "prompt": prompt}
+                        #         {"context": doc.page_content, "prompt": prompt}
                         #         for doc in st.session_state.texts
                         #     ],
                         #     config,

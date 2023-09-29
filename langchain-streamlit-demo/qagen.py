@@ -36,7 +36,7 @@ Do not provide additional commentary and do not wrap your response in Markdown f
 templ2 = """{prompt}
 Please create question/answer pairs, in the specified JSON format, for the following text:
 ----------------
-{input}"""
+{context}"""
 CHAT_PROMPT = ChatPromptTemplate.from_messages(
     [
         ("system", templ1),

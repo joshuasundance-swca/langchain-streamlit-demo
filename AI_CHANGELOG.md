@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated application version to 0.0.9](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/40604bea7723c4c05b4c36289950e6d8a25b7690)
+Thu Sep 28 20:41:33 2023 -0400
+- The version number in the bumpver.toml file has been updated from 0.0.8 to 0.0.9.
+- The Docker image version for the langchain-streamlit-demo app in the Kubernetes resources.yaml file has been updated from 0.0.8 to 0.0.9.
+- The __version__ variable in the app.py file of the langchain-streamlit-demo app has been updated from 0.0.8 to 0.0.9.
 ## [Improved text formatting in Q&A response](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/4eaf9de17247ed7e6bdc1771ff31639cca9e903d)
 Thu Sep 28 20:39:28 2023 -0400
 - This commit adjusts the formatting of the Q&A response in the langchain-streamlit-demo app. It adds an extra newline between the question and answer parts, and another newline between each Q&A pair for better readability.

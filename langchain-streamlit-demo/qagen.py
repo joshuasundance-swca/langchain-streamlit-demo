@@ -7,18 +7,12 @@ from langchain.prompts.chat import (
 )
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.runnable import RunnableSequence
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field
 
 
 class QuestionAnswerPair(BaseModel):
     question: str = Field(..., description="The question that will be answered.")
     answer: str = Field(..., description="The answer to the question that was asked.")
-
-    @field_validator("question")
-    def validate_question(cls, v: str) -> str:
-        if not v.endswith("?"):
-            raise ValueError("Question must end with a question mark.")
-        return v
 
 
 class QuestionAnswerPairList(BaseModel):

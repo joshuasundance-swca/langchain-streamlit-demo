@@ -18,6 +18,7 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.retrievers import BM25Retriever, EnsembleRetriever
 from langchain.schema.document import Document
 from langchain.schema.retriever import BaseRetriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -142,8 +143,19 @@ def get_texts_and_retriever(
         )
         texts = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        db = FAISS.from_documents(texts, embeddings)
-        return texts, db.as_retriever()
+
+        bm25_retriever = BM25Retriever.from_documents(texts)
+        bm25_retriever.k = 4
+
+        faiss_vectorstore = FAISS.from_documents(texts, embeddings)
+        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": 4})
+
+        ensemble_retriever = EnsembleRetriever(
+            retrievers=[bm25_retriever, faiss_retriever],
+            weights=[0.5, 0.5],
+        )
+
+        return texts, ensemble_retriever
 
 
 # --- Sidebar ---

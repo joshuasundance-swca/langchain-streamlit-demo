@@ -323,7 +323,7 @@ with sidebar:
 if provider_api_key:
     if st.session_state.provider == "OpenAI":
         st.session_state.llm = ChatOpenAI(
-            model=model,
+            model_name="test",
             openai_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
@@ -331,7 +331,7 @@ if provider_api_key:
         )
     elif st.session_state.provider == "Anthropic":
         st.session_state.llm = ChatAnthropic(
-            model_name=model,
+            model=model,
             anthropic_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
@@ -339,7 +339,7 @@ if provider_api_key:
         )
     elif st.session_state.provider == "Anyscale Endpoints":
         st.session_state.llm = ChatAnyscale(
-            model=model,
+            model_name=model,
             anyscale_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
@@ -365,7 +365,6 @@ if st.session_state.llm:
         if document_chat_chain_type == "Summarization":
             st.session_state.doc_chain = "summarization"
         elif document_chat_chain_type == "Q&A Generation":
-            # st.session_state.doc_chain = get_qa_gen_chain(st.session_state.llm)
             st.session_state.doc_chain = get_rag_qa_gen_chain(
                 st.session_state.retriever,
                 st.session_state.llm,
@@ -440,16 +439,7 @@ if st.session_state.llm:
                         )
                         if st.session_state.provider == "Anthropic":
                             config["max_concurrency"] = 5
-                        # raw_results = st.session_state.doc_chain.batch(
-                        #     [
-                        #         {"context": doc.page_content, "prompt": prompt}
-                        #         for doc in st.session_state.texts
-                        #     ],
-                        #     config,
-                        # )
                         raw_results = st.session_state.doc_chain.invoke(prompt, config)
-                        # print(raw_results)
-                        # results = combine_qa_pair_lists(raw_results).QuestionAnswerPairs
                         results = raw_results.QuestionAnswerPairs
 
                         def _to_str(idx, qap):

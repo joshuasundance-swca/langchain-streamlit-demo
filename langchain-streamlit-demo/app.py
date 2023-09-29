@@ -428,14 +428,14 @@ if st.session_state.llm:
                             answer_piece = f"{whitespace}**A:** {qap.answer}"
                             return f"{question_piece}\n{answer_piece}"
 
-                        output_text = "\n\n".join(
+                        full_response = "\n\n".join(
                             [
                                 _to_str(idx, qap)
                                 for idx, qap in enumerate(results, start=1)
                             ],
                         )
 
-                        st.markdown(output_text)
+                        st.markdown(full_response)
 
                     else:
                         st_handler = StreamlitCallbackHandler(st.container())

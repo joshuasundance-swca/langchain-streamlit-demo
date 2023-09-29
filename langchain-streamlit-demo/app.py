@@ -323,7 +323,7 @@ with sidebar:
 if provider_api_key:
     if st.session_state.provider == "OpenAI":
         st.session_state.llm = ChatOpenAI(
-            model_name="test",
+            model_name=model,
             openai_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,

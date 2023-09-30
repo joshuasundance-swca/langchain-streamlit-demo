@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Version Bump from 0.0.10 to 0.0.11](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/58978f749bdf319a2c2f76e74a46e7d905b7bf69)
+Sat Sep 30 01:31:32 2023 -0400
+- Updated the current_version in bumpver.toml from 0.0.10 to 0.0.11.
+- In the Kubernetes resources.yaml, updated the image version of langchain-streamlit-demo from 0.0.10 to 0.0.11.
+- In the langchain-streamlit-demo/app.py, updated the __version__ from 0.0.10 to 0.0.11.
 ## [Updated README.md with minor content and structure changes](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/241c14d23e150e0be6edee2c28e32c1b4a519c73)
 Sat Sep 30 01:29:08 2023 -0400
 - This commit includes changes to the README.md file. The authorship of the README has been clarified to indicate that it was originally written by Claude 2. The Features section has been updated to include a new model from Anyscale Endpoints, and to mention the addition of various forms of document chat. The Code Overview section was removed. A minor formatting change was made to the Docker run command. The Docker Compose instructions were simplified by removing a redundant command.

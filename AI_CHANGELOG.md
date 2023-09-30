@@ -1,4 +1,49 @@
 # AI CHANGELOG
+## [Improved UI labels and refactored code in langchain-streamlit-demo](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f8e912146cbca42cbd456abb123b5223b0924c45)
+Sat Sep 30 01:24:47 2023 -0400
+- This commit includes changes to improve the user interface labels for better readability. The labels 'chunk_size' and 'chunk_overlap' have been changed to 'Number of Tokens per Chunk' and 'Chunk Overlap' respectively.
+- Additionally, the code for handling the full response and the initialization of the `st.session_state.chain` has been refactored for better readability and maintainability. The code now clearly distinguishes between the cases when `use_document_chat` is true or false, and the initialization of `st.session_state.chain` is more streamlined.
+## [Refactored chat functionality and removed unnecessary code in app.py and qagen.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/923e6fac55336c07c8af10b74742b117517bd757)
+Sat Sep 30 01:10:43 2023 -0400
+- In app.py, removed the StreamlitCallbackHandler import and simplified the logic for handling chat inputs. Removed the document chat condition in the if statement, and directly implemented the regular chat functionality. Simplified the condition for using document chat, and refactored the way rag_runnable is retrieved based on the document chat chain type.
+- In qagen.py, removed the unnecessary import of reduce from functools and the combine_qa_pair_lists function. Simplified the get_rag_qa_gen_chain function by directly converting the parsed_output to a string.
+## [Refactored code for readability and efficiency](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/bfaa0c3cf1792d9cb5086657f9ded983ba616662)
+Fri Sep 29 23:12:56 2023 -0400
+- This commit includes changes in the 'app.py' and 'qagen.py' files. In 'app.py', the code has been refactored to improve readability and efficiency. The configuration dictionary has been moved outside the if-conditions to avoid redundancy. Also, the condition checking for 'Summarization' and 'Q&A Generation' has been combined to reduce nested if-statements.
+- In the 'qagen.py' file, two new methods 'to_str' have been added to the 'QuestionAnswerPair' and 'QuestionAnswerPairList' classes. These methods convert the question and answer pairs into a string format. This change has moved the responsibility of string formatting from 'app.py' to 'qagen.py', making the code more modular and easier to maintain.
+## [Updated summarization functionality in Streamlit app](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/dd9bfbddff559ce0065c236ccc6419f987a61664)
+Fri Sep 29 22:43:24 2023 -0400
+- Replaced the existing get_summarization_chain function with get_rag_summarization_chain in the Streamlit app.
+- The get_rag_summarization_chain function now takes in the prompt, retriever and the language model as parameters.
+- Refactored the way the summarization chain is invoked and the full response is generated.
+- Updated the get_rag_summarization_chain function in the summarize module to return a RunnableSequence.
+## [Updated model_name parameter in ChatOpenAI instantiation](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/06099804b5d0a4d635beb8a0021ac84b22cb0529)
+Fri Sep 29 18:38:23 2023 -0400
+- Replaced hardcoded 'test' value for model_name parameter with a variable named 'model'. This change allows the model name to be dynamically set when the ChatOpenAI class is instantiated.
+## [Refactored model instantiation and removed deprecated functions](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/c2ef57040f3231cc3fa80157d93d0d8420f21351)
+Fri Sep 29 18:38:01 2023 -0400
+- Updated the instantiation of ChatOpenAI, ChatAnthropic, and ChatAnyscale classes by swapping the model and model_name parameters to match their class definitions.
+- Removed the commented out get_qa_gen_chain function in qagen.py.
+- Removed commented out code related to raw_results and results in app.py, simplifying the logic.
+## [Refactored the data processing pipeline](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/8106321374be538f2740587a9a3d68e9cb82310f)
+Fri Sep 29 18:31:46 2023 -0400
+- Removed the 'combine_qa_pair_lists' function from the data processing pipeline in 'app.py'.
+- Directly accessed 'QuestionAnswerPairs' from 'raw_results' instead of using 'combine_qa_pair_lists' function.
+- Commented out the print statement for 'raw_results'.
+## [Refactored code to change 'input' to 'context' in langchain-streamlit-demo](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3550ebd119e342869167a228929538c069350942)
+Fri Sep 29 18:19:58 2023 -0400
+- This commit includes a change in the variable name from 'input' to 'context' in both app.py and qagen.py files. The change was made in the section where the document page content is being processed. This change is likely aimed at improving code readability and consistency.
+## [Added customizability for number of chunks in retriever](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/457889e5dc68143a1a5f935ca6af849bd380666c)
+Fri Sep 29 18:16:51 2023 -0400
+- This commit introduces a slider in the UI allowing the user to select the number of chunks that will be used for context in the retriever. The 'get_texts_and_retriever' function was updated to include a new parameter 'k' that defaults to the newly introduced constant 'DEFAULT_RETRIEVER_K'. This 'k' value is then used in the creation of both the 'bm25_retriever' and 'faiss_retriever'.
+## [Updated Q&A Generation method and invocation](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/8aab446c1cbafbdb04dcf6d56ed77413f1e63f65)
+Fri Sep 29 18:13:30 2023 -0400
+- Replaced the get_qa_gen_chain method with get_rag_qa_gen_chain in app.py and qagen.py. This change updates the Q&A Generation method used in the Document Chat feature.
+- Changed the way the Q&A Generation method is invoked. Instead of using the batch method, we now use the invoke method. This change is expected to improve the efficiency of the Document Chat feature.
+## [Implemented RAG-based Q&A Generation Chain](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/6467ea59cd8b5eb4859d20c8f84152402833cb92)
+Fri Sep 29 18:04:08 2023 -0400
+- Added a new function 'get_rag_qa_gen_chain' in 'qagen.py' to set up a RAG-based Q&A generation chain using a retriever and a language model.
+- Adjusted the 'app.py' to include a commented-out option to use the new RAG-based Q&A generation chain.
 ## [Bump version from 0.0.9 to 0.0.10](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/bb29f017b57cd891d1f9ae86e212ec6c92b5aa43)
 Fri Sep 29 13:17:34 2023 -0400
 - Updated the version number in the bumpver.toml, kubernetes/resources.yaml, and langchain-streamlit-demo/app.py files. The new version is 0.0.10.

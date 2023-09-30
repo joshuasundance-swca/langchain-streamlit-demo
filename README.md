@@ -26,7 +26,7 @@ tags: [langchain, streamlit, docker]
 
 This project shows how to build a simple chatbot UI with [Streamlit](https://streamlit.io) and [LangChain](https://langchain.com).
 
-This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2), an LLM from [Anthropic](https://www.anthropic.com/).
+This `README` was originally written by [Claude 2](https://www.anthropic.com/index/claude-2), an LLM from [Anthropic](https://www.anthropic.com/).
 
 # Features
 - Chat interface for talking to AI assistant
@@ -41,19 +41,17 @@ This `README` was written by [Claude 2](https://www.anthropic.com/index/claude-2
     - `meta-llama/Llama-2-7b-chat-hf`
     - `meta-llama/Llama-2-13b-chat-hf`
     - `meta-llama/Llama-2-70b-chat-hf`
+    - `codellama/CodeLlama-34b-Instruct-hf`
 - Streaming output of assistant responses
 - Leverages LangChain for dialogue and memory management
 - Integrates with [LangSmith](https://smith.langchain.com) for tracing conversations
 - Allows giving feedback on assistant's responses
 - Tries reading API keys and default values from environment variables
 - Parameters in sidebar can be customized
-
-# Code Overview
-- `langchain-streamlit-demo/app.py` - Main Streamlit app definition
-- `langchain-streamlit-demo/llm_stuff.py` - LangChain helper functions
-- `Dockerfile`, `docker-compose.yml`: Docker deployment
-- `kubernetes/`: Kubernetes deployment files
-- `.github/workflows/`: CI/CD workflows
+- Includes various forms of document chat
+  - Question/Answer Pair Generation
+  - Summarization
+  - Standard retrieval chains
 
 # Deployment
 `langchain-streamlit-demo` is deployed as a [Docker image](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo) based on the [`python:3.11-slim-bookworm`](https://github.com/docker-library/python/blob/81b6e5f0643965618d633cd6b811bf0879dee360/3.11/slim-bookworm/Dockerfile) image.
@@ -71,7 +69,7 @@ CI/CD workflows in `.github/workflows` handle building and publishing the image 
 
 or
 
-`docker run -p 7860:7860  --env-file .env joshuasundance/langchain-streamlit-demo:latest`
+`docker run -p 7860:7860 --env-file .env joshuasundance/langchain-streamlit-demo:latest`
 
 3. Open http://localhost:7860 in your browser
 
@@ -81,10 +79,6 @@ or
 3. Run in terminal:
 
 `docker compose up`
-
-or
-
-`docker compose up --env-file .env`
 
 4. Open http://localhost:7860 in your browser
 

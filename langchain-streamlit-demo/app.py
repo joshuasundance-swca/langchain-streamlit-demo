@@ -211,14 +211,14 @@ with sidebar:
         )
 
         chunk_size = st.slider(
-            label="chunk_size",
+            label="Number of Tokens per Chunk",
             help="Size of each chunk of text",
             min_value=MIN_CHUNK_SIZE,
             max_value=MAX_CHUNK_SIZE,
             value=DEFAULT_CHUNK_SIZE,
         )
         chunk_overlap = st.slider(
-            label="chunk_overlap",
+            label="Chunk Overlap",
             help="Number of characters to overlap between chunks",
             min_value=MIN_CHUNK_OVERLAP,
             max_value=MAX_CHUNK_OVERLAP,
@@ -399,56 +399,56 @@ if st.session_state.llm:
                 ],
             )
 
-            full_response = None
+            full_response: Union[str, None] = None
+
+            message_placeholder = st.empty()
+            stream_handler = StreamHandler(message_placeholder)
+            callbacks.append(stream_handler)
+
+            def get_rag_runnable():
+                if document_chat_chain_type == "Q&A Generation":
+                    return get_rag_qa_gen_chain(
+                        st.session_state.retriever,
+                        st.session_state.llm,
+                    )
+                elif document_chat_chain_type == "Summarization":
+                    return get_rag_summarization_chain(
+                        prompt,
+                        st.session_state.retriever,
+                        st.session_state.llm,
+                    )
+                else:
+                    return RetrievalQA.from_chain_type(
+                        llm=st.session_state.llm,
+                        chain_type=document_chat_chain_type,
+                        retriever=st.session_state.retriever,
+                        memory=MEMORY,
+                        output_key="output_text",
+                    ) | (lambda output: output["output_text"])
+
+            st.session_state.chain = (
+                get_rag_runnable()
+                if use_document_chat
+                else LLMChain(
+                    prompt=chat_prompt,
+                    llm=st.session_state.llm,
+                    memory=MEMORY,
+                )
+                | (lambda output: output["text"])
+            )
 
             try:
-                if not use_document_chat:
-                    message_placeholder = st.empty()
-                    stream_handler = StreamHandler(message_placeholder)
-                    callbacks.append(stream_handler)
-                    st.session_state.chain = LLMChain(
-                        prompt=chat_prompt,
-                        llm=st.session_state.llm,
-                        memory=MEMORY,
-                    ) | (lambda output: output["text"])
-                    config = {"callbacks": callbacks, "tags": ["Streamlit Chat"]}
-                    full_response = st.session_state.chain.invoke(prompt, config)
-                    message_placeholder.markdown(full_response)
-
-                else:
-
-                    def get_rag_runnable():
-                        if document_chat_chain_type == "Q&A Generation":
-                            return get_rag_qa_gen_chain(
-                                st.session_state.retriever,
-                                st.session_state.llm,
-                            )
-                        elif document_chat_chain_type == "Summarization":
-                            return get_rag_summarization_chain(
-                                prompt,
-                                st.session_state.retriever,
-                                st.session_state.llm,
-                            )
-                        else:
-                            return RetrievalQA.from_chain_type(
-                                llm=st.session_state.llm,
-                                chain_type=document_chat_chain_type,
-                                retriever=st.session_state.retriever,
-                                memory=MEMORY,
-                                output_key="output_text",
-                            ) | (lambda output: output["output_text"])
-
-                    st.session_state.doc_chain = get_rag_runnable()
-
-                    full_response = st.session_state.doc_chain.invoke(prompt, config)
-                    st.markdown(full_response)
+                full_response = st.session_state.chain.invoke(prompt, config)
 
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(
                     f"Please enter a valid {st.session_state.provider} API key.",
                     icon="❌",
                 )
+
             if full_response is not None:
+                message_placeholder.markdown(full_response)
+
                 # --- Tracing ---
                 if st.session_state.client:
                     st.session_state.run = RUN_COLLECTOR.traced_runs[0]

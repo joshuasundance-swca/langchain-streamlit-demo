@@ -28,7 +28,7 @@ from streamlit_feedback import streamlit_feedback
 from qagen import get_rag_qa_gen_chain
 from summarize import get_rag_summarization_chain
 
-__version__ = "0.0.10"
+__version__ = "0.0.11"
 
 # --- Initialization ---
 st.set_page_config(

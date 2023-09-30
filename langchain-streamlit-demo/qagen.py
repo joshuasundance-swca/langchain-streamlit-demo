@@ -1,4 +1,3 @@
-from functools import reduce
 from typing import List
 
 from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
@@ -6,7 +5,8 @@ from langchain.prompts.chat import (
     ChatPromptTemplate,
 )
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.runnable import RunnableSequence
+from langchain.schema.retriever import BaseRetriever
+from langchain.schema.runnable import RunnablePassthrough, RunnableSequence
 from pydantic import BaseModel, Field
 
 
@@ -14,9 +14,23 @@ class QuestionAnswerPair(BaseModel):
     question: str = Field(..., description="The question that will be answered.")
     answer: str = Field(..., description="The answer to the question that was asked.")
 
+    def to_str(self, idx: int) -> str:
+        question_piece = f"{idx}. **Q:** {self.question}"
+        whitespace = " " * (len(str(idx)) + 2)
+        answer_piece = f"{whitespace}**A:** {self.answer}"
+        return f"{question_piece}\n\n{answer_piece}"
+
 
 class QuestionAnswerPairList(BaseModel):
     QuestionAnswerPairs: List[QuestionAnswerPair]
+
+    def to_str(self) -> str:
+        return "\n\n".join(
+            [
+                qap.to_str(idx)
+                for idx, qap in enumerate(self.QuestionAnswerPairs, start=1)
+            ],
+        )
 
 
 PYDANTIC_PARSER: PydanticOutputParser = PydanticOutputParser(
@@ -35,7 +49,7 @@ Do not provide additional commentary and do not wrap your response in Markdown f
 templ2 = """{prompt}
 Please create question/answer pairs, in the specified JSON format, for the following text:
 ----------------
-{input}"""
+{context}"""
 CHAT_PROMPT = ChatPromptTemplate.from_messages(
     [
         ("system", templ1),
@@ -44,26 +58,15 @@ CHAT_PROMPT = ChatPromptTemplate.from_messages(
 ).partial(format_instructions=PYDANTIC_PARSER.get_format_instructions)
 
 
-def combine_qa_pair_lists(
-    qa_pair_lists: List[QuestionAnswerPairList],
-) -> QuestionAnswerPairList:
-    def reducer(
-        accumulator: QuestionAnswerPairList,
-        current: QuestionAnswerPairList,
-    ) -> QuestionAnswerPairList:
-        return QuestionAnswerPairList(
-            QuestionAnswerPairs=accumulator.QuestionAnswerPairs
-            + current.QuestionAnswerPairs,
-        )
-
-    return reduce(
-        reducer,
-        qa_pair_lists,
-        QuestionAnswerPairList(QuestionAnswerPairs=[]),
-    )
-
-
-def get_qa_gen_chain(llm: BaseLanguageModel) -> RunnableSequence:
+def get_rag_qa_gen_chain(
+    retriever: BaseRetriever,
+    llm: BaseLanguageModel,
+    input_key: str = "prompt",
+) -> RunnableSequence:
     return (
-        CHAT_PROMPT | llm | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
+        {"context": retriever, input_key: RunnablePassthrough()}
+        | CHAT_PROMPT
+        | llm
+        | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
+        | (lambda parsed_output: parsed_output.to_str())
     )

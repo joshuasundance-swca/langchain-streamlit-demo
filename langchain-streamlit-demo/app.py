@@ -7,7 +7,6 @@ import anthropic
 import langsmith.utils
 import openai
 import streamlit as st
-from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
@@ -26,8 +25,8 @@ from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
-from qagen import get_qa_gen_chain, combine_qa_pair_lists
-from summarize import get_summarization_chain
+from qagen import get_rag_qa_gen_chain
+from summarize import get_rag_summarization_chain
 
 __version__ = "0.0.10"
 
@@ -124,12 +123,15 @@ MIN_CHUNK_OVERLAP = 0
 MAX_CHUNK_OVERLAP = 10000
 DEFAULT_CHUNK_OVERLAP = 0
 
+DEFAULT_RETRIEVER_K = 4
+
 
 @st.cache_data
 def get_texts_and_retriever(
     uploaded_file_bytes: bytes,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
+    k: int = DEFAULT_RETRIEVER_K,
 ) -> Tuple[List[Document], BaseRetriever]:
     with NamedTemporaryFile() as temp_file:
         temp_file.write(uploaded_file_bytes)
@@ -145,10 +147,10 @@ def get_texts_and_retriever(
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
         bm25_retriever = BM25Retriever.from_documents(texts)
-        bm25_retriever.k = 4
+        bm25_retriever.k = k
 
         faiss_vectorstore = FAISS.from_documents(texts, embeddings)
-        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": 4})
+        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": k})
 
         ensemble_retriever = EnsembleRetriever(
             retrievers=[bm25_retriever, faiss_retriever],
@@ -200,15 +202,23 @@ with sidebar:
             help="Uploaded document will provide context for the chat.",
         )
 
+        k = st.slider(
+            label="Number of Chunks",
+            help="How many document chunks will be used for context?",
+            value=DEFAULT_RETRIEVER_K,
+            min_value=1,
+            max_value=10,
+        )
+
         chunk_size = st.slider(
-            label="chunk_size",
+            label="Number of Tokens per Chunk",
             help="Size of each chunk of text",
             min_value=MIN_CHUNK_SIZE,
             max_value=MAX_CHUNK_SIZE,
             value=DEFAULT_CHUNK_SIZE,
         )
         chunk_overlap = st.slider(
-            label="chunk_overlap",
+            label="Chunk Overlap",
             help="Number of characters to overlap between chunks",
             min_value=MIN_CHUNK_OVERLAP,
             max_value=MAX_CHUNK_OVERLAP,
@@ -251,6 +261,7 @@ with sidebar:
                     uploaded_file_bytes=uploaded_file.getvalue(),
                     chunk_size=chunk_size,
                     chunk_overlap=chunk_overlap,
+                    k=k,
                 )
             else:
                 st.error("Please enter a valid OpenAI API key.", icon="❌")
@@ -311,7 +322,7 @@ with sidebar:
 if provider_api_key:
     if st.session_state.provider == "OpenAI":
         st.session_state.llm = ChatOpenAI(
-            model=model,
+            model_name=model,
             openai_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
@@ -319,7 +330,7 @@ if provider_api_key:
         )
     elif st.session_state.provider == "Anthropic":
         st.session_state.llm = ChatAnthropic(
-            model_name=model,
+            model=model,
             anthropic_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
@@ -327,7 +338,7 @@ if provider_api_key:
         )
     elif st.session_state.provider == "Anyscale Endpoints":
         st.session_state.llm = ChatAnyscale(
-            model=model,
+            model_name=model,
             anyscale_api_key=provider_api_key,
             temperature=temperature,
             streaming=True,
@@ -348,38 +359,17 @@ for msg in STMEMORY.messages:
 
 # --- Current Chat ---
 if st.session_state.llm:
-    # --- Document Chat ---
-    if st.session_state.retriever:
-        if document_chat_chain_type == "Summarization":
-            st.session_state.doc_chain = "summarization"
-        elif document_chat_chain_type == "Q&A Generation":
-            st.session_state.doc_chain = get_qa_gen_chain(st.session_state.llm)
-
-        else:
-            st.session_state.doc_chain = RetrievalQA.from_chain_type(
-                llm=st.session_state.llm,
-                chain_type=document_chat_chain_type,
-                retriever=st.session_state.retriever,
-                memory=MEMORY,
-            )
-
-    else:
-        # --- Regular Chat ---
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    system_prompt + "\nIt's currently {time}.",
-                ),
-                MessagesPlaceholder(variable_name="chat_history"),
-                ("human", "{query}"),
-            ],
-        ).partial(time=lambda: str(datetime.now()))
-        st.session_state.chain = LLMChain(
-            prompt=chat_prompt,
-            llm=st.session_state.llm,
-            memory=MEMORY,
-        )
+    # --- Regular Chat ---
+    chat_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                system_prompt + "\nIt's currently {time}.",
+            ),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("human", "{query}"),
+        ],
+    ).partial(time=lambda: str(datetime.now()))
 
     # --- Chat Input ---
     prompt = st.chat_input(placeholder="Ask me a question!")
@@ -395,89 +385,70 @@ if st.session_state.llm:
             if st.session_state.ls_tracer:
                 callbacks.append(st.session_state.ls_tracer)
 
+            config: Dict[str, Any] = dict(
+                callbacks=callbacks,
+                tags=["Streamlit Chat"],
+            )
+            if st.session_state.provider == "Anthropic":
+                config["max_concurrency"] = 5
+
             use_document_chat = all(
                 [
                     document_chat,
-                    st.session_state.doc_chain,
                     st.session_state.retriever,
                 ],
             )
 
-            try:
-                full_response: Union[str, None]
-                if use_document_chat:
-                    if document_chat_chain_type == "Summarization":
-                        st.session_state.doc_chain = get_summarization_chain(
-                            st.session_state.llm,
-                            prompt,
-                        )
-                        full_response = st.session_state.doc_chain.run(
-                            st.session_state.texts,
-                            callbacks=callbacks,
-                            tags=["Streamlit Chat"],
-                        )
+            full_response: Union[str, None] = None
 
-                        st.markdown(full_response)
-                    elif document_chat_chain_type == "Q&A Generation":
-                        config: Dict[str, Any] = dict(
-                            callbacks=callbacks,
-                            tags=["Streamlit Chat"],
-                        )
-                        if st.session_state.provider == "Anthropic":
-                            config["max_concurrency"] = 5
-                        raw_results = st.session_state.doc_chain.batch(
-                            [
-                                {"input": doc.page_content, "prompt": prompt}
-                                for doc in st.session_state.texts
-                            ],
-                            config,
-                        )
-                        results = combine_qa_pair_lists(raw_results).QuestionAnswerPairs
+            message_placeholder = st.empty()
+            stream_handler = StreamHandler(message_placeholder)
+            callbacks.append(stream_handler)
 
-                        def _to_str(idx, qap):
-                            question_piece = f"{idx}. **Q:** {qap.question}"
-                            whitespace = " " * (len(str(idx)) + 2)
-                            answer_piece = f"{whitespace}**A:** {qap.answer}"
-                            return f"{question_piece}\n\n{answer_piece}"
-
-                        full_response = "\n\n".join(
-                            [
-                                _to_str(idx, qap)
-                                for idx, qap in enumerate(results, start=1)
-                            ],
-                        )
-
-                        st.markdown(full_response)
-
-                    else:
-                        st_handler = StreamlitCallbackHandler(st.container())
-                        callbacks.append(st_handler)
-                        full_response = st.session_state.doc_chain(
-                            {"query": prompt},
-                            callbacks=callbacks,
-                            tags=["Streamlit Chat"],
-                            return_only_outputs=True,
-                        )[st.session_state.doc_chain.output_key]
-                        st_handler._complete_current_thought()
-                        st.markdown(full_response)
+            def get_rag_runnable():
+                if document_chat_chain_type == "Q&A Generation":
+                    return get_rag_qa_gen_chain(
+                        st.session_state.retriever,
+                        st.session_state.llm,
+                    )
+                elif document_chat_chain_type == "Summarization":
+                    return get_rag_summarization_chain(
+                        prompt,
+                        st.session_state.retriever,
+                        st.session_state.llm,
+                    )
                 else:
-                    message_placeholder = st.empty()
-                    stream_handler = StreamHandler(message_placeholder)
-                    callbacks.append(stream_handler)
-                    full_response = st.session_state.chain(
-                        {"query": prompt},
-                        callbacks=callbacks,
-                        tags=["Streamlit Chat"],
-                        return_only_outputs=True,
-                    )[st.session_state.chain.output_key]
-                    message_placeholder.markdown(full_response)
+                    return RetrievalQA.from_chain_type(
+                        llm=st.session_state.llm,
+                        chain_type=document_chat_chain_type,
+                        retriever=st.session_state.retriever,
+                        memory=MEMORY,
+                        output_key="output_text",
+                    ) | (lambda output: output["output_text"])
+
+            st.session_state.chain = (
+                get_rag_runnable()
+                if use_document_chat
+                else LLMChain(
+                    prompt=chat_prompt,
+                    llm=st.session_state.llm,
+                    memory=MEMORY,
+                )
+                | (lambda output: output["text"])
+            )
+
+            try:
+                full_response = st.session_state.chain.invoke(prompt, config)
+
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(
                     f"Please enter a valid {st.session_state.provider} API key.",
                     icon="❌",
                 )
-                full_response = None
-            if full_response:
+
+            if full_response is not None:
+                message_placeholder.markdown(full_response)
+
                 # --- Tracing ---
                 if st.session_state.client:
                     st.session_state.run = RUN_COLLECTOR.traced_runs[0]

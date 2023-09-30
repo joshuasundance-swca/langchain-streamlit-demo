@@ -2,6 +2,8 @@ from langchain.chains.base import Chain
 from langchain.chains.summarize import load_summarize_chain
 from langchain.prompts import PromptTemplate
 from langchain.schema.language_model import BaseLanguageModel
+from langchain.schema.retriever import BaseRetriever
+from langchain.schema.runnable import RunnableSequence, RunnablePassthrough
 
 prompt_template = """Write a concise summary of the following text, based on the user input.
 User input: {query}
@@ -48,4 +50,17 @@ def get_summarization_chain(
         return_intermediate_steps=False,
         input_key="input_documents",
         output_key="output_text",
+    )
+
+
+def get_rag_summarization_chain(
+    prompt: str,
+    retriever: BaseRetriever,
+    llm: BaseLanguageModel,
+    input_key: str = "prompt",
+) -> RunnableSequence:
+    return (
+        {"input_documents": retriever, input_key: RunnablePassthrough()}
+        | get_summarization_chain(llm, prompt)
+        | (lambda output: output["output_text"])
     )

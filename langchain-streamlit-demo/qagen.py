@@ -15,9 +15,23 @@ class QuestionAnswerPair(BaseModel):
     question: str = Field(..., description="The question that will be answered.")
     answer: str = Field(..., description="The answer to the question that was asked.")
 
+    def to_str(self, idx: int) -> str:
+        question_piece = f"{idx}. **Q:** {self.question}"
+        whitespace = " " * (len(str(idx)) + 2)
+        answer_piece = f"{whitespace}**A:** {self.answer}"
+        return f"{question_piece}\n\n{answer_piece}"
+
 
 class QuestionAnswerPairList(BaseModel):
     QuestionAnswerPairs: List[QuestionAnswerPair]
+
+    def to_str(self) -> str:
+        return "\n\n".join(
+            [
+                qap.to_str(idx)
+                for idx, qap in enumerate(self.QuestionAnswerPairs, start=1)
+            ],
+        )
 
 
 PYDANTIC_PARSER: PydanticOutputParser = PydanticOutputParser(
@@ -74,4 +88,5 @@ def get_rag_qa_gen_chain(
         | CHAT_PROMPT
         | llm
         | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
+        | (lambda parsed_output: combine_qa_pair_lists(parsed_output).to_str())
     )

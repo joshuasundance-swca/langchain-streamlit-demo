@@ -409,6 +409,13 @@ if st.session_state.llm:
             if st.session_state.ls_tracer:
                 callbacks.append(st.session_state.ls_tracer)
 
+            config: Dict[str, Any] = dict(
+                callbacks=callbacks,
+                tags=["Streamlit Chat"],
+            )
+            if st.session_state.provider == "Anthropic":
+                config["max_concurrency"] = 5
+
             use_document_chat = all(
                 [
                     document_chat,
@@ -420,45 +427,17 @@ if st.session_state.llm:
             try:
                 full_response: Union[str, None]
                 if use_document_chat:
-                    if document_chat_chain_type == "Summarization":
-                        st.session_state.doc_chain = get_rag_summarization_chain(
-                            prompt,
-                            st.session_state.retriever,
-                            st.session_state.llm,
-                        )
+                    if document_chat_chain_type in ("Summarization", "Q&A Generation"):
+                        if document_chat_chain_type == "Summarization":
+                            st.session_state.doc_chain = get_rag_summarization_chain(
+                                prompt,
+                                st.session_state.retriever,
+                                st.session_state.llm,
+                            )
                         full_response = st.session_state.doc_chain.invoke(
                             prompt,
-                            dict(
-                                callbacks=callbacks,
-                                tags=["Streamlit Chat"],
-                            ),
+                            config,
                         )
-
-                        st.markdown(full_response)
-                    elif document_chat_chain_type == "Q&A Generation":
-                        config: Dict[str, Any] = dict(
-                            callbacks=callbacks,
-                            tags=["Streamlit Chat"],
-                        )
-                        if st.session_state.provider == "Anthropic":
-                            config["max_concurrency"] = 5
-                        raw_results = st.session_state.doc_chain.invoke(prompt, config)
-                        results = raw_results.QuestionAnswerPairs
-
-                        def _to_str(idx, qap):
-                            question_piece = f"{idx}. **Q:** {qap.question}"
-                            whitespace = " " * (len(str(idx)) + 2)
-                            answer_piece = f"{whitespace}**A:** {qap.answer}"
-                            return f"{question_piece}\n\n{answer_piece}"
-
-                        full_response = "\n\n".join(
-                            [
-                                _to_str(idx, qap)
-                                for idx, qap in enumerate(results, start=1)
-                            ],
-                        )
-
-                        st.markdown(full_response)
 
                     else:
                         st_handler = StreamlitCallbackHandler(st.container())
@@ -470,7 +449,9 @@ if st.session_state.llm:
                             return_only_outputs=True,
                         )[st.session_state.doc_chain.output_key]
                         st_handler._complete_current_thought()
-                        st.markdown(full_response)
+
+                    st.markdown(full_response)
+
                 else:
                     message_placeholder = st.empty()
                     stream_handler = StreamHandler(message_placeholder)

@@ -27,7 +27,7 @@ from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
 from qagen import get_rag_qa_gen_chain
-from summarize import get_summarization_chain
+from summarize import get_rag_summarization_chain
 
 __version__ = "0.0.10"
 
@@ -421,14 +421,17 @@ if st.session_state.llm:
                 full_response: Union[str, None]
                 if use_document_chat:
                     if document_chat_chain_type == "Summarization":
-                        st.session_state.doc_chain = get_summarization_chain(
-                            st.session_state.llm,
+                        st.session_state.doc_chain = get_rag_summarization_chain(
                             prompt,
+                            st.session_state.retriever,
+                            st.session_state.llm,
                         )
-                        full_response = st.session_state.doc_chain.run(
-                            st.session_state.texts,
-                            callbacks=callbacks,
-                            tags=["Streamlit Chat"],
+                        full_response = st.session_state.doc_chain.invoke(
+                            prompt,
+                            dict(
+                                callbacks=callbacks,
+                                tags=["Streamlit Chat"],
+                            ),
                         )
 
                         st.markdown(full_response)

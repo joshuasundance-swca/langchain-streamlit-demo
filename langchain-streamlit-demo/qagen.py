@@ -1,4 +1,3 @@
-from functools import reduce
 from typing import List
 
 from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
@@ -59,25 +58,6 @@ CHAT_PROMPT = ChatPromptTemplate.from_messages(
 ).partial(format_instructions=PYDANTIC_PARSER.get_format_instructions)
 
 
-def combine_qa_pair_lists(
-    qa_pair_lists: List[QuestionAnswerPairList],
-) -> QuestionAnswerPairList:
-    def reducer(
-        accumulator: QuestionAnswerPairList,
-        current: QuestionAnswerPairList,
-    ) -> QuestionAnswerPairList:
-        return QuestionAnswerPairList(
-            QuestionAnswerPairs=accumulator.QuestionAnswerPairs
-            + current.QuestionAnswerPairs,
-        )
-
-    return reduce(
-        reducer,
-        qa_pair_lists,
-        QuestionAnswerPairList(QuestionAnswerPairs=[]),
-    )
-
-
 def get_rag_qa_gen_chain(
     retriever: BaseRetriever,
     llm: BaseLanguageModel,
@@ -88,5 +68,5 @@ def get_rag_qa_gen_chain(
         | CHAT_PROMPT
         | llm
         | OutputFixingParser.from_llm(llm=llm, parser=PYDANTIC_PARSER)
-        | (lambda parsed_output: combine_qa_pair_lists(parsed_output).to_str())
+        | (lambda parsed_output: parsed_output.to_str())
     )

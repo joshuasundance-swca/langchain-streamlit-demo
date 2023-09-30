@@ -7,7 +7,6 @@ import anthropic
 import langsmith.utils
 import openai
 import streamlit as st
-from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
@@ -360,40 +359,17 @@ for msg in STMEMORY.messages:
 
 # --- Current Chat ---
 if st.session_state.llm:
-    # --- Document Chat ---
-    if st.session_state.retriever:
-        if document_chat_chain_type == "Summarization":
-            st.session_state.doc_chain = "summarization"
-        elif document_chat_chain_type == "Q&A Generation":
-            st.session_state.doc_chain = get_rag_qa_gen_chain(
-                st.session_state.retriever,
-                st.session_state.llm,
-            )
-        else:
-            st.session_state.doc_chain = RetrievalQA.from_chain_type(
-                llm=st.session_state.llm,
-                chain_type=document_chat_chain_type,
-                retriever=st.session_state.retriever,
-                memory=MEMORY,
-            )
-
-    else:
-        # --- Regular Chat ---
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    system_prompt + "\nIt's currently {time}.",
-                ),
-                MessagesPlaceholder(variable_name="chat_history"),
-                ("human", "{query}"),
-            ],
-        ).partial(time=lambda: str(datetime.now()))
-        st.session_state.chain = LLMChain(
-            prompt=chat_prompt,
-            llm=st.session_state.llm,
-            memory=MEMORY,
-        )
+    # --- Regular Chat ---
+    chat_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                system_prompt + "\nIt's currently {time}.",
+            ),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("human", "{query}"),
+        ],
+    ).partial(time=lambda: str(datetime.now()))
 
     # --- Chat Input ---
     prompt = st.chat_input(placeholder="Ask me a question!")
@@ -419,57 +395,60 @@ if st.session_state.llm:
             use_document_chat = all(
                 [
                     document_chat,
-                    st.session_state.doc_chain,
                     st.session_state.retriever,
                 ],
             )
 
+            full_response = None
+
             try:
-                full_response: Union[str, None]
-                if use_document_chat:
-                    if document_chat_chain_type in ("Summarization", "Q&A Generation"):
-                        if document_chat_chain_type == "Summarization":
-                            st.session_state.doc_chain = get_rag_summarization_chain(
+                if not use_document_chat:
+                    message_placeholder = st.empty()
+                    stream_handler = StreamHandler(message_placeholder)
+                    callbacks.append(stream_handler)
+                    st.session_state.chain = LLMChain(
+                        prompt=chat_prompt,
+                        llm=st.session_state.llm,
+                        memory=MEMORY,
+                    ) | (lambda output: output["text"])
+                    config = {"callbacks": callbacks, "tags": ["Streamlit Chat"]}
+                    full_response = st.session_state.chain.invoke(prompt, config)
+                    message_placeholder.markdown(full_response)
+
+                else:
+
+                    def get_rag_runnable():
+                        if document_chat_chain_type == "Q&A Generation":
+                            return get_rag_qa_gen_chain(
+                                st.session_state.retriever,
+                                st.session_state.llm,
+                            )
+                        elif document_chat_chain_type == "Summarization":
+                            return get_rag_summarization_chain(
                                 prompt,
                                 st.session_state.retriever,
                                 st.session_state.llm,
                             )
-                        full_response = st.session_state.doc_chain.invoke(
-                            prompt,
-                            config,
-                        )
+                        else:
+                            return RetrievalQA.from_chain_type(
+                                llm=st.session_state.llm,
+                                chain_type=document_chat_chain_type,
+                                retriever=st.session_state.retriever,
+                                memory=MEMORY,
+                                output_key="output_text",
+                            ) | (lambda output: output["output_text"])
 
-                    else:
-                        st_handler = StreamlitCallbackHandler(st.container())
-                        callbacks.append(st_handler)
-                        full_response = st.session_state.doc_chain(
-                            {"query": prompt},
-                            callbacks=callbacks,
-                            tags=["Streamlit Chat"],
-                            return_only_outputs=True,
-                        )[st.session_state.doc_chain.output_key]
-                        st_handler._complete_current_thought()
+                    st.session_state.doc_chain = get_rag_runnable()
 
+                    full_response = st.session_state.doc_chain.invoke(prompt, config)
                     st.markdown(full_response)
 
-                else:
-                    message_placeholder = st.empty()
-                    stream_handler = StreamHandler(message_placeholder)
-                    callbacks.append(stream_handler)
-                    full_response = st.session_state.chain(
-                        {"query": prompt},
-                        callbacks=callbacks,
-                        tags=["Streamlit Chat"],
-                        return_only_outputs=True,
-                    )[st.session_state.chain.output_key]
-                    message_placeholder.markdown(full_response)
             except (openai.error.AuthenticationError, anthropic.AuthenticationError):
                 st.error(
                     f"Please enter a valid {st.session_state.provider} API key.",
                     icon="❌",
                 )
-                full_response = None
-            if full_response:
+            if full_response is not None:
                 # --- Tracing ---
                 if st.session_state.client:
                     st.session_state.run = RUN_COLLECTOR.traced_runs[0]

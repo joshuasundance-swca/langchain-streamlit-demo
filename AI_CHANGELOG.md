@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated dependencies in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/9747a2d97d4e60861e6d0cc8de7ca8076a6ac971)
+Mon Oct 2 09:10:05 2023 -0400
+- The langchain and langsmith dependencies have been updated to versions 0.0.305 and 0.0.41 respectively.
+- The openai dependency has been updated to version 0.28.1.
+- The previous comment about rolling back the langchain update to avoid a bug has been removed, implying the bug has been fixed in the new version.
 ## [Version Bump from 0.0.10 to 0.0.11](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/58978f749bdf319a2c2f76e74a46e7d905b7bf69)
 Sat Sep 30 01:31:32 2023 -0400
 - Updated the current_version in bumpver.toml from 0.0.10 to 0.0.11.

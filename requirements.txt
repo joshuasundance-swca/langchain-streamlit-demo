@@ -1,9 +1,9 @@
 anthropic==0.3.11
 faiss-cpu==1.7.4
-langchain==0.0.300 # rolling back update to avoid a bug in langchain's chatanthropic
-langsmith==0.0.40
+langchain==0.0.305
+langsmith==0.0.41
 numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
-openai==0.28.0
+openai==0.28.1
 pypdf==3.16.2
 rank_bm25==0.2.2
 streamlit==1.27.1

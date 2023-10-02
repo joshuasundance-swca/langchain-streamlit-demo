@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated application version to 0.0.12](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/2bee8f19e2fa71c333588a3531b55fe062701328)
+Mon Oct 2 09:13:48 2023 -0400
+- The application version has been updated from 0.0.11 to 0.0.12 in three different files. These include bumpver.toml, resources.yaml under kubernetes, and app.py under langchain-streamlit-demo. In bumpver.toml, the current_version value is updated. In resources.yaml, the image version for the container 'langchain-streamlit-demo' is updated. In app.py, the __version__ variable is updated to reflect the new version.
 ## [Updated dependencies in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/9747a2d97d4e60861e6d0cc8de7ca8076a6ac971)
 Mon Oct 2 09:10:05 2023 -0400
 - The langchain and langsmith dependencies have been updated to versions 0.0.305 and 0.0.41 respectively.

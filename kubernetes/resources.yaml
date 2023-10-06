@@ -39,6 +39,11 @@ spec:
               secretKeyRef:
                 name: langchain-streamlit-demo-secret
                 key: AZURE_OPENAI_DEPLOYMENT_NAME
+          - name: AZURE_OPENAI_EMB_DEPLOYMENT_NAME
+            valueFrom:
+              secretKeyRef:
+                name: langchain-streamlit-demo-secret
+                key: AZURE_OPENAI_EMB_DEPLOYMENT_NAME
           - name: AZURE_OPENAI_API_KEY
             valueFrom:
               secretKeyRef:
@@ -71,6 +76,10 @@ spec:
                 key: LANGCHAIN_API_KEY
           - name: LANGCHAIN_PROJECT
             value: "langchain-streamlit-demo"
+          - name: SHOW_LANGCHAIN_OPTIONS
+            value: "False"
+          - name: SHOW_AZURE_OPTIONS
+            value: "False"
         securityContext:
           runAsNonRoot: true
 ---

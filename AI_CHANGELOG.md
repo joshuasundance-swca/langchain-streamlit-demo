@@ -1,4 +1,17 @@
 # AI CHANGELOG
+## [Refactored application code and updated dependencies](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/979e3bd9fe449bea04e5ceda5c1a72be2e824c58)
+Fri Oct 6 13:58:33 2023 -0400
+- Refactored the application code in 'langchain-streamlit-demo/app.py' to improve clarity and organization. Changes include renaming 'AZURE' to 'Azure OpenAI' in the 'MODEL_DICT' and modifying related conditional checks, renaming 'Advanced Options' to 'Advanced Settings', and restructuring 'LangSmith Options' into its own section within the sidebar.
+- Updated the 'streamlit' version from '1.27.1' to '1.27.2' in 'requirements.txt'.
+## [Added support for Azure Chat models in the Streamlit application](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/72c3d8c60b3e15ce8d89f926ffe2ab845d3d9c1b)
+Fri Oct 6 13:50:43 2023 -0400
+- The commit introduces Azure Chat models into the Streamlit application. It includes the addition of the AzureChatOpenAI model in the import statement and the MODEL_DICT. Environment variables for Azure are also defined and retrieved from the system environment. User interface elements for Azure options have been added within an expandable section in the sidebar. Finally, an instance of AzureChatOpenAI is created if all Azure details are available and the selected provider is Azure.
+## [Updated langsmith package](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/e4b72fedeb71c822b6a76ed84199fef2bbc3bf8a)
+Fri Oct 6 13:02:43 2023 -0400
+- The langsmith package version was updated from 0.0.41 to 0.0.43 in the requirements.txt file.
+## [Updated langchain version in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/2c41972749e5524bba738b37e6d31416e657fec6)
+Thu Oct 5 13:54:14 2023 +0000
+- The langchain package version in requirements.txt has been upgraded from 0.0.305 to 0.0.308. This update may include bug fixes, feature enhancements or performance improvements.
 ## [Updated application version to 0.0.12](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/2bee8f19e2fa71c333588a3531b55fe062701328)
 Mon Oct 2 09:13:48 2023 -0400
 - The application version has been updated from 0.0.11 to 0.0.12 in three different files. These include bumpver.toml, resources.yaml under kubernetes, and app.py under langchain-streamlit-demo. In bumpver.toml, the current_version value is updated. In resources.yaml, the image version for the container 'langchain-streamlit-demo' is updated. In app.py, the __version__ variable is updated to reflect the new version.

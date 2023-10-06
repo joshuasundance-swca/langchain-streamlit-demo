@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Added input field for Azure OpenAI EMB deployment name](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/b44c9a31a33a9b7d3b0e347a0ffe4ea31c068e81)
+Fri Oct 6 18:40:55 2023 -0400
+- An input field for the Azure OpenAI EMB deployment name has been added to the sidebar of the Streamlit application. This allows users to specify the name of their Azure OpenAI EMB deployment.
 ## [Added Azure OpenAI Embeddings option to app](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/c60388636d63567bd9bfe4b7bbfebf734d3100da)
 Fri Oct 6 18:35:40 2023 -0400
 - This commit introduces the option to use Azure OpenAI for embeddings in the langchain-streamlit-demo app. It adds the necessary environment variables and updates the code to handle the new option. The changes include:

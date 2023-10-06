@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Bumped version from 0.0.12 to 0.0.13](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d767997980a751389dcbec81b1bcaa1c10267534)
+Fri Oct 6 14:03:44 2023 -0400
+- Updated the current_version in bumpver.toml from 0.0.12 to 0.0.13.
+- Updated the image tag in the Kubernetes resources.yaml file to use the new version 0.0.13.
+- Updated the __version__ variable in the app.py file to reflect the new version 0.0.13.
 ## [Refactored application code and updated dependencies](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/979e3bd9fe449bea04e5ceda5c1a72be2e824c58)
 Fri Oct 6 13:58:33 2023 -0400
 - Refactored the application code in 'langchain-streamlit-demo/app.py' to improve clarity and organization. Changes include renaming 'AZURE' to 'Azure OpenAI' in the 'MODEL_DICT' and modifying related conditional checks, renaming 'Advanced Options' to 'Advanced Settings', and restructuring 'LangSmith Options' into its own section within the sidebar.

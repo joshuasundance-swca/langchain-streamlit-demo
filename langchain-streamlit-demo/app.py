@@ -95,7 +95,7 @@ MODEL_DICT = {
     "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
     "codellama/CodeLlama-34b-Instruct-hf": "Anyscale Endpoints",
-    "AZURE": "AZURE",
+    "Azure OpenAI": "Azure OpenAI",
 }
 SUPPORTED_MODELS = list(MODEL_DICT.keys())
 
@@ -198,7 +198,7 @@ with sidebar:
             f"{st.session_state.provider} API key",
             type="password",
         )
-        if st.session_state.provider != "AZURE"
+        if st.session_state.provider != "Azure OpenAI"
         else ""
     )
 
@@ -288,8 +288,8 @@ with sidebar:
             else:
                 st.error("Please enter a valid OpenAI API key.", icon="❌")
 
-    # --- Advanced Options ---
-    with st.expander("Advanced Options", expanded=False):
+    # --- Advanced Settings ---
+    with st.expander("Advanced Settings", expanded=False):
         st.markdown("## Feedback Scale")
         use_faces = st.toggle(label="`Thumbs` ⇄ `Faces`", value=False)
         feedback_option = "faces" if use_faces else "thumbs"
@@ -320,14 +320,16 @@ with sidebar:
             help="Higher values give longer results.",
         )
 
-        # --- API Keys ---
-        LANGSMITH_API_KEY = PROVIDER_KEY_DICT.get("LANGSMITH") or st.text_input(
+    # --- LangSmith Options ---
+    with st.expander("LangSmith Options", expanded=False):
+        LANGSMITH_API_KEY = st.text_input(
             "LangSmith API Key (optional)",
             type="password",
+            value=PROVIDER_KEY_DICT.get("LANGSMITH"),
         )
-        LANGSMITH_PROJECT = DEFAULT_LANGSMITH_PROJECT or st.text_input(
+        LANGSMITH_PROJECT = st.text_input(
             "LangSmith Project Name",
-            value="langchain-streamlit-demo",
+            value=DEFAULT_LANGSMITH_PROJECT or "langchain-streamlit-demo",
         )
         if st.session_state.client is None and LANGSMITH_API_KEY:
             st.session_state.client = Client(
@@ -400,7 +402,7 @@ if provider_api_key:
             streaming=True,
             max_tokens=max_tokens,
         )
-elif AZURE_AVAILABLE and st.session_state.provider == "AZURE":
+elif AZURE_AVAILABLE and st.session_state.provider == "Azure OpenAI":
     st.session_state.llm = AzureChatOpenAI(
         openai_api_base=AZURE_OPENAI_BASE_URL,
         openai_api_version=AZURE_OPENAI_API_VERSION,

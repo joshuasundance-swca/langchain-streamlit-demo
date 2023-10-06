@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from tempfile import NamedTemporaryFile
 from typing import Tuple, List, Dict, Any, Union
@@ -30,6 +29,29 @@ from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
+from defaults import (
+    MODEL_DICT,
+    SUPPORTED_MODELS,
+    DEFAULT_MODEL,
+    DEFAULT_SYSTEM_PROMPT,
+    MIN_TEMP,
+    MAX_TEMP,
+    DEFAULT_TEMP,
+    MIN_MAX_TOKENS,
+    MAX_MAX_TOKENS,
+    DEFAULT_MAX_TOKENS,
+    DEFAULT_LANGSMITH_PROJECT,
+    AZURE_DICT,
+    PROVIDER_KEY_DICT,
+    OPENAI_API_KEY,
+    MIN_CHUNK_SIZE,
+    MAX_CHUNK_SIZE,
+    DEFAULT_CHUNK_SIZE,
+    MIN_CHUNK_OVERLAP,
+    MAX_CHUNK_OVERLAP,
+    DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_RETRIEVER_K,
+)
 from qagen import get_rag_qa_gen_chain
 from summarize import get_rag_summarization_chain
 
@@ -83,64 +105,6 @@ class StreamHandler(BaseCallbackHandler):
 
 
 RUN_COLLECTOR = RunCollectorCallbackHandler()
-
-
-# --- Model Selection Helpers ---
-MODEL_DICT = {
-    "gpt-3.5-turbo": "OpenAI",
-    "gpt-4": "OpenAI",
-    "claude-instant-v1": "Anthropic",
-    "claude-2": "Anthropic",
-    "meta-llama/Llama-2-7b-chat-hf": "Anyscale Endpoints",
-    "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
-    "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
-    "codellama/CodeLlama-34b-Instruct-hf": "Anyscale Endpoints",
-    "Azure OpenAI": "Azure OpenAI",
-}
-SUPPORTED_MODELS = list(MODEL_DICT.keys())
-
-
-# --- Constants from Environment Variables ---
-DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "gpt-3.5-turbo")
-DEFAULT_SYSTEM_PROMPT = os.environ.get(
-    "DEFAULT_SYSTEM_PROMPT",
-    "You are a helpful chatbot.",
-)
-MIN_TEMP = float(os.environ.get("MIN_TEMPERATURE", 0.0))
-MAX_TEMP = float(os.environ.get("MAX_TEMPERATURE", 1.0))
-DEFAULT_TEMP = float(os.environ.get("DEFAULT_TEMPERATURE", 0.7))
-MIN_MAX_TOKENS = int(os.environ.get("MIN_MAX_TOKENS", 1))
-MAX_MAX_TOKENS = int(os.environ.get("MAX_MAX_TOKENS", 100000))
-DEFAULT_MAX_TOKENS = int(os.environ.get("DEFAULT_MAX_TOKENS", 1000))
-DEFAULT_LANGSMITH_PROJECT = os.environ.get("LANGCHAIN_PROJECT")
-
-AZURE_VARS = [
-    "AZURE_OPENAI_BASE_URL",
-    "AZURE_OPENAI_API_VERSION",
-    "AZURE_OPENAI_DEPLOYMENT_NAME",
-    "AZURE_OPENAI_API_KEY",
-    "AZURE_OPENAI_MODEL_VERSION",
-]
-
-AZURE_DICT = {v: os.environ.get(v, "") for v in AZURE_VARS}
-
-PROVIDER_KEY_DICT = {
-    "OpenAI": os.environ.get("OPENAI_API_KEY", ""),
-    "Anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
-    "Anyscale Endpoints": os.environ.get("ANYSCALE_API_KEY", ""),
-    "LANGSMITH": os.environ.get("LANGCHAIN_API_KEY", ""),
-}
-OPENAI_API_KEY = PROVIDER_KEY_DICT["OpenAI"]
-
-MIN_CHUNK_SIZE = 1
-MAX_CHUNK_SIZE = 10000
-DEFAULT_CHUNK_SIZE = 1000
-
-MIN_CHUNK_OVERLAP = 0
-MAX_CHUNK_OVERLAP = 10000
-DEFAULT_CHUNK_OVERLAP = 0
-
-DEFAULT_RETRIEVER_K = 4
 
 
 @st.cache_data
@@ -239,6 +203,7 @@ with sidebar:
             max_value=MAX_CHUNK_SIZE,
             value=DEFAULT_CHUNK_SIZE,
         )
+
         chunk_overlap = st.slider(
             label="Chunk Overlap",
             help="Number of characters to overlap between chunks",
@@ -250,6 +215,7 @@ with sidebar:
         chain_type_help_root = (
             "https://python.langchain.com/docs/modules/chains/document/"
         )
+
         chain_type_help = "\n".join(
             f"- [{chain_type_name}]({chain_type_help_root}/{chain_type_name})"
             for chain_type_name in (
@@ -259,6 +225,7 @@ with sidebar:
                 "map_rerank",
             )
         )
+
         document_chat_chain_type = st.selectbox(
             label="Document Chat Chain Type",
             options=[
@@ -304,6 +271,7 @@ with sidebar:
             .replace("{", "{{")
             .replace("}", "}}")
         )
+
         temperature = st.slider(
             "Temperature",
             min_value=MIN_TEMP,
@@ -327,10 +295,12 @@ with sidebar:
             type="password",
             value=PROVIDER_KEY_DICT.get("LANGSMITH"),
         )
+
         LANGSMITH_PROJECT = st.text_input(
             "LangSmith Project Name",
             value=DEFAULT_LANGSMITH_PROJECT or "langchain-streamlit-demo",
         )
+
         if st.session_state.client is None and LANGSMITH_API_KEY:
             st.session_state.client = Client(
                 api_url="https://api.smith.langchain.com",
@@ -347,19 +317,23 @@ with sidebar:
             "AZURE_OPENAI_BASE_URL",
             value=AZURE_DICT["AZURE_OPENAI_BASE_URL"],
         )
+
         AZURE_OPENAI_API_VERSION = st.text_input(
             "AZURE_OPENAI_API_VERSION",
             value=AZURE_DICT["AZURE_OPENAI_API_VERSION"],
         )
+
         AZURE_OPENAI_DEPLOYMENT_NAME = st.text_input(
             "AZURE_OPENAI_DEPLOYMENT_NAME",
             value=AZURE_DICT["AZURE_OPENAI_DEPLOYMENT_NAME"],
         )
+
         AZURE_OPENAI_API_KEY = st.text_input(
             "AZURE_OPENAI_API_KEY",
             value=AZURE_DICT["AZURE_OPENAI_API_KEY"],
             type="password",
         )
+
         AZURE_OPENAI_MODEL_VERSION = st.text_input(
             "AZURE_OPENAI_MODEL_VERSION",
             value=AZURE_DICT["AZURE_OPENAI_MODEL_VERSION"],
@@ -386,6 +360,7 @@ if provider_api_key:
             streaming=True,
             max_tokens=max_tokens,
         )
+
     elif st.session_state.provider == "Anthropic":
         st.session_state.llm = ChatAnthropic(
             model=model,
@@ -394,6 +369,7 @@ if provider_api_key:
             streaming=True,
             max_tokens_to_sample=max_tokens,
         )
+
     elif st.session_state.provider == "Anyscale Endpoints":
         st.session_state.llm = ChatAnyscale(
             model_name=model,
@@ -402,6 +378,7 @@ if provider_api_key:
             streaming=True,
             max_tokens=max_tokens,
         )
+
 elif AZURE_AVAILABLE and st.session_state.provider == "Azure OpenAI":
     st.session_state.llm = AzureChatOpenAI(
         openai_api_base=AZURE_OPENAI_BASE_URL,

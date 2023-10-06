@@ -1,31 +1,16 @@
 from datetime import datetime
-from tempfile import NamedTemporaryFile
 from typing import Tuple, List, Dict, Any, Union
 
 import anthropic
 import langsmith.utils
 import openai
 import streamlit as st
-from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
-from langchain.chains import RetrievalQA
-from langchain.chains.llm import LLMChain
-from langchain.chat_models import (
-    AzureChatOpenAI,
-    ChatAnthropic,
-    ChatAnyscale,
-    ChatOpenAI,
-)
-from langchain.document_loaders import PyPDFLoader
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.retrievers import BM25Retriever, EnsembleRetriever
 from langchain.schema.document import Document
 from langchain.schema.retriever import BaseRetriever
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
@@ -52,8 +37,7 @@ from defaults import (
     DEFAULT_CHUNK_OVERLAP,
     DEFAULT_RETRIEVER_K,
 )
-from qagen import get_rag_qa_gen_chain
-from summarize import get_rag_summarization_chain
+from llm_resources import get_runnable, get_llm, get_texts_and_retriever, StreamHandler
 
 __version__ = "0.0.13"
 
@@ -84,61 +68,29 @@ st_init_null(
     "trace_link",
 )
 
-# --- Memory ---
+# --- LLM globals ---
 STMEMORY = StreamlitChatMessageHistory(key="langchain_messages")
 MEMORY = ConversationBufferMemory(
     chat_memory=STMEMORY,
     return_messages=True,
     memory_key="chat_history",
 )
-
-
-# --- Callbacks ---
-class StreamHandler(BaseCallbackHandler):
-    def __init__(self, container, initial_text=""):
-        self.container = container
-        self.text = initial_text
-
-    def on_llm_new_token(self, token: str, **kwargs) -> None:
-        self.text += token
-        self.container.markdown(self.text)
-
-
 RUN_COLLECTOR = RunCollectorCallbackHandler()
 
 
 @st.cache_data
-def get_texts_and_retriever(
+def get_texts_and_retriever_cacheable_wrapper(
     uploaded_file_bytes: bytes,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
     k: int = DEFAULT_RETRIEVER_K,
 ) -> Tuple[List[Document], BaseRetriever]:
-    with NamedTemporaryFile() as temp_file:
-        temp_file.write(uploaded_file_bytes)
-        temp_file.seek(0)
-
-        loader = PyPDFLoader(temp_file.name)
-        documents = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-        )
-        texts = text_splitter.split_documents(documents)
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-
-        bm25_retriever = BM25Retriever.from_documents(texts)
-        bm25_retriever.k = k
-
-        faiss_vectorstore = FAISS.from_documents(texts, embeddings)
-        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": k})
-
-        ensemble_retriever = EnsembleRetriever(
-            retrievers=[bm25_retriever, faiss_retriever],
-            weights=[0.5, 0.5],
-        )
-
-        return texts, ensemble_retriever
+    return get_texts_and_retriever(
+        uploaded_file_bytes=uploaded_file_bytes,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        k=k,
+    )
 
 
 # --- Sidebar ---
@@ -351,46 +303,21 @@ with sidebar:
 
 
 # --- LLM Instantiation ---
-if provider_api_key:
-    if st.session_state.provider == "OpenAI":
-        st.session_state.llm = ChatOpenAI(
-            model_name=model,
-            openai_api_key=provider_api_key,
-            temperature=temperature,
-            streaming=True,
-            max_tokens=max_tokens,
-        )
-
-    elif st.session_state.provider == "Anthropic":
-        st.session_state.llm = ChatAnthropic(
-            model=model,
-            anthropic_api_key=provider_api_key,
-            temperature=temperature,
-            streaming=True,
-            max_tokens_to_sample=max_tokens,
-        )
-
-    elif st.session_state.provider == "Anyscale Endpoints":
-        st.session_state.llm = ChatAnyscale(
-            model_name=model,
-            anyscale_api_key=provider_api_key,
-            temperature=temperature,
-            streaming=True,
-            max_tokens=max_tokens,
-        )
-
-elif AZURE_AVAILABLE and st.session_state.provider == "Azure OpenAI":
-    st.session_state.llm = AzureChatOpenAI(
-        openai_api_base=AZURE_OPENAI_BASE_URL,
-        openai_api_version=AZURE_OPENAI_API_VERSION,
-        deployment_name=AZURE_OPENAI_DEPLOYMENT_NAME,
-        openai_api_key=AZURE_OPENAI_API_KEY,
-        openai_api_type="azure",
-        model_version=AZURE_OPENAI_MODEL_VERSION,
-        temperature=temperature,
-        streaming=True,
-        max_tokens=max_tokens,
-    )
+llm = get_llm(
+    provider=st.session_state.provider,
+    model=model,
+    provider_api_key=provider_api_key,
+    temperature=temperature,
+    max_tokens=max_tokens,
+    azure_available=AZURE_AVAILABLE,
+    azure_dict={
+        "AZURE_OPENAI_BASE_URL": AZURE_OPENAI_BASE_URL,
+        "AZURE_OPENAI_API_VERSION": AZURE_OPENAI_API_VERSION,
+        "AZURE_OPENAI_DEPLOYMENT_NAME": AZURE_OPENAI_DEPLOYMENT_NAME,
+        "AZURE_OPENAI_API_KEY": AZURE_OPENAI_API_KEY,
+        "AZURE_OPENAI_MODEL_VERSION": AZURE_OPENAI_MODEL_VERSION,
+    },
+)
 
 # --- Chat History ---
 if len(STMEMORY.messages) == 0:
@@ -451,38 +378,15 @@ if st.session_state.llm:
             stream_handler = StreamHandler(message_placeholder)
             callbacks.append(stream_handler)
 
-            def get_rag_runnable():
-                if document_chat_chain_type == "Q&A Generation":
-                    return get_rag_qa_gen_chain(
-                        st.session_state.retriever,
-                        st.session_state.llm,
-                    )
-                elif document_chat_chain_type == "Summarization":
-                    return get_rag_summarization_chain(
-                        prompt,
-                        st.session_state.retriever,
-                        st.session_state.llm,
-                    )
-                else:
-                    return RetrievalQA.from_chain_type(
-                        llm=st.session_state.llm,
-                        chain_type=document_chat_chain_type,
-                        retriever=st.session_state.retriever,
-                        memory=MEMORY,
-                        output_key="output_text",
-                    ) | (lambda output: output["output_text"])
-
-            st.session_state.chain = (
-                get_rag_runnable()
-                if use_document_chat
-                else LLMChain(
-                    prompt=chat_prompt,
-                    llm=st.session_state.llm,
-                    memory=MEMORY,
-                )
-                | (lambda output: output["text"])
+            st.session_state.chain = get_runnable(
+                use_document_chat,
+                document_chat_chain_type,
+                st.session_state.llm,
+                st.session_state.retriever,
+                MEMORY,
             )
 
+            # --- LLM call ---
             try:
                 full_response = st.session_state.chain.invoke(prompt, config)
 
@@ -492,6 +396,7 @@ if st.session_state.llm:
                     icon="❌",
                 )
 
+            # --- Display output ---
             if full_response is not None:
                 message_placeholder.markdown(full_response)
 
@@ -507,6 +412,8 @@ if st.session_state.llm:
                         ).url
                     except langsmith.utils.LangSmithError:
                         st.session_state.trace_link = None
+
+    # --- LangSmith Trace Link ---
     if st.session_state.trace_link:
         with sidebar:
             st.markdown(
@@ -550,10 +457,6 @@ if st.session_state.llm:
                     score=score,
                     comment=feedback.get("text"),
                 )
-                # feedback = {
-                #     "feedback_id": str(feedback_record.id),
-                #     "score": score,
-                # }
                 st.toast("Feedback recorded!", icon="📝")
             else:
                 st.warning("Invalid feedback score.")

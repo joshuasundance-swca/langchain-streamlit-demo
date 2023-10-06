@@ -315,6 +315,11 @@ with sidebar:
                 value=AZURE_OPENAI_DEPLOYMENT_NAME,
             )
 
+            AZURE_OPENAI_EMB_DEPLOYMENT_NAME = st.text_input(
+                "AZURE_OPENAI_EMB_DEPLOYMENT_NAME",
+                value=AZURE_OPENAI_EMB_DEPLOYMENT_NAME,
+            )
+
             AZURE_OPENAI_API_KEY = st.text_input(
                 "AZURE_OPENAI_API_KEY",
                 value=AZURE_OPENAI_API_KEY,

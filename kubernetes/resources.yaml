@@ -24,6 +24,31 @@ spec:
             cpu: "500m"
             memory: "500Mi"
         env:
+          - name: AZURE_OPENAI_BASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: langchain-streamlit-demo-secret
+                key: AZURE_OPENAI_BASE_URL
+          - name: AZURE_OPENAI_API_VERSION
+            valueFrom:
+              secretKeyRef:
+                name: langchain-streamlit-demo-secret
+                key: AZURE_OPENAI_API_VERSION
+          - name: AZURE_OPENAI_DEPLOYMENT_NAME
+            valueFrom:
+              secretKeyRef:
+                name: langchain-streamlit-demo-secret
+                key: AZURE_OPENAI_DEPLOYMENT_NAME
+          - name: AZURE_OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: langchain-streamlit-demo-secret
+                key: AZURE_OPENAI_API_KEY
+          - name: AZURE_OPENAI_MODEL_VERSION
+            valueFrom:
+              secretKeyRef:
+                name: langchain-streamlit-demo-secret
+                key: AZURE_OPENAI_MODEL_VERSION
           - name: OPENAI_API_KEY
             valueFrom:
               secretKeyRef:

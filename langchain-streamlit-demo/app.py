@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Tuple, List, Dict, Any, Union
+from typing import Tuple, List, Dict, Any, Union, Optional
 
 import anthropic
 import langsmith.utils
@@ -56,6 +56,43 @@ MEMORY = ConversationBufferMemory(
 )
 RUN_COLLECTOR = RunCollectorCallbackHandler()
 
+LANGSMITH_API_KEY = default_values.PROVIDER_KEY_DICT.get("LANGSMITH")
+LANGSMITH_PROJECT = (
+    default_values.DEFAULT_LANGSMITH_PROJECT or "langchain-streamlit-demo"
+)
+AZURE_OPENAI_BASE_URL = default_values.AZURE_DICT["AZURE_OPENAI_BASE_URL"]
+AZURE_OPENAI_API_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_API_VERSION"]
+AZURE_OPENAI_DEPLOYMENT_NAME = default_values.AZURE_DICT["AZURE_OPENAI_DEPLOYMENT_NAME"]
+AZURE_OPENAI_EMB_DEPLOYMENT_NAME = default_values.AZURE_DICT[
+    "AZURE_OPENAI_EMB_DEPLOYMENT_NAME"
+]
+AZURE_OPENAI_API_KEY = default_values.AZURE_DICT["AZURE_OPENAI_API_KEY"]
+AZURE_OPENAI_MODEL_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_MODEL_VERSION"]
+
+AZURE_AVAILABLE = all(
+    [
+        AZURE_OPENAI_BASE_URL,
+        AZURE_OPENAI_API_VERSION,
+        AZURE_OPENAI_DEPLOYMENT_NAME,
+        AZURE_OPENAI_API_KEY,
+        AZURE_OPENAI_MODEL_VERSION,
+    ],
+)
+
+AZURE_EMB_AVAILABLE = AZURE_AVAILABLE and AZURE_OPENAI_EMB_DEPLOYMENT_NAME
+
+AZURE_KWARGS = (
+    None
+    if not AZURE_EMB_AVAILABLE
+    else {
+        "openai_api_base": AZURE_OPENAI_BASE_URL,
+        "openai_api_version": AZURE_OPENAI_API_VERSION,
+        "deployment": AZURE_OPENAI_EMB_DEPLOYMENT_NAME,
+        "openai_api_key": AZURE_OPENAI_API_KEY,
+        "openai_api_type": "azure",
+    }
+)
+
 
 @st.cache_data
 def get_texts_and_retriever_cacheable_wrapper(
@@ -64,6 +101,8 @@ def get_texts_and_retriever_cacheable_wrapper(
     chunk_size: int = default_values.DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = default_values.DEFAULT_CHUNK_OVERLAP,
     k: int = default_values.DEFAULT_RETRIEVER_K,
+    azure_kwargs: Optional[Dict[str, str]] = None,
+    use_azure: bool = False,
 ) -> Tuple[List[Document], BaseRetriever]:
     return get_texts_and_retriever(
         uploaded_file_bytes=uploaded_file_bytes,
@@ -71,6 +110,8 @@ def get_texts_and_retriever_cacheable_wrapper(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         k=k,
+        azure_kwargs=azure_kwargs,
+        use_azure=use_azure,
     )
 
 
@@ -173,9 +214,17 @@ with sidebar:
             help=chain_type_help,
             disabled=not document_chat,
         )
+        use_azure = False
+
+        if AZURE_EMB_AVAILABLE:
+            use_azure = st.toggle(
+                label="Use Azure OpenAI",
+                value=AZURE_EMB_AVAILABLE,
+                help="Use Azure for embeddings instead of using OpenAI directly.",
+            )
 
         if uploaded_file:
-            if openai_api_key:
+            if AZURE_EMB_AVAILABLE or openai_api_key:
                 (
                     st.session_state.texts,
                     st.session_state.retriever,
@@ -185,6 +234,8 @@ with sidebar:
                     chunk_size=chunk_size,
                     chunk_overlap=chunk_overlap,
                     k=k,
+                    azure_kwargs=AZURE_KWARGS,
+                    use_azure=use_azure,
                 )
             else:
                 st.error("Please enter a valid OpenAI API key.", icon="❌")
@@ -223,11 +274,6 @@ with sidebar:
         )
 
     # --- LangSmith Options ---
-    LANGSMITH_API_KEY = default_values.PROVIDER_KEY_DICT.get("LANGSMITH")
-    LANGSMITH_PROJECT = (
-        default_values.DEFAULT_LANGSMITH_PROJECT or "langchain-streamlit-demo"
-    )
-
     if default_values.SHOW_LANGSMITH_OPTIONS:
         with st.expander("LangSmith Options", expanded=False):
             LANGSMITH_API_KEY = st.text_input(
@@ -252,14 +298,6 @@ with sidebar:
         )
 
     # --- Azure Options ---
-    AZURE_OPENAI_BASE_URL = default_values.AZURE_DICT["AZURE_OPENAI_BASE_URL"]
-    AZURE_OPENAI_API_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_API_VERSION"]
-    AZURE_OPENAI_DEPLOYMENT_NAME = default_values.AZURE_DICT[
-        "AZURE_OPENAI_DEPLOYMENT_NAME"
-    ]
-    AZURE_OPENAI_API_KEY = default_values.AZURE_DICT["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_MODEL_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_MODEL_VERSION"]
-
     if default_values.SHOW_AZURE_OPTIONS:
         with st.expander("Azure Options", expanded=False):
             AZURE_OPENAI_BASE_URL = st.text_input(
@@ -287,16 +325,6 @@ with sidebar:
                 "AZURE_OPENAI_MODEL_VERSION",
                 value=AZURE_OPENAI_MODEL_VERSION,
             )
-
-    AZURE_AVAILABLE = all(
-        [
-            AZURE_OPENAI_BASE_URL,
-            AZURE_OPENAI_API_VERSION,
-            AZURE_OPENAI_DEPLOYMENT_NAME,
-            AZURE_OPENAI_API_KEY,
-            AZURE_OPENAI_MODEL_VERSION,
-        ],
-    )
 
 
 # --- LLM Instantiation ---

@@ -1,5 +1,5 @@
 from tempfile import NamedTemporaryFile
-from typing import Tuple, List
+from typing import Tuple, List, Optional, Dict
 
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import RetrievalQA, LLMChain
@@ -117,6 +117,8 @@ def get_texts_and_retriever(
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
     k: int = DEFAULT_RETRIEVER_K,
+    azure_kwargs: Optional[Dict[str, str]] = None,
+    use_azure: bool = False,
 ) -> Tuple[List[Document], BaseRetriever]:
     with NamedTemporaryFile() as temp_file:
         temp_file.write(uploaded_file_bytes)
@@ -129,7 +131,10 @@ def get_texts_and_retriever(
             chunk_overlap=chunk_overlap,
         )
         texts = text_splitter.split_documents(documents)
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        embeddings_kwargs = {"openai_api_key": openai_api_key}
+        if use_azure and azure_kwargs:
+            embeddings_kwargs.update(azure_kwargs)
+        embeddings = OpenAIEmbeddings(**embeddings_kwargs)
 
         bm25_retriever = BM25Retriever.from_documents(texts)
         bm25_retriever.k = k

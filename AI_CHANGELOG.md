@@ -1,4 +1,25 @@
 # AI CHANGELOG
+## [Added Azure OpenAI Embeddings option to app](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/c60388636d63567bd9bfe4b7bbfebf734d3100da)
+Fri Oct 6 18:35:40 2023 -0400
+- This commit introduces the option to use Azure OpenAI for embeddings in the langchain-streamlit-demo app. It adds the necessary environment variables and updates the code to handle the new option. The changes include:
+- 1. Addition of the AZURE_OPENAI_EMB_DEPLOYMENT_NAME environment variable in the Kubernetes resources.
+- 2. Update of the app.py file to handle the Azure OpenAI option. If Azure embeddings are available, a toggle is displayed to the user to switch between Azure and OpenAI directly.
+- 3. Update of the get_texts_and_retriever function in llm_resources.py to accept additional arguments for azure_kwargs and use_azure.
+- 4. Update of the defaults.py file to include the AZURE_OPENAI_EMB_DEPLOYMENT_NAME in the list of Azure environment variables.
+## [Refactored code to improve readability and maintainability](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/0ce4fb3a9cb43ee563729df1d6b682511e17248f)
+Fri Oct 6 18:15:24 2023 -0400
+- 1. Updated kubernetes resource configuration to add environment variables for SHOW_LANGCHAIN_OPTIONS and SHOW_AZURE_OPTIONS.
+- 2. Refactored the app.py script to import default values from a single source, improving readability and maintainability of the code.
+- 3. Updated defaults.py to define a namedtuple for default values, which is imported in other scripts.
+- 4. Modified llm_resources.py to accommodate changes in the import of default values.
+## [Refactor code by moving logic to a separate module](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/21eccfc51cf90268826929cddbf2bfa42bc2f5eb)
+Fri Oct 6 16:26:26 2023 -0400
+- The commit moves a significant amount of logic from 'app.py' to a new module named 'llm_resources.py'. This includes the methods for getting the runnable instance, the language model, and the texts and retriever. The aim of this refactoring is to improve code organization, readability, and maintainability.
+## [Refactored code and improved project structure](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/87d698488900d63b992059b6f291d6981773fb4b)
+Fri Oct 6 15:59:43 2023 -0400
+- Moved model constants and environment variables into a separate 'defaults.py' file for better code organization and readability.
+- Updated 'app.py' to import these constants and variables from the new 'defaults.py' file.
+- Modified '.idea/langchain-streamlit-demo.iml' to include a new source folder, improving the project's structure.
 ## [Added Azure OpenAI environment variables to Kubernetes deployment](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f39ac3b55d8e57db36ff4a43a4b95dda1fa46e9d)
 Fri Oct 6 14:15:57 2023 -0400
 - In the Kubernetes resource configuration file, several environment variables related to Azure OpenAI have been added. These include the base URL, API version, deployment name, API key, and model version. The values for these variables are fetched from the 'langchain-streamlit-demo-secret' secret.

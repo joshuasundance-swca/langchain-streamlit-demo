@@ -12,7 +12,12 @@ from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.chains import RetrievalQA
 from langchain.chains.llm import LLMChain
-from langchain.chat_models import ChatOpenAI, ChatAnyscale, ChatAnthropic
+from langchain.chat_models import (
+    AzureChatOpenAI,
+    ChatAnthropic,
+    ChatAnyscale,
+    ChatOpenAI,
+)
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
@@ -90,6 +95,7 @@ MODEL_DICT = {
     "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
     "codellama/CodeLlama-34b-Instruct-hf": "Anyscale Endpoints",
+    "AZURE": "AZURE",
 }
 SUPPORTED_MODELS = list(MODEL_DICT.keys())
 
@@ -107,6 +113,17 @@ MIN_MAX_TOKENS = int(os.environ.get("MIN_MAX_TOKENS", 1))
 MAX_MAX_TOKENS = int(os.environ.get("MAX_MAX_TOKENS", 100000))
 DEFAULT_MAX_TOKENS = int(os.environ.get("DEFAULT_MAX_TOKENS", 1000))
 DEFAULT_LANGSMITH_PROJECT = os.environ.get("LANGCHAIN_PROJECT")
+
+AZURE_VARS = [
+    "AZURE_OPENAI_BASE_URL",
+    "AZURE_OPENAI_API_VERSION",
+    "AZURE_OPENAI_DEPLOYMENT_NAME",
+    "AZURE_OPENAI_API_KEY",
+    "AZURE_OPENAI_MODEL_VERSION",
+]
+
+AZURE_DICT = {v: os.environ.get(v, "") for v in AZURE_VARS}
+
 PROVIDER_KEY_DICT = {
     "OpenAI": os.environ.get("OPENAI_API_KEY", ""),
     "Anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
@@ -173,11 +190,16 @@ with sidebar:
 
     st.session_state.provider = MODEL_DICT[model]
 
-    provider_api_key = PROVIDER_KEY_DICT.get(
-        st.session_state.provider,
-    ) or st.text_input(
-        f"{st.session_state.provider} API key",
-        type="password",
+    provider_api_key = (
+        PROVIDER_KEY_DICT.get(
+            st.session_state.provider,
+        )
+        or st.text_input(
+            f"{st.session_state.provider} API key",
+            type="password",
+        )
+        if st.session_state.provider != "AZURE"
+        else ""
     )
 
     if st.button("Clear message history"):
@@ -317,6 +339,40 @@ with sidebar:
                 client=st.session_state.client,
             )
 
+    # --- Azure Options ---
+    with st.expander("Azure Options", expanded=False):
+        AZURE_OPENAI_BASE_URL = st.text_input(
+            "AZURE_OPENAI_BASE_URL",
+            value=AZURE_DICT["AZURE_OPENAI_BASE_URL"],
+        )
+        AZURE_OPENAI_API_VERSION = st.text_input(
+            "AZURE_OPENAI_API_VERSION",
+            value=AZURE_DICT["AZURE_OPENAI_API_VERSION"],
+        )
+        AZURE_OPENAI_DEPLOYMENT_NAME = st.text_input(
+            "AZURE_OPENAI_DEPLOYMENT_NAME",
+            value=AZURE_DICT["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        )
+        AZURE_OPENAI_API_KEY = st.text_input(
+            "AZURE_OPENAI_API_KEY",
+            value=AZURE_DICT["AZURE_OPENAI_API_KEY"],
+            type="password",
+        )
+        AZURE_OPENAI_MODEL_VERSION = st.text_input(
+            "AZURE_OPENAI_MODEL_VERSION",
+            value=AZURE_DICT["AZURE_OPENAI_MODEL_VERSION"],
+        )
+
+        AZURE_AVAILABLE = all(
+            [
+                AZURE_OPENAI_BASE_URL,
+                AZURE_OPENAI_API_VERSION,
+                AZURE_OPENAI_DEPLOYMENT_NAME,
+                AZURE_OPENAI_API_KEY,
+                AZURE_OPENAI_MODEL_VERSION,
+            ],
+        )
+
 
 # --- LLM Instantiation ---
 if provider_api_key:
@@ -344,7 +400,18 @@ if provider_api_key:
             streaming=True,
             max_tokens=max_tokens,
         )
-
+elif AZURE_AVAILABLE and st.session_state.provider == "AZURE":
+    st.session_state.llm = AzureChatOpenAI(
+        openai_api_base=AZURE_OPENAI_BASE_URL,
+        openai_api_version=AZURE_OPENAI_API_VERSION,
+        deployment_name=AZURE_OPENAI_DEPLOYMENT_NAME,
+        openai_api_key=AZURE_OPENAI_API_KEY,
+        openai_api_type="azure",
+        model_version=AZURE_OPENAI_MODEL_VERSION,
+        temperature=temperature,
+        streaming=True,
+        max_tokens=max_tokens,
+    )
 
 # --- Chat History ---
 if len(STMEMORY.messages) == 0:

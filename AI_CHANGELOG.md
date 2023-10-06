@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Added Azure OpenAI environment variables to Kubernetes deployment](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f39ac3b55d8e57db36ff4a43a4b95dda1fa46e9d)
+Fri Oct 6 14:15:57 2023 -0400
+- In the Kubernetes resource configuration file, several environment variables related to Azure OpenAI have been added. These include the base URL, API version, deployment name, API key, and model version. The values for these variables are fetched from the 'langchain-streamlit-demo-secret' secret.
 ## [Bumped version from 0.0.12 to 0.0.13](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d767997980a751389dcbec81b1bcaa1c10267534)
 Fri Oct 6 14:03:44 2023 -0400
 - Updated the current_version in bumpver.toml from 0.0.12 to 0.0.13.

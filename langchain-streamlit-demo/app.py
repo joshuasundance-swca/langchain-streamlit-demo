@@ -14,29 +14,8 @@ from langchain.schema.retriever import BaseRetriever
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
-from defaults import (
-    MODEL_DICT,
-    SUPPORTED_MODELS,
-    DEFAULT_MODEL,
-    DEFAULT_SYSTEM_PROMPT,
-    MIN_TEMP,
-    MAX_TEMP,
-    DEFAULT_TEMP,
-    MIN_MAX_TOKENS,
-    MAX_MAX_TOKENS,
-    DEFAULT_MAX_TOKENS,
-    DEFAULT_LANGSMITH_PROJECT,
-    AZURE_DICT,
-    PROVIDER_KEY_DICT,
-    OPENAI_API_KEY,
-    MIN_CHUNK_SIZE,
-    MAX_CHUNK_SIZE,
-    DEFAULT_CHUNK_SIZE,
-    MIN_CHUNK_OVERLAP,
-    MAX_CHUNK_OVERLAP,
-    DEFAULT_CHUNK_OVERLAP,
-    DEFAULT_RETRIEVER_K,
-)
+from defaults import default_values
+
 from llm_resources import get_runnable, get_llm, get_texts_and_retriever, StreamHandler
 
 __version__ = "0.0.13"
@@ -81,12 +60,14 @@ RUN_COLLECTOR = RunCollectorCallbackHandler()
 @st.cache_data
 def get_texts_and_retriever_cacheable_wrapper(
     uploaded_file_bytes: bytes,
-    chunk_size: int = DEFAULT_CHUNK_SIZE,
-    chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
-    k: int = DEFAULT_RETRIEVER_K,
+    openai_api_key: str,
+    chunk_size: int = default_values.DEFAULT_CHUNK_SIZE,
+    chunk_overlap: int = default_values.DEFAULT_CHUNK_OVERLAP,
+    k: int = default_values.DEFAULT_RETRIEVER_K,
 ) -> Tuple[List[Document], BaseRetriever]:
     return get_texts_and_retriever(
         uploaded_file_bytes=uploaded_file_bytes,
+        openai_api_key=openai_api_key,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         k=k,
@@ -100,14 +81,14 @@ with sidebar:
 
     model = st.selectbox(
         label="Chat Model",
-        options=SUPPORTED_MODELS,
-        index=SUPPORTED_MODELS.index(DEFAULT_MODEL),
+        options=default_values.SUPPORTED_MODELS,
+        index=default_values.SUPPORTED_MODELS.index(default_values.DEFAULT_MODEL),
     )
 
-    st.session_state.provider = MODEL_DICT[model]
+    st.session_state.provider = default_values.MODEL_DICT[model]
 
     provider_api_key = (
-        PROVIDER_KEY_DICT.get(
+        default_values.PROVIDER_KEY_DICT.get(
             st.session_state.provider,
         )
         or st.text_input(
@@ -130,7 +111,7 @@ with sidebar:
         openai_api_key = (
             provider_api_key
             if st.session_state.provider == "OpenAI"
-            else OPENAI_API_KEY
+            else default_values.OPENAI_API_KEY
             or st.sidebar.text_input("OpenAI API Key: ", type="password")
         )
 
@@ -143,7 +124,7 @@ with sidebar:
         k = st.slider(
             label="Number of Chunks",
             help="How many document chunks will be used for context?",
-            value=DEFAULT_RETRIEVER_K,
+            value=default_values.DEFAULT_RETRIEVER_K,
             min_value=1,
             max_value=10,
         )
@@ -151,17 +132,17 @@ with sidebar:
         chunk_size = st.slider(
             label="Number of Tokens per Chunk",
             help="Size of each chunk of text",
-            min_value=MIN_CHUNK_SIZE,
-            max_value=MAX_CHUNK_SIZE,
-            value=DEFAULT_CHUNK_SIZE,
+            min_value=default_values.MIN_CHUNK_SIZE,
+            max_value=default_values.MAX_CHUNK_SIZE,
+            value=default_values.DEFAULT_CHUNK_SIZE,
         )
 
         chunk_overlap = st.slider(
             label="Chunk Overlap",
             help="Number of characters to overlap between chunks",
-            min_value=MIN_CHUNK_OVERLAP,
-            max_value=MAX_CHUNK_OVERLAP,
-            value=DEFAULT_CHUNK_OVERLAP,
+            min_value=default_values.MIN_CHUNK_OVERLAP,
+            max_value=default_values.MAX_CHUNK_OVERLAP,
+            value=default_values.DEFAULT_CHUNK_OVERLAP,
         )
 
         chain_type_help_root = (
@@ -198,8 +179,9 @@ with sidebar:
                 (
                     st.session_state.texts,
                     st.session_state.retriever,
-                ) = get_texts_and_retriever(
+                ) = get_texts_and_retriever_cacheable_wrapper(
                     uploaded_file_bytes=uploaded_file.getvalue(),
+                    openai_api_key=openai_api_key,
                     chunk_size=chunk_size,
                     chunk_overlap=chunk_overlap,
                     k=k,
@@ -216,7 +198,7 @@ with sidebar:
         system_prompt = (
             st.text_area(
                 "Custom Instructions",
-                DEFAULT_SYSTEM_PROMPT,
+                default_values.DEFAULT_SYSTEM_PROMPT,
                 help="Custom instructions to provide the language model to determine style, personality, etc.",
             )
             .strip()
@@ -226,84 +208,99 @@ with sidebar:
 
         temperature = st.slider(
             "Temperature",
-            min_value=MIN_TEMP,
-            max_value=MAX_TEMP,
-            value=DEFAULT_TEMP,
+            min_value=default_values.MIN_TEMP,
+            max_value=default_values.MAX_TEMP,
+            value=default_values.DEFAULT_TEMP,
             help="Higher values give more random results.",
         )
 
         max_tokens = st.slider(
             "Max Tokens",
-            min_value=MIN_MAX_TOKENS,
-            max_value=MAX_MAX_TOKENS,
-            value=DEFAULT_MAX_TOKENS,
+            min_value=default_values.MIN_MAX_TOKENS,
+            max_value=default_values.MAX_MAX_TOKENS,
+            value=default_values.DEFAULT_MAX_TOKENS,
             help="Higher values give longer results.",
         )
 
     # --- LangSmith Options ---
-    with st.expander("LangSmith Options", expanded=False):
-        LANGSMITH_API_KEY = st.text_input(
-            "LangSmith API Key (optional)",
-            type="password",
-            value=PROVIDER_KEY_DICT.get("LANGSMITH"),
-        )
+    LANGSMITH_API_KEY = default_values.PROVIDER_KEY_DICT.get("LANGSMITH")
+    LANGSMITH_PROJECT = (
+        default_values.DEFAULT_LANGSMITH_PROJECT or "langchain-streamlit-demo"
+    )
 
-        LANGSMITH_PROJECT = st.text_input(
-            "LangSmith Project Name",
-            value=DEFAULT_LANGSMITH_PROJECT or "langchain-streamlit-demo",
-        )
+    if default_values.SHOW_LANGSMITH_OPTIONS:
+        with st.expander("LangSmith Options", expanded=False):
+            LANGSMITH_API_KEY = st.text_input(
+                "LangSmith API Key (optional)",
+                value=LANGSMITH_API_KEY,
+                type="password",
+            )
 
-        if st.session_state.client is None and LANGSMITH_API_KEY:
-            st.session_state.client = Client(
-                api_url="https://api.smith.langchain.com",
-                api_key=LANGSMITH_API_KEY,
+            LANGSMITH_PROJECT = st.text_input(
+                "LangSmith Project Name",
+                value=LANGSMITH_PROJECT,
             )
-            st.session_state.ls_tracer = LangChainTracer(
-                project_name=LANGSMITH_PROJECT,
-                client=st.session_state.client,
-            )
+
+    if st.session_state.client is None and LANGSMITH_API_KEY:
+        st.session_state.client = Client(
+            api_url="https://api.smith.langchain.com",
+            api_key=LANGSMITH_API_KEY,
+        )
+        st.session_state.ls_tracer = LangChainTracer(
+            project_name=LANGSMITH_PROJECT,
+            client=st.session_state.client,
+        )
 
     # --- Azure Options ---
-    with st.expander("Azure Options", expanded=False):
-        AZURE_OPENAI_BASE_URL = st.text_input(
-            "AZURE_OPENAI_BASE_URL",
-            value=AZURE_DICT["AZURE_OPENAI_BASE_URL"],
-        )
+    AZURE_OPENAI_BASE_URL = default_values.AZURE_DICT["AZURE_OPENAI_BASE_URL"]
+    AZURE_OPENAI_API_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_API_VERSION"]
+    AZURE_OPENAI_DEPLOYMENT_NAME = default_values.AZURE_DICT[
+        "AZURE_OPENAI_DEPLOYMENT_NAME"
+    ]
+    AZURE_OPENAI_API_KEY = default_values.AZURE_DICT["AZURE_OPENAI_API_KEY"]
+    AZURE_OPENAI_MODEL_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_MODEL_VERSION"]
 
-        AZURE_OPENAI_API_VERSION = st.text_input(
-            "AZURE_OPENAI_API_VERSION",
-            value=AZURE_DICT["AZURE_OPENAI_API_VERSION"],
-        )
+    if default_values.SHOW_AZURE_OPTIONS:
+        with st.expander("Azure Options", expanded=False):
+            AZURE_OPENAI_BASE_URL = st.text_input(
+                "AZURE_OPENAI_BASE_URL",
+                value=AZURE_OPENAI_BASE_URL,
+            )
 
-        AZURE_OPENAI_DEPLOYMENT_NAME = st.text_input(
-            "AZURE_OPENAI_DEPLOYMENT_NAME",
-            value=AZURE_DICT["AZURE_OPENAI_DEPLOYMENT_NAME"],
-        )
+            AZURE_OPENAI_API_VERSION = st.text_input(
+                "AZURE_OPENAI_API_VERSION",
+                value=AZURE_OPENAI_API_VERSION,
+            )
 
-        AZURE_OPENAI_API_KEY = st.text_input(
-            "AZURE_OPENAI_API_KEY",
-            value=AZURE_DICT["AZURE_OPENAI_API_KEY"],
-            type="password",
-        )
+            AZURE_OPENAI_DEPLOYMENT_NAME = st.text_input(
+                "AZURE_OPENAI_DEPLOYMENT_NAME",
+                value=AZURE_OPENAI_DEPLOYMENT_NAME,
+            )
 
-        AZURE_OPENAI_MODEL_VERSION = st.text_input(
-            "AZURE_OPENAI_MODEL_VERSION",
-            value=AZURE_DICT["AZURE_OPENAI_MODEL_VERSION"],
-        )
+            AZURE_OPENAI_API_KEY = st.text_input(
+                "AZURE_OPENAI_API_KEY",
+                value=AZURE_OPENAI_API_KEY,
+                type="password",
+            )
 
-        AZURE_AVAILABLE = all(
-            [
-                AZURE_OPENAI_BASE_URL,
-                AZURE_OPENAI_API_VERSION,
-                AZURE_OPENAI_DEPLOYMENT_NAME,
-                AZURE_OPENAI_API_KEY,
-                AZURE_OPENAI_MODEL_VERSION,
-            ],
-        )
+            AZURE_OPENAI_MODEL_VERSION = st.text_input(
+                "AZURE_OPENAI_MODEL_VERSION",
+                value=AZURE_OPENAI_MODEL_VERSION,
+            )
+
+    AZURE_AVAILABLE = all(
+        [
+            AZURE_OPENAI_BASE_URL,
+            AZURE_OPENAI_API_VERSION,
+            AZURE_OPENAI_DEPLOYMENT_NAME,
+            AZURE_OPENAI_API_KEY,
+            AZURE_OPENAI_MODEL_VERSION,
+        ],
+    )
 
 
 # --- LLM Instantiation ---
-llm = get_llm(
+st.session_state.llm = get_llm(
     provider=st.session_state.provider,
     model=model,
     provider_api_key=provider_api_key,
@@ -384,6 +381,8 @@ if st.session_state.llm:
                 st.session_state.llm,
                 st.session_state.retriever,
                 MEMORY,
+                chat_prompt,
+                prompt,
             )
 
             # --- LLM call ---

@@ -1,9 +1,8 @@
 from tempfile import NamedTemporaryFile
 from typing import Tuple, List
 
-from langchain import LLMChain, FAISS
 from langchain.callbacks.base import BaseCallbackHandler
-from langchain.chains import RetrievalQA
+from langchain.chains import RetrievalQA, LLMChain
 from langchain.chat_models import (
     AzureChatOpenAI,
     ChatOpenAI,
@@ -15,8 +14,8 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.retrievers import BM25Retriever, EnsembleRetriever
 from langchain.schema import Document, BaseRetriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
 
-from app import chat_prompt, prompt, openai_api_key
 from defaults import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP, DEFAULT_RETRIEVER_K
 from qagen import get_rag_qa_gen_chain
 from summarize import get_rag_summarization_chain
@@ -28,6 +27,8 @@ def get_runnable(
     llm,
     retriever,
     memory,
+    chat_prompt,
+    summarization_prompt,
 ):
     if not use_document_chat:
         return LLMChain(
@@ -43,7 +44,7 @@ def get_runnable(
         )
     elif document_chat_chain_type == "Summarization":
         return get_rag_summarization_chain(
-            prompt,
+            summarization_prompt,
             retriever,
             llm,
         )
@@ -112,6 +113,7 @@ def get_llm(
 
 def get_texts_and_retriever(
     uploaded_file_bytes: bytes,
+    openai_api_key: str,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
     k: int = DEFAULT_RETRIEVER_K,

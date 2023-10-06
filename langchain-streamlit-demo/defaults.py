@@ -1,4 +1,6 @@
 import os
+from collections import namedtuple
+
 
 MODEL_DICT = {
     "gpt-3.5-turbo": "OpenAI",
@@ -41,6 +43,12 @@ AZURE_VARS = [
 
 AZURE_DICT = {v: os.environ.get(v, "") for v in AZURE_VARS}
 
+
+SHOW_LANGSMITH_OPTIONS = (
+    os.environ.get("SHOW_LANGSMITH_OPTIONS", "true").lower() == "true"
+)
+SHOW_AZURE_OPTIONS = os.environ.get("SHOW_AZURE_OPTIONS", "true").lower() == "true"
+
 PROVIDER_KEY_DICT = {
     "OpenAI": os.environ.get("OPENAI_API_KEY", ""),
     "Anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
@@ -60,3 +68,61 @@ MAX_CHUNK_OVERLAP = 10000
 DEFAULT_CHUNK_OVERLAP = 0
 
 DEFAULT_RETRIEVER_K = 4
+
+DEFAULT_VALUES = namedtuple(
+    "DEFAULT_VALUES",
+    [
+        "MODEL_DICT",
+        "SUPPORTED_MODELS",
+        "DEFAULT_MODEL",
+        "DEFAULT_SYSTEM_PROMPT",
+        "MIN_TEMP",
+        "MAX_TEMP",
+        "DEFAULT_TEMP",
+        "MIN_MAX_TOKENS",
+        "MAX_MAX_TOKENS",
+        "DEFAULT_MAX_TOKENS",
+        "DEFAULT_LANGSMITH_PROJECT",
+        "AZURE_VARS",
+        "AZURE_DICT",
+        "PROVIDER_KEY_DICT",
+        "OPENAI_API_KEY",
+        "MIN_CHUNK_SIZE",
+        "MAX_CHUNK_SIZE",
+        "DEFAULT_CHUNK_SIZE",
+        "MIN_CHUNK_OVERLAP",
+        "MAX_CHUNK_OVERLAP",
+        "DEFAULT_CHUNK_OVERLAP",
+        "DEFAULT_RETRIEVER_K",
+        "SHOW_LANGSMITH_OPTIONS",
+        "SHOW_AZURE_OPTIONS",
+    ],
+)
+
+
+default_values = DEFAULT_VALUES(
+    MODEL_DICT,
+    SUPPORTED_MODELS,
+    DEFAULT_MODEL,
+    DEFAULT_SYSTEM_PROMPT,
+    MIN_TEMP,
+    MAX_TEMP,
+    DEFAULT_TEMP,
+    MIN_MAX_TOKENS,
+    MAX_MAX_TOKENS,
+    DEFAULT_MAX_TOKENS,
+    DEFAULT_LANGSMITH_PROJECT,
+    AZURE_VARS,
+    AZURE_DICT,
+    PROVIDER_KEY_DICT,
+    OPENAI_API_KEY,
+    MIN_CHUNK_SIZE,
+    MAX_CHUNK_SIZE,
+    DEFAULT_CHUNK_SIZE,
+    MIN_CHUNK_OVERLAP,
+    MAX_CHUNK_OVERLAP,
+    DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_RETRIEVER_K,
+    SHOW_LANGSMITH_OPTIONS,
+    SHOW_AZURE_OPTIONS,
+)

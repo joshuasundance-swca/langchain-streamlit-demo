@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated environment variable name in Kubernetes config](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/62281947edc36d93259d723b8b4b63f3b9b646d1)
+Fri Oct 6 21:19:03 2023 -0400
+- In the Kubernetes configuration file 'resources.yaml', the environment variable name 'SHOW_LANGCHAIN_OPTIONS' was replaced with 'SHOW_LANGSMITH_OPTIONS'. This change reflects an update in the naming convention or the service being used.
 ## [Bumped application version to 0.0.14](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/eb059075d36e4b09269df5b75dbea1b0e4e22f11)
 Fri Oct 6 20:59:11 2023 -0400
 - Updated the version of the application in bumpver.toml, kubernetes/resources.yaml, and langchain-streamlit-demo/app.py from 0.0.13 to 0.0.14.

@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Bumped application version to 0.0.14](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/eb059075d36e4b09269df5b75dbea1b0e4e22f11)
+Fri Oct 6 20:59:11 2023 -0400
+- Updated the version of the application in bumpver.toml, kubernetes/resources.yaml, and langchain-streamlit-demo/app.py from 0.0.13 to 0.0.14.
 ## [Refactored app.py to use Streamlit session state for storing global variables](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/e9f7a777844336b99d3bc8c2270e77e2acb0e7e7)
 Fri Oct 6 20:47:25 2023 -0400
 - This commit refactors the app.py file of the langchain-streamlit-demo to use Streamlit's session state for storing global variables. This includes API keys, project names, and Azure configurations. A new function 'azure_state_or_default' has been introduced to update the session state for Azure configurations. This change allows for better state management and persistence across multiple sessions.

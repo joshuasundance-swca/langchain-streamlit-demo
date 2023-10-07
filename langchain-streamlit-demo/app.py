@@ -18,7 +18,7 @@ from defaults import default_values
 
 from llm_resources import get_runnable, get_llm, get_texts_and_retriever, StreamHandler
 
-__version__ = "0.0.13"
+__version__ = "0.0.14"
 
 # --- Initialization ---
 st.set_page_config(

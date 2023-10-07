@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Refactored app.py to use Streamlit session state for storing global variables](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/e9f7a777844336b99d3bc8c2270e77e2acb0e7e7)
+Fri Oct 6 20:47:25 2023 -0400
+- This commit refactors the app.py file of the langchain-streamlit-demo to use Streamlit's session state for storing global variables. This includes API keys, project names, and Azure configurations. A new function 'azure_state_or_default' has been introduced to update the session state for Azure configurations. This change allows for better state management and persistence across multiple sessions.
 ## [Added input field for Azure OpenAI EMB deployment name](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/b44c9a31a33a9b7d3b0e347a0ffe4ea31c068e81)
 Fri Oct 6 18:40:55 2023 -0400
 - An input field for the Azure OpenAI EMB deployment name has been added to the sidebar of the Streamlit application. This allows users to specify the name of their Azure OpenAI EMB deployment.

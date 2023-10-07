@@ -45,6 +45,15 @@ st_init_null(
     "run",
     "run_id",
     "trace_link",
+    "LANGSMITH_API_KEY",
+    "LANGSMITH_PROJECT",
+    "AZURE_OPENAI_BASE_URL",
+    "AZURE_OPENAI_API_VERSION",
+    "AZURE_OPENAI_DEPLOYMENT_NAME",
+    "AZURE_OPENAI_EMB_DEPLOYMENT_NAME",
+    "AZURE_OPENAI_API_KEY",
+    "AZURE_OPENAI_MODEL_VERSION",
+    "AZURE_AVAILABLE",
 )
 
 # --- LLM globals ---
@@ -54,41 +63,60 @@ MEMORY = ConversationBufferMemory(
     return_messages=True,
     memory_key="chat_history",
 )
+
 RUN_COLLECTOR = RunCollectorCallbackHandler()
 
-LANGSMITH_API_KEY = default_values.PROVIDER_KEY_DICT.get("LANGSMITH")
-LANGSMITH_PROJECT = (
+st.session_state.LANGSMITH_API_KEY = (
+    st.session_state.LANGSMITH_API_KEY
+    or default_values.PROVIDER_KEY_DICT.get("LANGSMITH")
+)
+
+st.session_state.LANGSMITH_PROJECT = st.session_state.LANGSMITH_PROJECT or (
     default_values.DEFAULT_LANGSMITH_PROJECT or "langchain-streamlit-demo"
 )
-AZURE_OPENAI_BASE_URL = default_values.AZURE_DICT["AZURE_OPENAI_BASE_URL"]
-AZURE_OPENAI_API_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_API_VERSION"]
-AZURE_OPENAI_DEPLOYMENT_NAME = default_values.AZURE_DICT["AZURE_OPENAI_DEPLOYMENT_NAME"]
-AZURE_OPENAI_EMB_DEPLOYMENT_NAME = default_values.AZURE_DICT[
-    "AZURE_OPENAI_EMB_DEPLOYMENT_NAME"
-]
-AZURE_OPENAI_API_KEY = default_values.AZURE_DICT["AZURE_OPENAI_API_KEY"]
-AZURE_OPENAI_MODEL_VERSION = default_values.AZURE_DICT["AZURE_OPENAI_MODEL_VERSION"]
 
-AZURE_AVAILABLE = all(
+
+def azure_state_or_default(*args):
+    st.session_state.update(
+        {
+            arg: st.session_state.get(arg) or default_values.AZURE_DICT.get(arg)
+            for arg in args
+        },
+    )
+
+
+azure_state_or_default(
+    "AZURE_OPENAI_BASE_URL",
+    "AZURE_OPENAI_API_VERSION",
+    "AZURE_OPENAI_DEPLOYMENT_NAME",
+    "AZURE_OPENAI_EMB_DEPLOYMENT_NAME",
+    "AZURE_OPENAI_API_KEY",
+    "AZURE_OPENAI_MODEL_VERSION",
+)
+
+st.session_state.AZURE_AVAILABLE = all(
     [
-        AZURE_OPENAI_BASE_URL,
-        AZURE_OPENAI_API_VERSION,
-        AZURE_OPENAI_DEPLOYMENT_NAME,
-        AZURE_OPENAI_API_KEY,
-        AZURE_OPENAI_MODEL_VERSION,
+        st.session_state.AZURE_OPENAI_BASE_URL,
+        st.session_state.AZURE_OPENAI_API_VERSION,
+        st.session_state.AZURE_OPENAI_DEPLOYMENT_NAME,
+        st.session_state.AZURE_OPENAI_API_KEY,
+        st.session_state.AZURE_OPENAI_MODEL_VERSION,
     ],
 )
 
-AZURE_EMB_AVAILABLE = AZURE_AVAILABLE and AZURE_OPENAI_EMB_DEPLOYMENT_NAME
+st.session_state.AZURE_EMB_AVAILABLE = (
+    st.session_state.AZURE_AVAILABLE
+    and st.session_state.AZURE_OPENAI_EMB_DEPLOYMENT_NAME
+)
 
 AZURE_KWARGS = (
     None
-    if not AZURE_EMB_AVAILABLE
+    if not st.session_state.AZURE_EMB_AVAILABLE
     else {
-        "openai_api_base": AZURE_OPENAI_BASE_URL,
-        "openai_api_version": AZURE_OPENAI_API_VERSION,
-        "deployment": AZURE_OPENAI_EMB_DEPLOYMENT_NAME,
-        "openai_api_key": AZURE_OPENAI_API_KEY,
+        "openai_api_base": st.session_state.AZURE_OPENAI_BASE_URL,
+        "openai_api_version": st.session_state.AZURE_OPENAI_API_VERSION,
+        "deployment": st.session_state.AZURE_OPENAI_EMB_DEPLOYMENT_NAME,
+        "openai_api_key": st.session_state.AZURE_OPENAI_API_KEY,
         "openai_api_type": "azure",
     }
 )
@@ -214,17 +242,14 @@ with sidebar:
             help=chain_type_help,
             disabled=not document_chat,
         )
-        use_azure = False
-
-        if AZURE_EMB_AVAILABLE:
-            use_azure = st.toggle(
-                label="Use Azure OpenAI",
-                value=AZURE_EMB_AVAILABLE,
-                help="Use Azure for embeddings instead of using OpenAI directly.",
-            )
+        use_azure = st.toggle(
+            label="Use Azure OpenAI",
+            value=st.session_state.AZURE_EMB_AVAILABLE,
+            help="Use Azure for embeddings instead of using OpenAI directly.",
+        )
 
         if uploaded_file:
-            if AZURE_EMB_AVAILABLE or openai_api_key:
+            if st.session_state.AZURE_EMB_AVAILABLE or openai_api_key:
                 (
                     st.session_state.texts,
                     st.session_state.retriever,
@@ -276,59 +301,59 @@ with sidebar:
     # --- LangSmith Options ---
     if default_values.SHOW_LANGSMITH_OPTIONS:
         with st.expander("LangSmith Options", expanded=False):
-            LANGSMITH_API_KEY = st.text_input(
+            st.session_state.LANGSMITH_API_KEY = st.text_input(
                 "LangSmith API Key (optional)",
-                value=LANGSMITH_API_KEY,
+                value=st.session_state.LANGSMITH_API_KEY,
                 type="password",
             )
 
-            LANGSMITH_PROJECT = st.text_input(
+            st.session_state.LANGSMITH_PROJECT = st.text_input(
                 "LangSmith Project Name",
-                value=LANGSMITH_PROJECT,
+                value=st.session_state.LANGSMITH_PROJECT,
             )
 
-    if st.session_state.client is None and LANGSMITH_API_KEY:
+    if st.session_state.client is None and st.session_state.LANGSMITH_API_KEY:
         st.session_state.client = Client(
             api_url="https://api.smith.langchain.com",
-            api_key=LANGSMITH_API_KEY,
+            api_key=st.session_state.LANGSMITH_API_KEY,
         )
         st.session_state.ls_tracer = LangChainTracer(
-            project_name=LANGSMITH_PROJECT,
+            project_name=st.session_state.LANGSMITH_PROJECT,
             client=st.session_state.client,
         )
 
     # --- Azure Options ---
     if default_values.SHOW_AZURE_OPTIONS:
         with st.expander("Azure Options", expanded=False):
-            AZURE_OPENAI_BASE_URL = st.text_input(
+            st.session_state.AZURE_OPENAI_BASE_URL = st.text_input(
                 "AZURE_OPENAI_BASE_URL",
-                value=AZURE_OPENAI_BASE_URL,
+                value=st.session_state.AZURE_OPENAI_BASE_URL,
             )
 
-            AZURE_OPENAI_API_VERSION = st.text_input(
+            st.session_state.AZURE_OPENAI_API_VERSION = st.text_input(
                 "AZURE_OPENAI_API_VERSION",
-                value=AZURE_OPENAI_API_VERSION,
+                value=st.session_state.AZURE_OPENAI_API_VERSION,
             )
 
-            AZURE_OPENAI_DEPLOYMENT_NAME = st.text_input(
+            st.session_state.AZURE_OPENAI_DEPLOYMENT_NAME = st.text_input(
                 "AZURE_OPENAI_DEPLOYMENT_NAME",
-                value=AZURE_OPENAI_DEPLOYMENT_NAME,
+                value=st.session_state.AZURE_OPENAI_DEPLOYMENT_NAME,
             )
 
-            AZURE_OPENAI_EMB_DEPLOYMENT_NAME = st.text_input(
+            st.session_state.AZURE_OPENAI_EMB_DEPLOYMENT_NAME = st.text_input(
                 "AZURE_OPENAI_EMB_DEPLOYMENT_NAME",
-                value=AZURE_OPENAI_EMB_DEPLOYMENT_NAME,
+                value=st.session_state.AZURE_OPENAI_EMB_DEPLOYMENT_NAME,
             )
 
-            AZURE_OPENAI_API_KEY = st.text_input(
+            st.session_state.AZURE_OPENAI_API_KEY = st.text_input(
                 "AZURE_OPENAI_API_KEY",
-                value=AZURE_OPENAI_API_KEY,
+                value=st.session_state.AZURE_OPENAI_API_KEY,
                 type="password",
             )
 
-            AZURE_OPENAI_MODEL_VERSION = st.text_input(
+            st.session_state.AZURE_OPENAI_MODEL_VERSION = st.text_input(
                 "AZURE_OPENAI_MODEL_VERSION",
-                value=AZURE_OPENAI_MODEL_VERSION,
+                value=st.session_state.AZURE_OPENAI_MODEL_VERSION,
             )
 
 
@@ -339,13 +364,13 @@ st.session_state.llm = get_llm(
     provider_api_key=provider_api_key,
     temperature=temperature,
     max_tokens=max_tokens,
-    azure_available=AZURE_AVAILABLE,
+    azure_available=st.session_state.AZURE_AVAILABLE,
     azure_dict={
-        "AZURE_OPENAI_BASE_URL": AZURE_OPENAI_BASE_URL,
-        "AZURE_OPENAI_API_VERSION": AZURE_OPENAI_API_VERSION,
-        "AZURE_OPENAI_DEPLOYMENT_NAME": AZURE_OPENAI_DEPLOYMENT_NAME,
-        "AZURE_OPENAI_API_KEY": AZURE_OPENAI_API_KEY,
-        "AZURE_OPENAI_MODEL_VERSION": AZURE_OPENAI_MODEL_VERSION,
+        "AZURE_OPENAI_BASE_URL": st.session_state.AZURE_OPENAI_BASE_URL,
+        "AZURE_OPENAI_API_VERSION": st.session_state.AZURE_OPENAI_API_VERSION,
+        "AZURE_OPENAI_DEPLOYMENT_NAME": st.session_state.AZURE_OPENAI_DEPLOYMENT_NAME,
+        "AZURE_OPENAI_API_KEY": st.session_state.AZURE_OPENAI_API_KEY,
+        "AZURE_OPENAI_MODEL_VERSION": st.session_state.AZURE_OPENAI_MODEL_VERSION,
     },
 )
 

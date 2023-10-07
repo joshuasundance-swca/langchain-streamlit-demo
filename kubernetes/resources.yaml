@@ -76,7 +76,7 @@ spec:
                 key: LANGCHAIN_API_KEY
           - name: LANGCHAIN_PROJECT
             value: "langchain-streamlit-demo"
-          - name: SHOW_LANGCHAIN_OPTIONS
+          - name: SHOW_LANGSMITH_OPTIONS
             value: "False"
           - name: SHOW_AZURE_OPTIONS
             value: "False"

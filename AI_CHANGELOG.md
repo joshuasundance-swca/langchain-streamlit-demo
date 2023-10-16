@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated several package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/cfa1e0b55c4f108b30ff6c7389668f1677f91437)
+Mon Oct 16 14:02:49 2023 -0400
+- Updated the version of langchain from 0.0.308 to 0.0.315.
+- Updated the version of langsmith from 0.0.43 to 0.0.44.
+- Updated the version of pypdf from 3.16.2 to 3.16.4.
 ## [Updated environment variable name in Kubernetes config](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/62281947edc36d93259d723b8b4b63f3b9b646d1)
 Fri Oct 6 21:19:03 2023 -0400
 - In the Kubernetes configuration file 'resources.yaml', the environment variable name 'SHOW_LANGCHAIN_OPTIONS' was replaced with 'SHOW_LANGSMITH_OPTIONS'. This change reflects an update in the naming convention or the service being used.

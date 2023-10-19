@@ -14,8 +14,10 @@ tags: [langchain, streamlit, docker]
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![python](https://img.shields.io/badge/Python-3.11-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
-[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&logo=docker&logoColor=white)](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
+[![Push to Docker Hub](https://github.com/joshuasundance-swca/langchain-streamlit-demo/actions/workflows/docker-hub.yml/badge.svg)](https://github.com/joshuasundance-swca/langchain-streamlit-demo/actions/workflows/docker-hub.yml)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/joshuasundance/langchain-streamlit-demo/latest)](https://hub.docker.com/r/joshuasundance/langchain-streamlit-demo)
+
+[![Push to HuggingFace Space](https://github.com/joshuasundance-swca/langchain-streamlit-demo/actions/workflows/hf-space.yml/badge.svg)](https://github.com/joshuasundance-swca/langchain-streamlit-demo/actions/workflows/hf-space.yml)
 [![Open HuggingFace Space](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/joshuasundance/langchain-streamlit-demo)
 
 ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/joshuasundance-swca/langchain-streamlit-demo)
@@ -29,6 +31,8 @@ tags: [langchain, streamlit, docker]
 
 [![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 ![Known Vulnerabilities](https://snyk.io/test/github/joshuasundance-swca/langchain-streamlit-demo/badge.svg)
+
+[![Update AI Changelog on Push to Main](https://github.com/joshuasundance-swca/langchain-streamlit-demo/actions/workflows/ai_changelog.yml/badge.svg)](https://github.com/joshuasundance-swca/langchain-streamlit-demo/actions/workflows/ai_changelog.yml)
 
 
 This project shows how to build a simple chatbot UI with [Streamlit](https://streamlit.io) and [LangChain](https://langchain.com).

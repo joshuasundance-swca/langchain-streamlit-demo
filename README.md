@@ -49,6 +49,8 @@ This `README` was originally written by [Claude 2](https://www.anthropic.com/ind
     - `meta-llama/Llama-2-13b-chat-hf`
     - `meta-llama/Llama-2-70b-chat-hf`
     - `codellama/CodeLlama-34b-Instruct-hf`
+  - [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/ai-services/openai-service/)
+    - `[configurable]`
 - Streaming output of assistant responses
 - Leverages LangChain for dialogue and memory management
 - Integrates with [LangSmith](https://smith.langchain.com) for tracing conversations
@@ -102,3 +104,4 @@ or
 - [OpenAI](https://openai.com/)
 - [Anthropic](https://www.anthropic.com/)
 - [Anyscale Endpoints](https://endpoints.anyscale.com/)
+- [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/ai-services/openai-service/)

@@ -1,4 +1,17 @@
 # AI CHANGELOG
+## [Updated badges in README](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/32f02019c445fb88beb73f00c6ffd0a17ff2a5d3)
+Thu Oct 19 15:19:10 2023 -0400
+- Replaced the Docker badge with a 'Push to Docker Hub' GitHub Actions workflow badge.
+- Added a 'Push to HuggingFace Space' GitHub Actions workflow badge.
+- Added an 'Update AI Changelog on Push to Main' GitHub Actions workflow badge.
+## [Added Azure OpenAI Service to README](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3353ff5eaa74c050414bf6b67ac590ac25d19f74)
+Thu Oct 19 11:08:36 2023 -0400
+- Updated README.md to include Azure OpenAI Service in the list of services and endpoints. A placeholder for configurable endpoints under Azure OpenAI Service has also been added.
+## [Added Black component to misc.xml and updated badges in README.md](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1fb27e8b839a4c3d526da009c05ef3c08a1c2786)
+Thu Oct 19 10:49:24 2023 -0400
+- The commit introduces two changes:
+- 1. A new Black component is added to the .idea/misc.xml file. This suggests that the Black Python code formatter has been configured for the project.
+- 2. The README.md file has been updated to include new badges for code maintainability, issues, technical debt, and known vulnerabilities. The order of the existing badges has also been rearranged.
 ## [Version Bump from 0.0.14 to 0.0.15](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/cc115e36633b7d899076da029c59dda03ca177ec)
 Mon Oct 16 14:09:34 2023 -0400
 - The version number has been increased from 0.0.14 to 0.0.15. This change has been reflected in the bumpver.toml file, the Kubernetes resources file, and the langchain-streamlit-demo app.py file. The Docker image used in the Kubernetes resources file has also been updated to reflect this new version number.

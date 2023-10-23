@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/839541a4fc5515d4554a36946001f1cee80f6fdc)
+Mon Oct 23 12:49:36 2023 -0400
+- Updated the versions of 'anthropic', 'langchain', and 'langsmith' in the requirements file. 'anthropic' is updated from version 0.3.11 to 0.5.0, 'langchain' from 0.0.315 to 0.0.320, and 'langsmith' from 0.0.44 to 0.0.49.
+## [Added 'validators' package to requirements](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a1e0ab15cde332cd8efcba310fb67e25cb990783)
+Fri Oct 20 22:54:23 2023 +0000
+- The 'validators' package was added to the requirements.txt file. This package is not directly required by the project, but it has been pinned by Snyk to version 0.21.0 or newer to avoid a potential vulnerability.
 ## [Updated badges in README](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/32f02019c445fb88beb73f00c6ffd0a17ff2a5d3)
 Thu Oct 19 15:19:10 2023 -0400
 - Replaced the Docker badge with a 'Push to Docker Hub' GitHub Actions workflow badge.

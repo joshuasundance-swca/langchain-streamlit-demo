@@ -53,6 +53,7 @@ This `README` was originally written by [Claude 2](https://www.anthropic.com/ind
     - `meta-llama/Llama-2-13b-chat-hf`
     - `meta-llama/Llama-2-70b-chat-hf`
     - `codellama/CodeLlama-34b-Instruct-hf`
+    - `mistralai/Mistral-7B-Instruct-v0.1`
   - [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/ai-services/openai-service/)
     - `[configurable]`
 - Streaming output of assistant responses

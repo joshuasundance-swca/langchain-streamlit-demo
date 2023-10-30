@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Updated langsmith package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/018041a3bdd72aaf3ab62b6eecba51ac18c93bcd)
+Mon Oct 30 12:50:15 2023 +0000
+- The langsmith package version in requirements.txt has been updated from 0.0.49 to 0.0.53. This update might include bug fixes, new features, or improvements.
+## [Updated langchain version in requirements](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1215664e1bcb9b0a1f7f90a608fa16dc68dbbd0a)
+Mon Oct 30 12:49:54 2023 +0000
+- The langchain package version in requirements.txt has been updated from 0.0.320 to 0.0.325. This update might include bug fixes, security patches or new features.
 ## [Bump version from 0.0.15 to 0.0.16](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/04871e0362967e38aceb00aa4fd13818a793ff1a)
 Mon Oct 23 12:57:22 2023 -0400
 - Updated the current version in bumpver.toml from 0.0.15 to 0.0.16.

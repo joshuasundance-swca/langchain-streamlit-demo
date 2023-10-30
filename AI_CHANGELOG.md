@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated project version to 0.1.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/bbb9f000d8907e12c2aea643fb01e234b8d771bc)
+Mon Oct 30 12:03:02 2023 -0400
+- The project's version number has been updated from 0.0.16 to 0.1.0 in the bumpver.toml file, kubernetes resource file, and the main application file.
 ## [Added mistralai/Mistral-7B-Instruct-v0.1 to Anyscale Endpoints](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d8cef94cffde0307292685d7273a0bf7a0974d02)
 Mon Oct 30 11:31:43 2023 -0400
 - In the README.md file, a new endpoint mistralai/Mistral-7B-Instruct-v0.1 was added under the section of Anyscale Endpoints.

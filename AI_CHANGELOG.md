@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Added mistralai/Mistral-7B-Instruct-v0.1 to Anyscale Endpoints](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d8cef94cffde0307292685d7273a0bf7a0974d02)
+Mon Oct 30 11:31:43 2023 -0400
+- In the README.md file, a new endpoint mistralai/Mistral-7B-Instruct-v0.1 was added under the section of Anyscale Endpoints.
+- In the defaults.py file, the same endpoint was added to the MODEL_DICT dictionary under the key-value pair 'mistralai/Mistral-7B-Instruct-v0.1': 'Anyscale Endpoints'.
+- The SUPPORTED_MODELS list was updated accordingly to include this new endpoint.
 ## [Updated langsmith package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/018041a3bdd72aaf3ab62b6eecba51ac18c93bcd)
 Mon Oct 30 12:50:15 2023 +0000
 - The langsmith package version in requirements.txt has been updated from 0.0.49 to 0.0.53. This update might include bug fixes, new features, or improvements.

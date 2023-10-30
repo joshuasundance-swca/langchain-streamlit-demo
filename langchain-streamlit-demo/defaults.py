@@ -11,6 +11,7 @@ MODEL_DICT = {
     "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
     "codellama/CodeLlama-34b-Instruct-hf": "Anyscale Endpoints",
+    "mistralai/Mistral-7B-Instruct-v0.1": "Anyscale Endpoints",
     "Azure OpenAI": "Azure OpenAI",
 }
 

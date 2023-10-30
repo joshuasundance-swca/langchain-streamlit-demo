@@ -6,7 +6,7 @@ numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
 openai==0.28.1
 pypdf==3.16.4
 rank_bm25==0.2.2
-streamlit==1.27.2
+streamlit==1.28.0
 streamlit-feedback==0.1.2
 tiktoken==0.5.1
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability

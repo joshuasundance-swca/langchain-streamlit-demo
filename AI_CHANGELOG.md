@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Bumped application version from 0.1.1 to 0.1.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a51a26dd0cf4b33726ac3aa84b41acc103b0c06f)
+Wed Nov 1 16:03:52 2023 -0400
+- Updated the application version in bumpver.toml, resources.yaml, and app.py. This includes the version used for the Docker image in the Kubernetes deployment configuration.
 ## [Updated default checkbox value and removed initial chatbot message](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3d59c85771f67f633f9498ffa3705880576de914)
 Wed Nov 1 15:51:00 2023 -0400
 - Changed the default value of the 'Document Chat' checkbox to be true if a file is uploaded and false if not.

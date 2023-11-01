@@ -186,7 +186,7 @@ with sidebar:
 
         document_chat = st.checkbox(
             "Document Chat",
-            value=False,
+            value=True if uploaded_file else False,
             help="Uploaded document will provide context for the chat.",
         )
 
@@ -240,7 +240,6 @@ with sidebar:
             ],
             index=0,
             help=chain_type_help,
-            disabled=not document_chat,
         )
         use_azure = st.toggle(
             label="Use Azure OpenAI",
@@ -375,9 +374,6 @@ st.session_state.llm = get_llm(
 )
 
 # --- Chat History ---
-if len(STMEMORY.messages) == 0:
-    STMEMORY.add_ai_message("Hello! I'm a helpful AI chatbot. Ask me a question!")
-
 for msg in STMEMORY.messages:
     st.chat_message(
         msg.type,

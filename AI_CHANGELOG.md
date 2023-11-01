@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated default checkbox value and removed initial chatbot message](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3d59c85771f67f633f9498ffa3705880576de914)
+Wed Nov 1 15:51:00 2023 -0400
+- Changed the default value of the 'Document Chat' checkbox to be true if a file is uploaded and false if not.
+- Removed the condition that disables the 'Chain Type' dropdown when 'Document Chat' is not selected.
+- Eliminated the automatic 'Hello! I'm a helpful AI chatbot. Ask me a question!' message when the chat history is empty.
 ## [Version Bump to 0.1.1](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/fc0e83182e47a9f41465fa815b286455b10e78f9)
 Wed Nov 1 13:58:11 2023 -0400
 - This commit represents a version bump from 0.1.0 to 0.1.1. Changes were made in the bumpver.toml file to update the current version. The Docker image reference in the Kubernetes resources.yaml file was also updated to reflect the new version. Lastly, the __version__ variable in the langchain-streamlit-demo/app.py file was updated.

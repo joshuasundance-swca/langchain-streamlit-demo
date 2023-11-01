@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Version Bump to 0.1.1](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/fc0e83182e47a9f41465fa815b286455b10e78f9)
+Wed Nov 1 13:58:11 2023 -0400
+- This commit represents a version bump from 0.1.0 to 0.1.1. Changes were made in the bumpver.toml file to update the current version. The Docker image reference in the Kubernetes resources.yaml file was also updated to reflect the new version. Lastly, the __version__ variable in the langchain-streamlit-demo/app.py file was updated.
 ## [Handled additional exception in app.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/8a23b378977a263201791101e5a0ebc56e4f5f05)
 Wed Nov 1 13:55:35 2023 -0400
 - Updated the exception handling in app.py to include LangSmithNotFoundError along with the existing LangSmithError. This change improves the robustness of the error handling mechanism.

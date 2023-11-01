@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Handled additional exception in app.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/8a23b378977a263201791101e5a0ebc56e4f5f05)
+Wed Nov 1 13:55:35 2023 -0400
+- Updated the exception handling in app.py to include LangSmithNotFoundError along with the existing LangSmithError. This change improves the robustness of the error handling mechanism.
 ## [Updated project version to 0.1.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/bbb9f000d8907e12c2aea643fb01e234b8d771bc)
 Mon Oct 30 12:03:02 2023 -0400
 - The project's version number has been updated from 0.0.16 to 0.1.0 in the bumpver.toml file, kubernetes resource file, and the main application file.

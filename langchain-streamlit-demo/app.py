@@ -467,7 +467,10 @@ if st.session_state.llm:
                         st.session_state.trace_link = st.session_state.client.read_run(
                             st.session_state.run_id,
                         ).url
-                    except langsmith.utils.LangSmithError:
+                    except (
+                        langsmith.utils.LangSmithError,
+                        langsmith.utils.LangSmithNotFoundError,
+                    ):
                         st.session_state.trace_link = None
 
     # --- LangSmith Trace Link ---

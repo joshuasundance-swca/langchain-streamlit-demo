@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated project version to 0.2.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/97d4687085a8c28a8c0a3a082e9cfa70d2fe853e)
+Fri Nov 10 21:30:40 2023 -0500
+- The version number in bumpver.toml has been updated from 0.1.2 to 0.2.0.
+- In the Kubernetes resources.yaml file, the image version of langchain-streamlit-demo has been updated to reflect the new version.
+- The __version__ variable in the app.py file of the langchain-streamlit-demo project has also been updated to 0.2.0.
 ## [Updated pillow library version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f61858c54e1a37f8a7a734ca2c84c66cd62d77e4)
 Sat Nov 11 02:07:34 2023 +0000
 - The pillow library version was updated from 10.0.0 to 10.0.1 in the requirements.txt file. This change was made to avoid a vulnerability.

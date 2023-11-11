@@ -8,7 +8,7 @@ pre_commit_hook = ""
 post_commit_hook = ""
 commit = true
 tag = true
-push = false
+push = true
 
 [bumpver.file_patterns]
 "bumpver.toml" = [

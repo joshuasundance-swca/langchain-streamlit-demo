@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d4691b420e22e6b27a3d968f1295d97bb3191376)
+Fri Nov 10 21:04:08 2023 -0500
+- Updated the versions of the 'langchain', 'langsmith', and 'streamlit' packages in the requirements.txt file.
+- Added 'pillow' and 'pyarrow' packages to the requirements.txt file.
+- These changes ensure that the project is using the latest and most secure versions of the dependencies.
 ## [Bumped application version from 0.1.1 to 0.1.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a51a26dd0cf4b33726ac3aa84b41acc103b0c06f)
 Wed Nov 1 16:03:52 2023 -0400
 - Updated the application version in bumpver.toml, resources.yaml, and app.py. This includes the version used for the Docker image in the Kubernetes deployment configuration.

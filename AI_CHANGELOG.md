@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated pillow library version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f61858c54e1a37f8a7a734ca2c84c66cd62d77e4)
+Sat Nov 11 02:07:34 2023 +0000
+- The pillow library version was updated from 10.0.0 to 10.0.1 in the requirements.txt file. This change was made to avoid a vulnerability.
 ## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d4691b420e22e6b27a3d968f1295d97bb3191376)
 Fri Nov 10 21:04:08 2023 -0500
 - Updated the versions of the 'langchain', 'langsmith', and 'streamlit' packages in the requirements.txt file.

@@ -1,6 +1,6 @@
 anthropic==0.5.0
 faiss-cpu==1.7.4
-langchain==0.0.334
+langchain==0.0.335
 langsmith==0.0.63
 numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
 openai==0.28.1

@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated version from 0.2.0 to 0.3.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/2d1ba795654b4c65e705f42a92eae7a382cc8e66)
+Mon Nov 27 16:46:11 2023 -0500
+- The version number has been updated from 0.2.0 to 0.3.0 in multiple files. This includes the bumpver.toml, which controls the project versioning, the Kubernetes resources.yaml, which specifies the Docker image version to use, and the main app.py file, which includes a version number for display in the web app.
 ## [Updated caching decorator and minor code formatting](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/5cdfa32bdb13c91564a4e175bafe1bc04414d1d8)
 Mon Nov 27 14:47:58 2023 -0600
 - Replaced the `@st.cache_data` decorator with `@st.cache_resource` in `app.py` for the `get_texts_and_retriever_cacheable_wrapper` function. This change might be due to an update in the library or to utilize a more suitable caching method.

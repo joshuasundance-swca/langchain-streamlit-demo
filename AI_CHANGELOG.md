@@ -1,4 +1,23 @@
 # AI CHANGELOG
+## [Updated caching decorator and minor code formatting](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/5cdfa32bdb13c91564a4e175bafe1bc04414d1d8)
+Mon Nov 27 14:47:58 2023 -0600
+- Replaced the `@st.cache_data` decorator with `@st.cache_resource` in `app.py` for the `get_texts_and_retriever_cacheable_wrapper` function. This change might be due to an update in the library or to utilize a more suitable caching method.
+- In `llm_resources.py`, removed an unnecessary line break and added a space for better code readability.
+## [Updated OpenAI library version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a88ba2b3040ffff0c93d1c6159b6120091f76e37)
+Mon Nov 27 12:36:16 2023 +0000
+- The OpenAI library version in the project's requirements has been updated from 0.28.1 to 1.3.5. This update may include new features, bug fixes, or performance improvements from the library.
+## [Updated langsmith package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/b3a6aa254b2acd40593ef0b0167e061cd5beb448)
+Mon Nov 27 12:36:12 2023 +0000
+- The langsmith package version in requirements.txt was updated from 0.0.63 to 0.0.66.
+## [Updated langchain version in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d6340145557e4727e4521c530efa8abe16060882)
+Mon Nov 27 12:36:07 2023 +0000
+- The langchain package version has been updated from 0.0.334 to 0.0.340 in the requirements.txt file. This update may include new features, bug fixes, or performance improvements.
+## [Updated anthropic package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/264cec5ebc6b618397d3b9449bf5277c3ad53c96)
+Mon Nov 27 12:36:01 2023 +0000
+- The anthropic package version in requirements.txt was updated from 0.5.0 to 0.7.4. No other dependencies were changed.
+## [Updated pypdf version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/325c8315d4b388c71776a939a5267776940b26ce)
+Mon Nov 20 12:35:08 2023 +0000
+- The pypdf library was updated from version 3.17.0 to 3.17.1 in the requirements.txt file.
 ## [Updated project version to 0.2.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/97d4687085a8c28a8c0a3a082e9cfa70d2fe853e)
 Fri Nov 10 21:30:40 2023 -0500
 - The version number in bumpver.toml has been updated from 0.1.2 to 0.2.0.

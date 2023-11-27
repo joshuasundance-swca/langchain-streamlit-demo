@@ -122,7 +122,7 @@ AZURE_KWARGS = (
 )
 
 
-@st.cache_data
+@st.cache_resource
 def get_texts_and_retriever_cacheable_wrapper(
     uploaded_file_bytes: bytes,
     openai_api_key: str,

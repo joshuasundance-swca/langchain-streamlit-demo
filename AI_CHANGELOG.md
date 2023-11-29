@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Upgraded project version from 0.3.0 to 1.0.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a338494f3816bbb77360d2f43a515d1cc39cd760)
+Wed Nov 29 16:05:50 2023 -0500
+- Updated the current version in bumpver.toml from 0.3.0 to 1.0.0.
+- Modified the Docker image version in kubernetes/resources.yaml from joshuasundance/langchain-streamlit-demo:0.3.0 to joshuasundance/langchain-streamlit-demo:1.0.0.
+- Changed the __version__ variable in langchain-streamlit-demo/app.py from 0.3.0 to 1.0.0.
 ## [Updated model list, library versions, and code formatting](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3ca1115e20d1709f4ede77b0ce63fafcf42a362c)
 Wed Nov 29 16:01:38 2023 -0500
 - 1. In the 'defaults.py' file, the list of models was updated. New models were added and existing model names were updated.

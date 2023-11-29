@@ -5,13 +5,17 @@ from collections import namedtuple
 MODEL_DICT = {
     "gpt-3.5-turbo": "OpenAI",
     "gpt-4": "OpenAI",
-    "claude-instant-v1": "Anthropic",
+    "gpt-4-1106-preview": "OpenAI",
+    "claude-instant-1": "Anthropic",
+    "claude-instant-1.2": "Anthropic",
     "claude-2": "Anthropic",
+    "claude-2.1": "Anthropic",
     "meta-llama/Llama-2-7b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-13b-chat-hf": "Anyscale Endpoints",
     "meta-llama/Llama-2-70b-chat-hf": "Anyscale Endpoints",
     "codellama/CodeLlama-34b-Instruct-hf": "Anyscale Endpoints",
     "mistralai/Mistral-7B-Instruct-v0.1": "Anyscale Endpoints",
+    "HuggingFaceH4/zephyr-7b-beta": "Anyscale Endpoints",
     "Azure OpenAI": "Azure OpenAI",
 }
 

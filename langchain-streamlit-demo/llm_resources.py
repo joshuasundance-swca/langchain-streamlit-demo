@@ -110,6 +110,7 @@ def get_llm(
 
     return None
 
+
 def get_texts_and_retriever(
     uploaded_file_bytes: bytes,
     openai_api_key: str,
@@ -145,7 +146,7 @@ def get_texts_and_retriever(
             retrievers=[bm25_retriever, faiss_retriever],
             weights=[0.5, 0.5],
         )
-        
+
         return texts, ensemble_retriever
 
 

@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated model list, library versions, and code formatting](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3ca1115e20d1709f4ede77b0ce63fafcf42a362c)
+Wed Nov 29 16:01:38 2023 -0500
+- 1. In the 'defaults.py' file, the list of models was updated. New models were added and existing model names were updated.
+- 2. In the 'llm_resources.py' file, a minor code formatting change was made.
+- 3. In the 'requirements.txt' file, the versions of several libraries were updated, including 'anthropic', 'langchain', 'langsmith', and 'openai'.
 ## [Updated version from 0.2.0 to 0.3.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/2d1ba795654b4c65e705f42a92eae7a382cc8e66)
 Mon Nov 27 16:46:11 2023 -0500
 - The version number has been updated from 0.2.0 to 0.3.0 in multiple files. This includes the bumpver.toml, which controls the project versioning, the Kubernetes resources.yaml, which specifies the Docker image version to use, and the main app.py file, which includes a version number for display in the web app.

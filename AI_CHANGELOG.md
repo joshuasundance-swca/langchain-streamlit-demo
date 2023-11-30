@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated version to 1.0.1](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d15b0d2767d9647dd0b05649e5c1d008fa56920e)
+Thu Nov 30 15:19:39 2023 -0500
+- The version number in bumpver.toml, the Docker image tag in kubernetes/resources.yaml and the version in langchain-streamlit-demo/app.py have been updated from 1.0.0 to 1.0.1.
 ## [Refactored error handling and added support for AzureOpenAIEmbeddings](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/ead1471ab8d44f8e1ad885100ba614a8a589de5a)
 Thu Nov 30 15:12:53 2023 -0500
 - This commit includes two main changes. First, the error handling in 'app.py' was refactored to correct the namespace for 'openai.AuthenticationError'.

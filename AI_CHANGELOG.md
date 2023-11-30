@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Refactored error handling and added support for AzureOpenAIEmbeddings](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/ead1471ab8d44f8e1ad885100ba614a8a589de5a)
+Thu Nov 30 15:12:53 2023 -0500
+- This commit includes two main changes. First, the error handling in 'app.py' was refactored to correct the namespace for 'openai.AuthenticationError'.
+- Second, in 'llm_resources.py', the code was updated to include support for 'AzureOpenAIEmbeddings' in addition to the existing 'OpenAIEmbeddings'. This allows the application to use either OpenAI's standard embeddings or Azure's version, depending on the provided configuration.
 ## [Upgraded project version from 0.3.0 to 1.0.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/a338494f3816bbb77360d2f43a515d1cc39cd760)
 Wed Nov 29 16:05:50 2023 -0500
 - Updated the current version in bumpver.toml from 0.3.0 to 1.0.0.

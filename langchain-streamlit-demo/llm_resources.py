@@ -10,7 +10,7 @@ from langchain.chat_models import (
     ChatAnyscale,
 )
 from langchain.document_loaders import PyPDFLoader
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from langchain.retrievers import BM25Retriever, EnsembleRetriever
 from langchain.schema import Document, BaseRetriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -134,7 +134,9 @@ def get_texts_and_retriever(
         embeddings_kwargs = {"openai_api_key": openai_api_key}
         if use_azure and azure_kwargs:
             embeddings_kwargs.update(azure_kwargs)
-        embeddings = OpenAIEmbeddings(**embeddings_kwargs)
+            embeddings = AzureOpenAIEmbeddings(**embeddings_kwargs)
+        else:
+            embeddings = OpenAIEmbeddings(**embeddings_kwargs)
 
         bm25_retriever = BM25Retriever.from_documents(texts)
         bm25_retriever.k = k

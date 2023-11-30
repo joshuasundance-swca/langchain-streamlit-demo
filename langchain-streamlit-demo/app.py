@@ -443,7 +443,7 @@ if st.session_state.llm:
             try:
                 full_response = st.session_state.chain.invoke(prompt, config)
 
-            except (openai.error.AuthenticationError, anthropic.AuthenticationError):
+            except (openai.AuthenticationError, anthropic.AuthenticationError):
                 st.error(
                     f"Please enter a valid {st.session_state.provider} API key.",
                     icon="❌",

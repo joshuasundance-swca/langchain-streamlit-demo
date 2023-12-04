@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Update version from 1.0.1 to 1.0.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/8fee298d3553974031cad83e42e34b6559df5fe5)
+Mon Dec 4 11:27:10 2023 -0500
+- The version number has been updated in the following files: `bumpver.toml` (the project's version control file), `kubernetes/resources.yaml` (the Kubernetes resources configuration file), and `langchain-streamlit-demo/app.py` (the application's main Python file).
+- In `bumpver.toml`, the `current_version` variable has been updated to `1.0.2`.
+- In `kubernetes/resources.yaml`, the Docker image version has been updated to `1.0.2`.
+- In `langchain-streamlit-demo/app.py`, the `__version__` variable has been updated to `1.0.2`.
 ## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3d7adb3b01d4565d59e4b999c69e2d554fab9f02)
 Mon Dec 4 11:11:37 2023 -0500
 - This commit updates the versions of several packages in the requirements.txt file. The updated packages include 'langchain', 'langsmith', 'openai', 'streamlit', and 'tiktoken'.

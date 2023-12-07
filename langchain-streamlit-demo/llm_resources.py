@@ -133,6 +133,7 @@ def get_texts_and_retriever(
         texts = text_splitter.split_documents(documents)
         embeddings_kwargs = {"openai_api_key": openai_api_key}
         if use_azure and azure_kwargs:
+            azure_kwargs["azure_endpoint"] = azure_kwargs.pop("openai_api_base")
             embeddings_kwargs.update(azure_kwargs)
             embeddings = AzureOpenAIEmbeddings(**embeddings_kwargs)
         else:

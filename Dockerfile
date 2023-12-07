@@ -11,7 +11,7 @@ RUN pip install --user --no-cache-dir --upgrade pip
 COPY ./requirements.txt /home/appuser/requirements.txt
 RUN pip install --user --no-cache-dir  --upgrade -r /home/appuser/requirements.txt
 
-COPY ./langchain-streamlit-demo/* /home/appuser/langchain-streamlit-demo/
+COPY ./langchain-streamlit-demo/ /home/appuser/langchain-streamlit-demo/
 
 WORKDIR /home/appuser/langchain-streamlit-demo
 EXPOSE 7860

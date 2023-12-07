@@ -69,7 +69,7 @@ def get_llm(
 ):
     if azure_available and provider == "Azure OpenAI":
         return AzureChatOpenAI(
-            openai_api_base=azure_dict["AZURE_OPENAI_BASE_URL"],
+            azure_endpoint=azure_dict["AZURE_OPENAI_BASE_URL"],
             openai_api_version=azure_dict["AZURE_OPENAI_API_VERSION"],
             deployment_name=azure_dict["AZURE_OPENAI_DEPLOYMENT_NAME"],
             openai_api_key=azure_dict["AZURE_OPENAI_API_KEY"],

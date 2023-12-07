@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated Azure endpoint configuration in embeddings_kwargs](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/56dd4e0c90ab9ec09be58c184e6bf100398c9be8)
+Thu Dec 7 11:00:31 2023 -0500
+- This commit modifies the 'get_texts_and_retriever' function in the 'llm_resources.py' file.
+- If 'use_azure' is True and 'azure_kwargs' is provided, the 'azure_endpoint' is now set with the value from 'openai_api_base'.
+- This update ensures that the correct Azure endpoint is used when creating AzureOpenAIEmbeddings.
 ## [Bumped version from 1.0.2 to 1.0.3](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1c0c6c5c2e58321a2dd5f58c079c070d601e315c)
 Thu Dec 7 10:25:07 2023 -0500
 - Updated the version number in bumpver.toml, the Docker image version in the Kubernetes resources.yaml, and the application version in the app.py file of the langchain-streamlit-demo.

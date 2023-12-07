@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Refactored variable name in AzureChatOpenAI constructor](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/17f45e34541f6182f43665bf6c0fe66b2a725eb8)
+Thu Dec 7 10:21:30 2023 -0500
+- Changed the variable name 'openai_api_base' to 'azure_endpoint' in the AzureChatOpenAI constructor for clarity and consistency.
 ## [Update version from 1.0.1 to 1.0.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/8fee298d3553974031cad83e42e34b6559df5fe5)
 Mon Dec 4 11:27:10 2023 -0500
 - The version number has been updated in the following files: `bumpver.toml` (the project's version control file), `kubernetes/resources.yaml` (the Kubernetes resources configuration file), and `langchain-streamlit-demo/app.py` (the application's main Python file).

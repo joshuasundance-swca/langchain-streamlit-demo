@@ -11,10 +11,15 @@ from langchain.chat_models import (
 )
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import AzureOpenAIEmbeddings, OpenAIEmbeddings
-from langchain.retrievers import BM25Retriever, EnsembleRetriever
+from langchain.retrievers import EnsembleRetriever
 from langchain.schema import Document, BaseRetriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
+
+from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain.retrievers.multi_vector import MultiVectorRetriever
+from langchain.storage import InMemoryStore
+import uuid
 
 from defaults import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP, DEFAULT_RETRIEVER_K
 from qagen import get_rag_qa_gen_chain
@@ -111,7 +116,7 @@ def get_llm(
     return None
 
 
-def get_texts_and_retriever(
+def get_texts_and_multiretriever(
     uploaded_file_bytes: bytes,
     openai_api_key: str,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
@@ -127,10 +132,23 @@ def get_texts_and_retriever(
         loader = PyPDFLoader(temp_file.name)
         documents = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
+            chunk_size=10000,
+            chunk_overlap=0,
         )
+        child_text_splitter = RecursiveCharacterTextSplitter(chunk_size=400)
+
         texts = text_splitter.split_documents(documents)
+        id_key = "doc_id"
+
+        text_ids = [str(uuid.uuid4()) for _ in texts]
+        sub_texts = []
+        for i, text in enumerate(texts):
+            _id = text_ids[i]
+            _sub_texts = child_text_splitter.split_documents([text])
+            for _text in _sub_texts:
+                _text.metadata[id_key] = _id
+            sub_texts.extend(_sub_texts)
+
         embeddings_kwargs = {"openai_api_key": openai_api_key}
         if use_azure and azure_kwargs:
             azure_kwargs["azure_endpoint"] = azure_kwargs.pop("openai_api_base")
@@ -138,19 +156,35 @@ def get_texts_and_retriever(
             embeddings = AzureOpenAIEmbeddings(**embeddings_kwargs)
         else:
             embeddings = OpenAIEmbeddings(**embeddings_kwargs)
+        store = InMemoryStore()
 
-        bm25_retriever = BM25Retriever.from_documents(texts)
-        bm25_retriever.k = k
+        # MultiVectorRetriever
+        multivectorstore = FAISS.from_documents(sub_texts, embeddings)
+        multivector_retriever = MultiVectorRetriever(
+            vectorstore=multivectorstore,
+            docstore=store,
+            id_key=id_key,
+        )
+        multivector_retriever.docstore.mset(list(zip(text_ids, texts)))
+        # multivector_retriever.k = k
 
-        faiss_vectorstore = FAISS.from_documents(texts, embeddings)
-        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": k})
-
-        ensemble_retriever = EnsembleRetriever(
-            retrievers=[bm25_retriever, faiss_retriever],
-            weights=[0.5, 0.5],
+        multiquery_text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+        # MultiQueryRetriever
+        multiquery_texts = multiquery_text_splitter.split_documents(documents)
+        multiquerystore = FAISS.from_documents(multiquery_texts, embeddings)
+        multiquery_retriever = MultiQueryRetriever.from_llm(
+            retriever=multiquerystore.as_retriever(search_kwargs={"k": k}),
+            llm=ChatOpenAI(),
         )
 
-        return texts, ensemble_retriever
+        ensemble_retriever = EnsembleRetriever(
+            retrievers=[multiquery_retriever, multivector_retriever],
+            weights=[0.5, 0.5],
+        )
+        return multiquery_texts, ensemble_retriever
 
 
 class StreamHandler(BaseCallbackHandler):

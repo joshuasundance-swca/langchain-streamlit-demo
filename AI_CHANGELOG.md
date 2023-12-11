@@ -1,4 +1,24 @@
 # AI CHANGELOG
+## [Removed BM25Retriever and related dependencies](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/c132355839f407ff11494aeee4ff361a7646e913)
+Mon Dec 11 12:31:16 2023 -0500
+- In this commit, the use of the BM25Retriever and its related dependencies were removed from the project. This included changes in the 'app.py' and 'llm_resources.py' files where the retriever was being used. The 'get_texts_and_retriever' function was removed from 'llm_resources.py' as it was no longer needed. Additionally, the 'rank_bm25' library was removed from the project's requirements in the 'requirements.txt' file.
+## [Updated retriever function and imports in app.py and llm_resources.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/e8b1107dfef3f5b1bb104b9e4d1f98095a2228ff)
+Mon Dec 11 10:27:19 2023 -0600
+- In the app.py file, the import statement was updated to include the 'get_texts_and_multiretriever' function from the 'llm_resources' module. The function 'get_texts_and_retriever_cacheable_wrapper' was also updated to call 'get_texts_and_multiretriever' instead of 'get_texts_and_retriever'.
+- In the llm_resources.py file, the function 'get_texts_and_retriever2' was renamed to 'get_texts_and_multiretriever'.
+## [Updated OpenAI package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/cc740341e378b46896457ff83048b981ff8eadc2)
+Mon Dec 11 12:44:43 2023 +0000
+- The OpenAI package version in requirements.txt was updated from 1.3.7 to 1.3.8.
+## [Updated pypdf version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d880411e5d768b13efb25d3d7ac4ead6755a4ff0)
+Mon Dec 11 12:44:36 2023 +0000
+- The pypdf package version in requirements.txt was updated from 3.17.1 to 3.17.2. This change doesn't affect any other dependencies.
+## [Updated langchain version in requirements](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f23ab029e9e13452f9fe0e41ed48f36f257cdbfb)
+Mon Dec 11 12:44:32 2023 +0000
+- The version of langchain in the requirements.txt file was updated from 0.0.345 to 0.0.348. No other changes were made.
+## [Added new retriever function and updated langchain version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/09bee796cc0e56bf167cff0d12cbdb233184c376)
+Fri Dec 8 15:20:41 2023 -0600
+- In the langchain-streamlit-demo/llm_resources.py file, a new function called get_texts_and_retriever2 was added. This function processes uploaded file bytes and returns a list of documents and a BaseRetriever instance. It introduces new retriever classes MultiVectorRetriever and MultiQueryRetriever, and uses InMemoryStore for storage. Also, it generates unique identifiers for each text using the uuid library.
+- In the requirements.txt file, the version of the langchain package was updated from 0.0.345 to 0.0.346.
 ## [Updated Azure endpoint configuration in embeddings_kwargs](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/56dd4e0c90ab9ec09be58c184e6bf100398c9be8)
 Thu Dec 7 11:00:31 2023 -0500
 - This commit modifies the 'get_texts_and_retriever' function in the 'llm_resources.py' file.

@@ -158,7 +158,7 @@ def get_texts_and_retriever(
         return texts, ensemble_retriever
 
 
-def get_texts_and_retriever2(
+def get_texts_and_multiretriever(
     uploaded_file_bytes: bytes,
     openai_api_key: str,
     chunk_size: int = DEFAULT_CHUNK_SIZE,

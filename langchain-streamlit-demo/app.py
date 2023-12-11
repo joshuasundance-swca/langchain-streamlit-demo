@@ -16,7 +16,13 @@ from streamlit_feedback import streamlit_feedback
 
 from defaults import default_values
 
-from llm_resources import get_runnable, get_llm, get_texts_and_retriever, StreamHandler
+from llm_resources import (
+    get_runnable, 
+    get_llm, 
+    get_texts_and_retriever, 
+    get_texts_and_multiretriever,
+    StreamHandler,
+)
 
 __version__ = "1.0.3"
 
@@ -132,7 +138,7 @@ def get_texts_and_retriever_cacheable_wrapper(
     azure_kwargs: Optional[Dict[str, str]] = None,
     use_azure: bool = False,
 ) -> Tuple[List[Document], BaseRetriever]:
-    return get_texts_and_retriever(
+    return get_texts_and_multiretriever(
         uploaded_file_bytes=uploaded_file_bytes,
         openai_api_key=openai_api_key,
         chunk_size=chunk_size,

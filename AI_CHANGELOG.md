@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Updated version from 1.0.3 to 1.1.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f9ace4d1dc84d8acfab5d95c489b461362d680d0)
+Mon Dec 11 12:36:57 2023 -0500
+- The version number in bumpver.toml, kubernetes/resources.yaml, and langchain-streamlit-demo/app.py has been updated from 1.0.3 to 1.1.0.
+- In bumpver.toml, the current_version key's value is updated.
+- In kubernetes/resources.yaml, the image version of the langchain-streamlit-demo container is updated.
+- In langchain-streamlit-demo/app.py, the __version__ variable is updated.
 ## [Removed BM25Retriever and related dependencies](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/c132355839f407ff11494aeee4ff361a7646e913)
 Mon Dec 11 12:31:16 2023 -0500
 - In this commit, the use of the BM25Retriever and its related dependencies were removed from the project. This included changes in the 'app.py' and 'llm_resources.py' files where the retriever was being used. The 'get_texts_and_retriever' function was removed from 'llm_resources.py' as it was no longer needed. Additionally, the 'rank_bm25' library was removed from the project's requirements in the 'requirements.txt' file.

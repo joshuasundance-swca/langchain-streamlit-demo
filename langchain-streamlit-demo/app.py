@@ -23,7 +23,7 @@ from llm_resources import (
     StreamHandler,
 )
 
-__version__ = "1.0.3"
+__version__ = "1.1.0"
 
 # --- Initialization ---
 st.set_page_config(

@@ -11,7 +11,7 @@ from langchain.chat_models import (
 )
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import AzureOpenAIEmbeddings, OpenAIEmbeddings
-from langchain.retrievers import BM25Retriever, EnsembleRetriever
+from langchain.retrievers import EnsembleRetriever
 from langchain.schema import Document, BaseRetriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
@@ -116,48 +116,6 @@ def get_llm(
     return None
 
 
-def get_texts_and_retriever(
-    uploaded_file_bytes: bytes,
-    openai_api_key: str,
-    chunk_size: int = DEFAULT_CHUNK_SIZE,
-    chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
-    k: int = DEFAULT_RETRIEVER_K,
-    azure_kwargs: Optional[Dict[str, str]] = None,
-    use_azure: bool = False,
-) -> Tuple[List[Document], BaseRetriever]:
-    with NamedTemporaryFile() as temp_file:
-        temp_file.write(uploaded_file_bytes)
-        temp_file.seek(0)
-
-        loader = PyPDFLoader(temp_file.name)
-        documents = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-        )
-        texts = text_splitter.split_documents(documents)
-        embeddings_kwargs = {"openai_api_key": openai_api_key}
-        if use_azure and azure_kwargs:
-            azure_kwargs["azure_endpoint"] = azure_kwargs.pop("openai_api_base")
-            embeddings_kwargs.update(azure_kwargs)
-            embeddings = AzureOpenAIEmbeddings(**embeddings_kwargs)
-        else:
-            embeddings = OpenAIEmbeddings(**embeddings_kwargs)
-
-        bm25_retriever = BM25Retriever.from_documents(texts)
-        bm25_retriever.k = k
-
-        faiss_vectorstore = FAISS.from_documents(texts, embeddings)
-        faiss_retriever = faiss_vectorstore.as_retriever(search_kwargs={"k": k})
-
-        ensemble_retriever = EnsembleRetriever(
-            retrievers=[bm25_retriever, faiss_retriever],
-            weights=[0.5, 0.5],
-        )
-
-        return texts, ensemble_retriever
-
-
 def get_texts_and_multiretriever(
     uploaded_file_bytes: bytes,
     openai_api_key: str,
@@ -204,7 +162,7 @@ def get_texts_and_multiretriever(
         multivectorstore = FAISS.from_documents(sub_texts, embeddings)
         multivector_retriever = MultiVectorRetriever(
             vectorstore=multivectorstore,
-            base_store=store,
+            docstore=store,
             id_key=id_key,
         )
         multivector_retriever.docstore.mset(list(zip(text_ids, texts)))

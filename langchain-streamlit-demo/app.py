@@ -17,9 +17,8 @@ from streamlit_feedback import streamlit_feedback
 from defaults import default_values
 
 from llm_resources import (
-    get_runnable, 
-    get_llm, 
-    get_texts_and_retriever, 
+    get_runnable,
+    get_llm,
     get_texts_and_multiretriever,
     StreamHandler,
 )

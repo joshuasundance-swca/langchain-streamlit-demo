@@ -3,13 +3,13 @@ from tempfile import NamedTemporaryFile
 from typing import Tuple, List, Optional, Dict
 
 from langchain.agents import AgentExecutor
-from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain.agents.openai_functions_agent.agent_token_buffer_memory import (
     AgentTokenBufferMemory,
 )
 from langchain.agents.openai_functions_agent.base import OpenAIFunctionsAgent
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import LLMChain
+from langchain.chains import RetrievalQA
 from langchain.chat_models import (
     AzureChatOpenAI,
     ChatOpenAI,
@@ -18,29 +18,30 @@ from langchain.chat_models import (
 )
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import AzureOpenAIEmbeddings, OpenAIEmbeddings
+from langchain.llms.base import BaseLLM
 from langchain.prompts import MessagesPlaceholder
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain.schema import Document, BaseRetriever
+from langchain.schema.chat_history import BaseChatMessageHistory
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.storage import InMemoryStore
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.tools.base import BaseTool
 from langchain.vectorstores import FAISS
 from langchain_core.messages import SystemMessage
 
 from defaults import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP, DEFAULT_RETRIEVER_K
 from qagen import get_rag_qa_gen_chain
 from summarize import get_rag_summarization_chain
-from langchain.tools.base import BaseTool
-from langchain.schema.chat_history import BaseChatMessageHistory
-from langchain.llms.base import BaseLLM
 
 
 def get_agent(
     tools: list[BaseTool],
     chat_history: BaseChatMessageHistory,
     llm: BaseLLM,
+    callbacks,
 ):
     memory_key = "agent_history"
     system_message = SystemMessage(
@@ -68,6 +69,7 @@ def get_agent(
         memory=agent_memory,
         verbose=True,
         return_intermediate_steps=True,
+        callbacks=callbacks,
     )
     return (
         {"input": RunnablePassthrough()}
@@ -84,7 +86,6 @@ def get_runnable(
     memory,
     chat_prompt,
     summarization_prompt,
-    chat_history,
 ):
     if not use_document_chat:
         return LLMChain(
@@ -105,14 +106,12 @@ def get_runnable(
             llm,
         )
     else:
-        tool = create_retriever_tool(
-            retriever,
-            "search_user_document",
-            "Retrieves custom context provided by the user for this conversation. Use this if you cannot answer immediately and confidently.",
-        )
-        tools = [tool]
-
-        return get_agent(tools, chat_history, llm)
+        return RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type=document_chat_chain_type,
+            retriever=retriever,
+            output_key="output_text",
+        ) | (lambda output: output["output_text"])
 
 
 def get_llm(

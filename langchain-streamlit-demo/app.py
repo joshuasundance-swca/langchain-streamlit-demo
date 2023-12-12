@@ -6,6 +6,7 @@ import langsmith.utils
 import openai
 import streamlit as st
 from langchain.callbacks import StreamlitCallbackHandler
+from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
@@ -20,6 +21,7 @@ from defaults import default_values
 from llm_resources import (
     get_agent,
     get_llm,
+    get_runnable,
     get_texts_and_multiretriever,
 )
 from research_assistant.chain import chain as research_assistant_chain
@@ -379,15 +381,6 @@ st.session_state.llm = get_llm(
     },
 )
 
-research_assistant_tool = Tool.from_function(
-    func=lambda s: research_assistant_chain.invoke({"question": s}),
-    name="web-research-assistant",
-    description="this assistant returns a report based on web research",
-)
-
-TOOLS = [research_assistant_tool]
-st.session_state.agent = get_agent(TOOLS, STMEMORY, st.session_state.llm)
-
 # --- Chat History ---
 for msg in STMEMORY.messages:
     st.chat_message(
@@ -424,12 +417,16 @@ if st.session_state.llm:
             if st.session_state.ls_tracer:
                 callbacks.append(st.session_state.ls_tracer)
 
-            config: Dict[str, Any] = dict(
-                callbacks=callbacks,
-                tags=["Streamlit Chat"],
-            )
-            if st.session_state.provider == "Anthropic":
-                config["max_concurrency"] = 5
+            def get_config(callbacks: list[BaseCallbackHandler]) -> dict[str, Any]:
+                config: Dict[str, Any] = dict(
+                    callbacks=callbacks,
+                    tags=["Streamlit Chat"],
+                    verbose=True,
+                    return_intermediate_steps=True,
+                )
+                if st.session_state.provider == "Anthropic":
+                    config["max_concurrency"] = 5
+                return config
 
             use_document_chat = all(
                 [
@@ -439,32 +436,66 @@ if st.session_state.llm:
             )
 
             full_response: Union[str, None] = None
-
             # stream_handler = StreamHandler(message_placeholder)
             # callbacks.append(stream_handler)
-
-            st_callback = StreamlitCallbackHandler(st.container())
-            callbacks.append(st_callback)
-
             message_placeholder = st.empty()
-            # TODO use agent if openai or azure openai
-            # otherwise use runnable
-            # for agent + runnable, add to tools
 
-            # st.session_state.chain = get_runnable(
-            #     use_document_chat,
-            #     document_chat_chain_type,
-            #     st.session_state.llm,
-            #     st.session_state.retriever,
-            #     MEMORY,
-            #     chat_prompt,
-            #     prompt,
-            #     STMEMORY,
-            # )
+            if st.session_state.provider in ("Azure OpenAI", "OpenAI"):
+                st_callback = StreamlitCallbackHandler(st.container())
+                callbacks.append(st_callback)
+                research_assistant_tool = Tool.from_function(
+                    func=lambda s: research_assistant_chain.invoke(
+                        {"question": s},
+                        config=get_config(callbacks),
+                    ),
+                    name="web-research-assistant",
+                    description="this assistant returns a report based on web research",
+                )
+
+                TOOLS = [research_assistant_tool]
+                if use_document_chat:
+                    st.session_state.doc_chain = get_runnable(
+                        use_document_chat,
+                        document_chat_chain_type,
+                        st.session_state.llm,
+                        st.session_state.retriever,
+                        MEMORY,
+                        chat_prompt,
+                        prompt,
+                    )
+                    doc_chain_tool = Tool.from_function(
+                        func=lambda s: st.session_state.doc_chain.invoke(
+                            s,
+                            config=get_config(callbacks),
+                        ),
+                        name="user-document-chat",
+                        description="this assistant returns a response based on the user's custom context. if the user's meaning is unclear, perhaps the answer is here. generally speaking, try this tool before conducting web research.",
+                    )
+                    TOOLS = [doc_chain_tool, research_assistant_tool]
+
+                st.session_state.chain = get_agent(
+                    TOOLS,
+                    STMEMORY,
+                    st.session_state.llm,
+                    callbacks,
+                )
+            else:
+                st.session_state.chain = get_runnable(
+                    use_document_chat,
+                    document_chat_chain_type,
+                    st.session_state.llm,
+                    st.session_state.retriever,
+                    MEMORY,
+                    chat_prompt,
+                    prompt,
+                )
 
             # --- LLM call ---
             try:
-                full_response = st.session_state.agent.invoke(prompt, config)
+                full_response = st.session_state.chain.invoke(
+                    prompt,
+                    config=get_config(callbacks),
+                )
 
             except (openai.AuthenticationError, anthropic.AuthenticationError):
                 st.error(

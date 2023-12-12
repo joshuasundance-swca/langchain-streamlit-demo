@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Update version to 2.0.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/870f9c796ca452f131df63efeb5fd22f41b35cb3)
+Tue Dec 12 17:23:25 2023 -0500
+- The version number in bumpver.toml, kubernetes resources.yaml, and app.py has been updated from 1.1.0 to 2.0.0. This includes updates to the current version in the bumpver configuration, the docker image version in the Kubernetes resources file, and the application version in the app.py file.
 ## [Added new search tools and updated assistant descriptions](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1ea3b530f16118973e99729685e5e0be621e8a91)
 Tue Dec 12 17:03:20 2023 -0500
 - Added DuckDuckGoSearchRun and WikipediaQueryRun to the default tools. Updated the description of 'web-research-assistant' to mention quick facts usage of DuckDuckGo. Also, added these tools to the TOOLS list in the provider's condition.

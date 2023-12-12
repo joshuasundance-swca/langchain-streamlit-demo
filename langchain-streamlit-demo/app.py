@@ -28,7 +28,7 @@ from llm_resources import (
 )
 from research_assistant.chain import chain as research_assistant_chain
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
 # --- Initialization ---
 st.set_page_config(

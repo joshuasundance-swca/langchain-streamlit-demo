@@ -447,6 +447,10 @@ if st.session_state.llm:
             callbacks.append(st_callback)
 
             message_placeholder = st.empty()
+            # TODO use agent if openai or azure openai
+            # otherwise use runnable
+            # for agent + runnable, add to tools
+
             # st.session_state.chain = get_runnable(
             #     use_document_chat,
             #     document_chat_chain_type,

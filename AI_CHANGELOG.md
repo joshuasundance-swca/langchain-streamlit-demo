@@ -1,4 +1,29 @@
 # AI CHANGELOG
+## [Added new search tools and updated assistant descriptions](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1ea3b530f16118973e99729685e5e0be621e8a91)
+Tue Dec 12 17:03:20 2023 -0500
+- Added DuckDuckGoSearchRun and WikipediaQueryRun to the default tools. Updated the description of 'web-research-assistant' to mention quick facts usage of DuckDuckGo. Also, added these tools to the TOOLS list in the provider's condition.
+- Updated the DEFAULT_SYSTEM_PROMPT in defaults.py to emphasize a step-by-step approach.
+- Added 'wikipedia==1.4.0' to the requirements.txt file for using the Wikipedia API.
+## [Updated pre-commit hooks and refactored Streamlit app](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/5825ff944afc97081a1cc740d0ccf3095a80d697)
+Tue Dec 12 16:03:57 2023 -0500
+- 1. Updated the pre-commit configuration file to reorder the hooks, replacing the 'mypy' hook with the 'black' hook and vice versa.
+- 2. Refactored the Streamlit application 'app.py' by adding a new import statement and restructuring the code for better readability and performance. This includes changes in the way the 'research_assistant_tool' and 'doc_chain_tool' are defined and used, and the addition of the 'get_config' function for creating a configuration dictionary.
+- 3. Updated the 'llm_resources.py' file to include 'callbacks' as an argument in the 'get_agent' function, and removed the 'create_retriever_tool' usage from the 'get_runnable' function.
+## [Added TODO comments for future development](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/547d578fa19e7542737e6165e21b93c0369f5f4f)
+Tue Dec 12 14:50:49 2023 -0500
+- This commit includes TODO comments in the app.py file of the langchain-streamlit-demo. These comments outline future development tasks related to the usage of agents in the OpenAI or Azure OpenAI, the usage of runnable, and the addition of these to tools.
+## [Added web research assistant and updated dependencies](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/883f3bee29ccd1f670e48245d3ada8d1fd7fd3c9)
+Tue Dec 12 14:48:04 2023 -0500
+- Added a web research assistant that uses DuckDuckGo's search API to perform web searches and BeautifulSoup to scrape text from the resulting URLs. The assistant then generates a report based on the scraped information.
+- Updated the pre-commit configuration to add a dependency on 'types-requests'.
+- Refactored the 'get_runnable' function in 'llm_resources.py' to use the new 'get_agent' function, which creates an agent with a set of tools and a chat history.
+- Updated 'app.py' to use the new web research assistant, and refactored the code to use the new 'get_agent' function.
+- Updated the requirements file to include 'beautifulsoup4' and 'duckduckgo-search'.
+## [Enhanced chat functionality in the LLMChain](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/048798b27efb2d8dbe52648fdcf34176a608a296)
+Tue Dec 12 14:01:20 2023 -0500
+- This commit introduces an enhancement to the chat functionality in the LLMChain. It does so by incorporating the chat history into the get_runnable function. The commit also restructures the import statements in the llm_resources.py file and adds new imports necessary for the enhancement.
+- The get_runnable function now takes an additional parameter 'chat_history'. It creates a retriever tool and an OpenAIFunctionsAgent with a prompt that includes system messages and the chat history. An AgentTokenBufferMemory is also initialized with the chat history.
+- The agent and the tools are then executed using an AgentExecutor that returns the output of the conversation. This enhancement allows the chatbot to maintain a history of the conversation and use it to provide more context-aware responses.
 ## [Updated version from 1.0.3 to 1.1.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f9ace4d1dc84d8acfab5d95c489b461362d680d0)
 Mon Dec 11 12:36:57 2023 -0500
 - The version number in bumpver.toml, kubernetes/resources.yaml, and langchain-streamlit-demo/app.py has been updated from 1.0.3 to 1.1.0.

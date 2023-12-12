@@ -1,4 +1,6 @@
 anthropic==0.7.7
+beautifulsoup4==4.12.2
+duckduckgo-search==4.0.0
 faiss-cpu==1.7.4
 langchain==0.0.348
 langsmith==0.0.69

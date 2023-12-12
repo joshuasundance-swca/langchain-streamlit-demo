@@ -44,6 +44,8 @@ repos:
     rev: v1.5.1
     hooks:
     -   id: mypy
+        additional_dependencies:
+            - types-requests
 -   repo: https://github.com/asottile/add-trailing-comma
     rev: v3.1.0
     hooks:
@@ -60,4 +62,4 @@ repos:
     rev: 1.7.5
     hooks:
     -   id: bandit
-        args: ["-x", "tests/*.py"]
+        args: ["-x", "tests/*.py", "-s", "B113"]

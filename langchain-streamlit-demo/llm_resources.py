@@ -32,6 +32,48 @@ from langchain_core.messages import SystemMessage
 from defaults import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP, DEFAULT_RETRIEVER_K
 from qagen import get_rag_qa_gen_chain
 from summarize import get_rag_summarization_chain
+from langchain.tools.base import BaseTool
+from langchain.schema.chat_history import BaseChatMessageHistory
+from langchain.llms.base import BaseLLM
+
+
+def get_agent(
+    tools: list[BaseTool],
+    chat_history: BaseChatMessageHistory,
+    llm: BaseLLM,
+):
+    memory_key = "agent_history"
+    system_message = SystemMessage(
+        content=(
+            "Do your best to answer the questions. "
+            "Feel free to use any tools available to look up "
+            "relevant information, only if necessary"
+        ),
+    )
+    prompt = OpenAIFunctionsAgent.create_prompt(
+        system_message=system_message,
+        extra_prompt_messages=[MessagesPlaceholder(variable_name=memory_key)],
+    )
+    agent = OpenAIFunctionsAgent(llm=llm, tools=tools, prompt=prompt)
+
+    agent_memory = AgentTokenBufferMemory(
+        chat_memory=chat_history,
+        memory_key=memory_key,
+        llm=llm,
+    )
+
+    agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        memory=agent_memory,
+        verbose=True,
+        return_intermediate_steps=True,
+    )
+    return (
+        {"input": RunnablePassthrough()}
+        | agent_executor
+        | (lambda output: output["output"])
+    )
 
 
 def get_runnable(
@@ -69,38 +111,8 @@ def get_runnable(
             "Retrieves custom context provided by the user for this conversation. Use this if you cannot answer immediately and confidently.",
         )
         tools = [tool]
-        memory_key = "agent_history"
-        system_message = SystemMessage(
-            content=(
-                "Do your best to answer the questions. "
-                "Feel free to use any tools available to look up "
-                "relevant information, only if necessary"
-            ),
-        )
-        prompt = OpenAIFunctionsAgent.create_prompt(
-            system_message=system_message,
-            extra_prompt_messages=[MessagesPlaceholder(variable_name=memory_key)],
-        )
-        agent = OpenAIFunctionsAgent(llm=llm, tools=tools, prompt=prompt)
 
-        agent_memory = AgentTokenBufferMemory(
-            chat_memory=chat_history,
-            memory_key=memory_key,
-            llm=llm,
-        )
-
-        agent_executor = AgentExecutor(
-            agent=agent,
-            tools=tools,
-            memory=agent_memory,
-            verbose=True,
-            return_intermediate_steps=True,
-        )
-        return (
-            {"input": RunnablePassthrough()}
-            | agent_executor
-            | (lambda output: output["output"])
-        )
+        return get_agent(tools, chat_history, llm)
 
 
 def get_llm(

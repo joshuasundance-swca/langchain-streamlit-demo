@@ -5,23 +5,24 @@ import anthropic
 import langsmith.utils
 import openai
 import streamlit as st
+from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema.document import Document
 from langchain.schema.retriever import BaseRetriever
+from langchain.tools import Tool
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
 from defaults import default_values
-
 from llm_resources import (
-    get_runnable,
+    get_agent,
     get_llm,
     get_texts_and_multiretriever,
-    StreamHandler,
 )
+from research_assistant.chain import chain as research_assistant_chain
 
 __version__ = "1.1.0"
 
@@ -378,6 +379,15 @@ st.session_state.llm = get_llm(
     },
 )
 
+research_assistant_tool = Tool.from_function(
+    func=lambda s: research_assistant_chain.invoke({"question": s}),
+    name="web-research-assistant",
+    description="this assistant returns a report based on web research",
+)
+
+TOOLS = [research_assistant_tool]
+st.session_state.agent = get_agent(TOOLS, STMEMORY, st.session_state.llm)
+
 # --- Chat History ---
 for msg in STMEMORY.messages:
     st.chat_message(
@@ -430,24 +440,27 @@ if st.session_state.llm:
 
             full_response: Union[str, None] = None
 
-            message_placeholder = st.empty()
-            stream_handler = StreamHandler(message_placeholder)
-            callbacks.append(stream_handler)
+            # stream_handler = StreamHandler(message_placeholder)
+            # callbacks.append(stream_handler)
 
-            st.session_state.chain = get_runnable(
-                use_document_chat,
-                document_chat_chain_type,
-                st.session_state.llm,
-                st.session_state.retriever,
-                MEMORY,
-                chat_prompt,
-                prompt,
-                STMEMORY,
-            )
+            st_callback = StreamlitCallbackHandler(st.container())
+            callbacks.append(st_callback)
+
+            message_placeholder = st.empty()
+            # st.session_state.chain = get_runnable(
+            #     use_document_chat,
+            #     document_chat_chain_type,
+            #     st.session_state.llm,
+            #     st.session_state.retriever,
+            #     MEMORY,
+            #     chat_prompt,
+            #     prompt,
+            #     STMEMORY,
+            # )
 
             # --- LLM call ---
             try:
-                full_response = st.session_state.chain.invoke(prompt, config)
+                full_response = st.session_state.agent.invoke(prompt, config)
 
             except (openai.AuthenticationError, anthropic.AuthenticationError):
                 st.error(

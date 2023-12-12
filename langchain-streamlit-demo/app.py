@@ -442,6 +442,7 @@ if st.session_state.llm:
                 MEMORY,
                 chat_prompt,
                 prompt,
+                STMEMORY,
             )
 
             # --- LLM call ---

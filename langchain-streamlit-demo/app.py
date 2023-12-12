@@ -13,7 +13,9 @@ from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHisto
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema.document import Document
 from langchain.schema.retriever import BaseRetriever
+from langchain.tools import DuckDuckGoSearchRun, WikipediaQueryRun
 from langchain.tools import Tool
+from langchain.utilities import WikipediaAPIWrapper
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
 
@@ -440,6 +442,10 @@ if st.session_state.llm:
             # callbacks.append(stream_handler)
             message_placeholder = st.empty()
 
+            default_tools = [
+                DuckDuckGoSearchRun(),
+                WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),
+            ]
             if st.session_state.provider in ("Azure OpenAI", "OpenAI"):
                 st_callback = StreamlitCallbackHandler(st.container())
                 callbacks.append(st_callback)
@@ -449,10 +455,10 @@ if st.session_state.llm:
                         config=get_config(callbacks),
                     ),
                     name="web-research-assistant",
-                    description="this assistant returns a report based on web research",
+                    description="this assistant returns a comprehensive report based on web research. for quick facts, use duckduckgo instead.",
                 )
 
-                TOOLS = [research_assistant_tool]
+                TOOLS = [research_assistant_tool] + default_tools
                 if use_document_chat:
                     st.session_state.doc_chain = get_runnable(
                         use_document_chat,
@@ -471,7 +477,7 @@ if st.session_state.llm:
                         name="user-document-chat",
                         description="this assistant returns a response based on the user's custom context. if the user's meaning is unclear, perhaps the answer is here. generally speaking, try this tool before conducting web research.",
                     )
-                    TOOLS = [doc_chain_tool, research_assistant_tool]
+                    TOOLS = [doc_chain_tool, research_assistant_tool] + default_tools
 
                 st.session_state.chain = get_agent(
                     TOOLS,

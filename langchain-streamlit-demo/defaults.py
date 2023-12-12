@@ -25,7 +25,7 @@ DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "gpt-3.5-turbo")
 
 DEFAULT_SYSTEM_PROMPT = os.environ.get(
     "DEFAULT_SYSTEM_PROMPT",
-    "You are a helpful chatbot.",
+    "You are a helpful chatbot. Do not rush. Always plan, think, and act in a step-by-step manner.",
 )
 
 MIN_TEMP = float(os.environ.get("MIN_TEMPERATURE", 0.0))

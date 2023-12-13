@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated application version to 2.1.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/6a5206daa0170076d2e55f3878204571c03b0dbe)
+Wed Dec 13 17:57:20 2023 -0500
+- The version of the application has been updated from 2.0.1 to 2.1.0. This change is reflected in the bumpver.toml file, which tracks the current version of the application.
+- In addition, the Docker image referenced in the Kubernetes resource configuration file (resources.yaml) has been updated to match the new version.
+- Finally, the version number displayed on the application's Streamlit page (app.py) has also been updated to reflect the new version.
 ## [Added Python Coder Assistant to Application Tools](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/94f9b82dcf0b254853e489743d140c674acb2bb6)
 Wed Dec 13 17:54:48 2023 -0500
 - In this commit, a Python Coder Assistant was added to the application's tools. This assistant is capable of writing Python code given clear instructions and requirements. It was implemented by importing the 'get_agent' function from the newly created 'python_coder.py' file and adding the resulting 'python_coder_tool' to the 'TOOLS' list.

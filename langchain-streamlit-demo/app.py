@@ -450,6 +450,7 @@ if st.session_state.llm:
                 WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),
             ]
             default_tools += load_tools(["requests_get"])
+            default_tools += load_tools(["llm-math"], llm=st.session_state.llm)
             if st.session_state.provider in ("Azure OpenAI", "OpenAI"):
                 research_assistant_chain = get_research_assistant_chain(
                     search_llm=get_llm(**get_llm_args_temp_zero),  # type: ignore
@@ -463,7 +464,9 @@ if st.session_state.llm:
                         # config=get_config(callbacks),
                     ),
                     name="web-research-assistant",
-                    description="this assistant returns a comprehensive report based on web research. it's relatively expensive, so use it sparingly. for quick facts, use duckduckgo instead.",
+                    description="this assistant returns a comprehensive report based on web research. "
+                    "it's slow and relatively expensive, so use it sparingly. "
+                    "for quick facts, use duckduckgo instead.",
                 )
 
                 TOOLS = [research_assistant_tool] + default_tools
@@ -483,7 +486,9 @@ if st.session_state.llm:
                             # config=get_config(callbacks),
                         ),
                         name="user-document-chat",
-                        description="this assistant returns a response based on the user's custom context. if the user's meaning is unclear, perhaps the answer is here. generally speaking, try this tool before conducting web research.",
+                        description="this assistant returns a response based on the user's custom context. "
+                        "if the user's meaning is unclear, perhaps the answer is here. "
+                        "generally speaking, try this tool before conducting web research.",
                     )
                     TOOLS = [doc_chain_tool, research_assistant_tool] + default_tools
 

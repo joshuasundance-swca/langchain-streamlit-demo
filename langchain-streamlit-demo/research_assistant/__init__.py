@@ -1,3 +1,3 @@
-from research_assistant.chain import chain
+from research_assistant.chain import get_chain
 
-__all__ = ["chain"]
+__all__ = ["get_chain"]

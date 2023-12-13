@@ -1,7 +1,8 @@
-from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import ConfigurableField
+from langchain.llms.base import BaseLLM
+from langchain.schema.runnable import Runnable
 
 WRITER_SYSTEM_PROMPT = "You are an AI critical thinker research assistant. Your sole purpose is to write well written, critically acclaimed, objective and structured reports on given text."  # noqa: E501
 
@@ -50,7 +51,6 @@ Use appropriate Markdown syntax to format the outline and ensure readability.
 
 Please do your best, this is very important to my career."""  # noqa: E501
 
-model = ChatOpenAI(temperature=0)
 prompt = ChatPromptTemplate.from_messages(
     [
         ("system", WRITER_SYSTEM_PROMPT),
@@ -72,4 +72,7 @@ prompt = ChatPromptTemplate.from_messages(
         ],
     ),
 )
-chain = prompt | model | StrOutputParser()
+
+
+def get_writer_chain(model: BaseLLM) -> Runnable:
+    return prompt | model | StrOutputParser()

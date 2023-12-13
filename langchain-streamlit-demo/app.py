@@ -26,7 +26,7 @@ from llm_resources import (
     get_runnable,
     get_texts_and_multiretriever,
 )
-from research_assistant.chain import chain as research_assistant_chain
+from research_assistant.chain import get_chain as get_research_assistant_chain
 
 __version__ = "2.0.1"
 
@@ -367,7 +367,7 @@ with sidebar:
 
 
 # --- LLM Instantiation ---
-st.session_state.llm = get_llm(
+get_llm_args = dict(
     provider=st.session_state.provider,
     model=model,
     provider_api_key=provider_api_key,
@@ -382,6 +382,8 @@ st.session_state.llm = get_llm(
         "AZURE_OPENAI_MODEL_VERSION": st.session_state.AZURE_OPENAI_MODEL_VERSION,
     },
 )
+get_llm_args_temp_zero = get_llm_args | {"temperature": 0.0}
+st.session_state.llm = get_llm(**get_llm_args)
 
 # --- Chat History ---
 for msg in STMEMORY.messages:
@@ -448,12 +450,16 @@ if st.session_state.llm:
                 WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),
             ]
             if st.session_state.provider in ("Azure OpenAI", "OpenAI"):
+                research_assistant_chain = get_research_assistant_chain(
+                    search_llm=get_llm(**get_llm_args_temp_zero),  # type: ignore
+                    writer_llm=get_llm(**get_llm_args_temp_zero),  # type: ignore
+                )
                 st_callback = StreamlitCallbackHandler(st.container())
                 callbacks.append(st_callback)
                 research_assistant_tool = Tool.from_function(
                     func=lambda s: research_assistant_chain.invoke(
                         {"question": s},
-                        config=get_config(callbacks),
+                        # config=get_config(callbacks),
                     ),
                     name="web-research-assistant",
                     description="this assistant returns a comprehensive report based on web research. for quick facts, use duckduckgo instead.",
@@ -473,7 +479,7 @@ if st.session_state.llm:
                     doc_chain_tool = Tool.from_function(
                         func=lambda s: st.session_state.doc_chain.invoke(
                             s,
-                            config=get_config(callbacks),
+                            # config=get_config(callbacks),
                         ),
                         name="user-document-chat",
                         description="this assistant returns a response based on the user's custom context. if the user's meaning is unclear, perhaps the answer is here. generally speaking, try this tool before conducting web research.",

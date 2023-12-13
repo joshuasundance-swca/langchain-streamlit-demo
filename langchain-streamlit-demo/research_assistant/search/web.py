@@ -3,7 +3,7 @@ from typing import Any
 
 import requests
 from bs4 import BeautifulSoup
-from langchain.chat_models import ChatOpenAI
+from langchain.llms.base import BaseLLM
 from langchain.prompts import ChatPromptTemplate
 from langchain.retrievers.tavily_search_api import TavilySearchAPIRetriever
 from langchain.utilities import DuckDuckGoSearchAPIWrapper
@@ -130,25 +130,6 @@ Using the above text, answer in short the following question:
 if the question cannot be answered using the text, imply summarize the text. Include all factual information, numbers, stats etc if available."""  # noqa: E501
 SUMMARY_PROMPT = ChatPromptTemplate.from_template(SUMMARY_TEMPLATE)
 
-scrape_and_summarize: Runnable[Any, Any] = (
-    RunnableParallel(
-        {
-            "question": lambda x: x["question"],
-            "text": lambda x: scrape_text(x["url"])[:10000],
-            "url": lambda x: x["url"],
-        },
-    )
-    | RunnableParallel(
-        {
-            "summary": SUMMARY_PROMPT | ChatOpenAI(temperature=0) | StrOutputParser(),
-            "url": lambda x: x["url"],
-        },
-    )
-    | RunnableLambda(lambda x: f"Source Url: {x['url']}\nSummary: {x['summary']}")
-)
-
-multi_search = get_links | scrape_and_summarize.map() | (lambda x: "\n".join(x))
-
 
 def load_json(s):
     try:
@@ -157,24 +138,41 @@ def load_json(s):
         return {}
 
 
-search_query = SEARCH_PROMPT | ChatOpenAI(temperature=0) | StrOutputParser() | load_json
-choose_agent = (
-    CHOOSE_AGENT_PROMPT | ChatOpenAI(temperature=0) | StrOutputParser() | load_json
-)
-
-get_search_queries = (
-    RunnablePassthrough().assign(
-        agent_prompt=RunnableParallel({"task": lambda x: x})
-        | choose_agent
-        | (lambda x: x.get("agent_role_prompt")),
+def get_search_chain(model: BaseLLM) -> Runnable:
+    scrape_and_summarize: Runnable[Any, Any] = (
+        RunnableParallel(
+            {
+                "question": lambda x: x["question"],
+                "text": lambda x: scrape_text(x["url"])[:10000],
+                "url": lambda x: x["url"],
+            },
+        )
+        | RunnableParallel(
+            {
+                "summary": SUMMARY_PROMPT | model | StrOutputParser(),
+                "url": lambda x: x["url"],
+            },
+        )
+        | RunnableLambda(lambda x: f"Source Url: {x['url']}\nSummary: {x['summary']}")
     )
-    | search_query
-)
 
+    multi_search = get_links | scrape_and_summarize.map() | (lambda x: "\n".join(x))
 
-chain = (
-    get_search_queries
-    | (lambda x: [{"question": q} for q in x])
-    | multi_search.map()
-    | (lambda x: "\n\n".join(x))
-)
+    search_query = SEARCH_PROMPT | model | StrOutputParser() | load_json
+    choose_agent = CHOOSE_AGENT_PROMPT | model | StrOutputParser() | load_json
+
+    get_search_queries = (
+        RunnablePassthrough().assign(
+            agent_prompt=RunnableParallel({"task": lambda x: x})
+            | choose_agent
+            | (lambda x: x.get("agent_role_prompt")),
+        )
+        | search_query
+    )
+
+    return (
+        get_search_queries
+        | (lambda x: [{"question": q} for q in x])
+        | multi_search.map()
+        | (lambda x: "\n\n".join(x))
+    )

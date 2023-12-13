@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Added tool loading functionality and updated assistant description](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d8714b091e4b40041ac26cd8a2854e5ef34011cb)
+Wed Dec 13 10:35:50 2023 -0500
+- In this commit, the developer has added a line to load additional tools using the 'load_tools' function from the 'langchain.agents' module. This extends the functionality of the default tools available in the application.
+- Additionally, the developer has updated the description of the 'web-research-assistant' tool to provide more context on its usage and cost implications. The updated description advises users to use the assistant sparingly due to its relative expense and suggests using DuckDuckGo for quick facts instead.
 ## [Bumped version from 2.0.0 to 2.0.1](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/9e698f4a274c4780d013fdfb0110a1f7675b580e)
 Wed Dec 13 14:10:39 2023 +0000
 - This commit updates the version number across several files. Specifically, it modifies the current version in bumpver.toml, the image version in the Kubernetes resources.yaml, and the __version__ variable in the langchain-streamlit-demo/app.py. All these changes reflect the version bump from 2.0.0 to 2.0.1.

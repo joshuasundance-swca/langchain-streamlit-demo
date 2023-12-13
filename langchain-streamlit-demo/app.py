@@ -28,6 +28,8 @@ from llm_resources import (
     get_texts_and_multiretriever,
 )
 from research_assistant.chain import get_chain as get_research_assistant_chain
+from python_coder import get_agent as get_python_agent
+
 
 __version__ = "2.0.1"
 
@@ -469,7 +471,19 @@ if st.session_state.llm:
                     "for quick facts, use duckduckgo instead.",
                 )
 
-                TOOLS = [research_assistant_tool] + default_tools
+                python_coder_agent = get_python_agent(st.session_state.llm)
+
+                python_coder_tool = Tool.from_function(
+                    func=lambda s: python_coder_agent.invoke(
+                        {"input": s},
+                        # config=get_config(callbacks),
+                    ),
+                    name="python-coder-assistant",
+                    description="this assistant writes Python code. give it clear instructions and requirements.",
+                )
+
+                TOOLS = [research_assistant_tool, python_coder_tool] + default_tools
+
                 if use_document_chat:
                     st.session_state.doc_chain = get_runnable(
                         use_document_chat,

@@ -385,10 +385,11 @@ st.session_state.llm = get_llm(
 
 # --- Chat History ---
 for msg in STMEMORY.messages:
-    st.chat_message(
-        msg.type,
-        avatar="🦜" if msg.type in ("ai", "assistant") else None,
-    ).write(msg.content)
+    if msg.content and msg.type in ("ai", "assistant", "human", "user"):
+        st.chat_message(
+            msg.type,
+            avatar="🦜" if msg.type in ("ai", "assistant") else None,
+        ).write(msg.content)
 
 
 # --- Current Chat ---

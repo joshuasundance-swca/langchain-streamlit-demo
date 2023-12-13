@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Added Python Coder Assistant to Application Tools](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/94f9b82dcf0b254853e489743d140c674acb2bb6)
+Wed Dec 13 17:54:48 2023 -0500
+- In this commit, a Python Coder Assistant was added to the application's tools. This assistant is capable of writing Python code given clear instructions and requirements. It was implemented by importing the 'get_agent' function from the newly created 'python_coder.py' file and adding the resulting 'python_coder_tool' to the 'TOOLS' list.
+- The 'python_coder.py' file contains the necessary functions and classes to initialize the Python Coder Assistant, check the code, and submit the code. It also ensures that the code conforms to the black, ruff, and strict mypy standards.
+- The 'requirements.txt' file was updated to include the new dependencies required by the Python Coder Assistant, namely 'black', 'mypy', and 'ruff'.
 ## [Added certifi and requests packages to requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/920ffd4c80beac16450c762c3caab609ede20fd0)
 Wed Dec 13 18:16:18 2023 +0000
 - The certifi and requests packages were added to the requirements.txt file to avoid potential vulnerabilities. These packages were not directly required, but were pinned by Snyk for security reasons.

@@ -1,3 +1,4 @@
+from langchain.agents import load_tools
 from datetime import datetime
 from typing import Tuple, List, Dict, Any, Union, Optional
 
@@ -444,11 +445,11 @@ if st.session_state.llm:
             # stream_handler = StreamHandler(message_placeholder)
             # callbacks.append(stream_handler)
             message_placeholder = st.empty()
-
             default_tools = [
                 DuckDuckGoSearchRun(),
                 WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()),
             ]
+            default_tools += load_tools(["requests_get"])
             if st.session_state.provider in ("Azure OpenAI", "OpenAI"):
                 research_assistant_chain = get_research_assistant_chain(
                     search_llm=get_llm(**get_llm_args_temp_zero),  # type: ignore
@@ -462,7 +463,7 @@ if st.session_state.llm:
                         # config=get_config(callbacks),
                     ),
                     name="web-research-assistant",
-                    description="this assistant returns a comprehensive report based on web research. for quick facts, use duckduckgo instead.",
+                    description="this assistant returns a comprehensive report based on web research. it's relatively expensive, so use it sparingly. for quick facts, use duckduckgo instead.",
                 )
 
                 TOOLS = [research_assistant_tool] + default_tools

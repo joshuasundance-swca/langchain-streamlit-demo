@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Enhanced tool descriptions and added 'llm-math' tool](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/13d332463cb60b873e75f45f783ca23cef55de93)
+Wed Dec 13 13:09:22 2023 -0500
+- The commit enhances the descriptions of the 'web-research-assistant' and 'user-document-chat' tools. It also adds the 'llm-math' tool to the default tools list in the 'app.py' file of the 'langchain-streamlit-demo' project.
+- In the 'requirements.txt' file, the 'numexpr' package (version 2.8.8) has been added.
 ## [Added tool loading functionality and updated assistant description](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d8714b091e4b40041ac26cd8a2854e5ef34011cb)
 Wed Dec 13 10:35:50 2023 -0500
 - In this commit, the developer has added a line to load additional tools using the 'load_tools' function from the 'langchain.agents' module. This extends the functionality of the default tools available in the application.

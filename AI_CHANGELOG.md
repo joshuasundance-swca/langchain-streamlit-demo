@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Bumped version from 2.0.0 to 2.0.1](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/64e3f44425ac59e36877017675ec247813c6f681)
+Wed Dec 13 09:09:50 2023 -0500
+- Updated the current version in bumpver.toml from 2.0.0 to 2.0.1.
+- Updated the image version in the Kubernetes resources.yaml from joshuasundance/langchain-streamlit-demo:2.0.0 to joshuasundance/langchain-streamlit-demo:2.0.1.
+- Updated the __version__ variable in the langchain-streamlit-demo/app.py from 2.0.0 to 2.0.1.
 ## [Improved chat message display in Streamlit app](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f15299ef4c3f6d17e1fed55329d9be2683e3e6de)
 Wed Dec 13 09:08:41 2023 -0500
 - This commit updates the chat history section of the Streamlit app. It adds a check to ensure that a message is only displayed if it has content and is of a recognized type ('ai', 'assistant', 'human', 'user'). This prevents empty or unhandled message types from being displayed, improving the user experience.

@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Added certifi and requests packages to requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/920ffd4c80beac16450c762c3caab609ede20fd0)
+Wed Dec 13 18:16:18 2023 +0000
+- The certifi and requests packages were added to the requirements.txt file to avoid potential vulnerabilities. These packages were not directly required, but were pinned by Snyk for security reasons.
 ## [Enhanced tool descriptions and added 'llm-math' tool](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/13d332463cb60b873e75f45f783ca23cef55de93)
 Wed Dec 13 13:09:22 2023 -0500
 - The commit enhances the descriptions of the 'web-research-assistant' and 'user-document-chat' tools. It also adds the 'llm-math' tool to the default tools list in the 'app.py' file of the 'langchain-streamlit-demo' project.

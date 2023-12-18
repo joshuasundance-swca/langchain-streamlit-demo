@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated langsmith package](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/688f2b15a1d6086d6c81ae06f27495421641ac20)
+Mon Dec 18 13:15:37 2023 +0000
+- The langsmith package has been updated from version 0.0.69 to 0.0.71 in the requirements.txt file.
 ## [Updated anthropic package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d0fdfb5eaa95b1628140a0a1650d416220070fb4)
 Mon Dec 18 13:15:24 2023 +0000
 - The anthropic package in the requirements.txt file has been updated from version 0.7.7 to 0.7.8. No other packages were affected in this commit.

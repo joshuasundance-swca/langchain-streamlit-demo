@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Update PyPDF package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/fc63706a675b02d7b7db5bb31b81d14da3f17bed)
+Mon Dec 18 13:16:53 2023 +0000
+- This commit updates the version of the PyPDF package from 3.17.2 to 3.17.3 in the requirements.txt file.
 ## [Updated langsmith package](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/688f2b15a1d6086d6c81ae06f27495421641ac20)
 Mon Dec 18 13:15:37 2023 +0000
 - The langsmith package has been updated from version 0.0.69 to 0.0.71 in the requirements.txt file.

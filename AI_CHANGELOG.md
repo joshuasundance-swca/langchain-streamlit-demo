@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated anthropic package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/d0fdfb5eaa95b1628140a0a1650d416220070fb4)
+Mon Dec 18 13:15:24 2023 +0000
+- The anthropic package in the requirements.txt file has been updated from version 0.7.7 to 0.7.8. No other packages were affected in this commit.
 ## [Updated OpenAI library version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/4c03ff5ea6f5c3097a53e0c0c5db36967d5e1e8f)
 Mon Dec 18 13:13:17 2023 +0000
 - The OpenAI library version in requirements.txt has been updated from 1.3.8 to 1.5.0. This update may include new features, bug fixes, and performance improvements.

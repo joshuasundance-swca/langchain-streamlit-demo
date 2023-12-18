@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated langchain version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/00528c803be2d7b84bedf1d5469d269529e8a3db)
+Mon Dec 18 12:13:48 2023 +0000
+- The langchain package was updated from version 0.0.348 to 0.0.350 in the requirements.txt file. This change was necessary to incorporate the latest features and bug fixes from the langchain package.
 ## [Updated application version to 2.1.0](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/6a5206daa0170076d2e55f3878204571c03b0dbe)
 Wed Dec 13 17:57:20 2023 -0500
 - The version of the application has been updated from 2.0.1 to 2.1.0. This change is reflected in the bumpver.toml file, which tracks the current version of the application.

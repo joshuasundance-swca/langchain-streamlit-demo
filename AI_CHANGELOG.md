@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Added PythonCompatibilityInspectionAdvertiser to misc.xml and updated agent_type in python_coder.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/04cf693d125a71f61b12ce8f5f8024c79fe9908c)
+Mon Dec 18 10:59:56 2023 -0500
+- In the misc.xml file, a new component 'PythonCompatibilityInspectionAdvertiser' was added to the project. This component is used for inspecting python compatibility.
+- In the python_coder.py file, the default value for the 'agent_type' argument in the 'get_agent' function was changed from 'OPENAI_FUNCTIONS' to 'CHAT_CONVERSATIONAL_REACT_DESCRIPTION'. This change affects the type of agent that is initialized by default when the 'get_agent' function is called.
 ## [Bumped version from 2.1.0 to 2.1.1](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/5a348f9029a30b49eda60ed7b6d612f9602c8bc8)
 Mon Dec 18 10:41:42 2023 -0500
 - The current version number in bumpver.toml, the image tag in kubernetes/resources.yaml, and the __version__ variable in langchain-streamlit-demo/app.py have all been updated from 2.1.0 to 2.1.1.

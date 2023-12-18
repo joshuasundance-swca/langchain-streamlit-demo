@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated OpenAI library version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/4c03ff5ea6f5c3097a53e0c0c5db36967d5e1e8f)
+Mon Dec 18 13:13:17 2023 +0000
+- The OpenAI library version in requirements.txt has been updated from 1.3.8 to 1.5.0. This update may include new features, bug fixes, and performance improvements.
 ## [Updated langchain version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/00528c803be2d7b84bedf1d5469d269529e8a3db)
 Mon Dec 18 12:13:48 2023 +0000
 - The langchain package was updated from version 0.0.348 to 0.0.350 in the requirements.txt file. This change was necessary to incorporate the latest features and bug fixes from the langchain package.

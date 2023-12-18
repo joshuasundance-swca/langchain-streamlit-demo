@@ -5,7 +5,7 @@ certifi>=2023.7.22 # not directly required, pinned by Snyk to avoid a vulnerabil
 duckduckgo-search==4.0.0
 faiss-cpu==1.7.4
 langchain==0.0.350
-langsmith==0.0.69
+langsmith==0.0.71
 mypy==1.7.1
 numexpr==2.8.8
 numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability

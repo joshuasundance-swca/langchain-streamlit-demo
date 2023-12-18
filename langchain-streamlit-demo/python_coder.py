@@ -173,7 +173,10 @@ submit_code_tool = Tool.from_function(
 tools = [check_code_tool, submit_code_tool]
 
 
-def get_agent(llm: BaseLLM, agent_type: AgentType = AgentType.OPENAI_FUNCTIONS):
+def get_agent(
+    llm: BaseLLM,
+    agent_type: AgentType = AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+):
     return initialize_agent(
         tools,
         llm,

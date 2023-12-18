@@ -4,4 +4,7 @@
     <option name="sdkName" value="Remote Python 3.11.4 Docker (&lt;none&gt;:&lt;none&gt;) (5)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.11.4 Docker (&lt;none&gt;:&lt;none&gt;) (5)" project-jdk-type="Python SDK" />
+  <component name="PythonCompatibilityInspectionAdvertiser">
+    <option name="version" value="3" />
+  </component>
 </project>

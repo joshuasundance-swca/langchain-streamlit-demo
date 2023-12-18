@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Updated application version to 2.1.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3fddfc9d34f66f92255f6a0d0878e20db401d694)
+Mon Dec 18 11:02:13 2023 -0500
+- Bumped the current version of the application in the bumpver.toml file from 2.1.1 to 2.1.2.
+- Updated the version of the Docker image used in the Kubernetes resources.yaml file from 2.1.1 to 2.1.2.
+- Changed the __version__ variable in the app.py file of the langchain-streamlit-demo application from 2.1.1 to 2.1.2.
 ## [Added PythonCompatibilityInspectionAdvertiser to misc.xml and updated agent_type in python_coder.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/04cf693d125a71f61b12ce8f5f8024c79fe9908c)
 Mon Dec 18 10:59:56 2023 -0500
 - In the misc.xml file, a new component 'PythonCompatibilityInspectionAdvertiser' was added to the project. This component is used for inspecting python compatibility.

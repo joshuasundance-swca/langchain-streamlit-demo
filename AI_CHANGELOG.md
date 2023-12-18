@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Bumped version from 2.1.0 to 2.1.1](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/5a348f9029a30b49eda60ed7b6d612f9602c8bc8)
+Mon Dec 18 10:41:42 2023 -0500
+- The current version number in bumpver.toml, the image tag in kubernetes/resources.yaml, and the __version__ variable in langchain-streamlit-demo/app.py have all been updated from 2.1.0 to 2.1.1.
 ## [Update PyPDF package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/fc63706a675b02d7b7db5bb31b81d14da3f17bed)
 Mon Dec 18 13:16:53 2023 +0000
 - This commit updates the version of the PyPDF package from 3.17.2 to 3.17.3 in the requirements.txt file.

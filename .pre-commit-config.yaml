@@ -10,7 +10,7 @@
 exclude: "AI_CHANGELOG.md"
 repos:
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.291"
+    rev: "v0.1.8"
     hooks:
     -   id: ruff
         args: [--fix, --exit-non-zero-on-fix, --ignore, E501]
@@ -19,7 +19,7 @@ repos:
     hooks:
     -   id: shellcheck
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: check-ast
     -   id: check-builtin-literals
@@ -41,7 +41,7 @@ repos:
     -   id: mixed-line-ending
     -   id: requirements-txt-fixer
 -   repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 23.12.0
     hooks:
     -   id: black
 -   repo: https://github.com/asottile/add-trailing-comma
@@ -49,13 +49,13 @@ repos:
     hooks:
     -   id: add-trailing-comma
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.7.1
     hooks:
     -   id: mypy
         additional_dependencies:
             - types-requests
 -   repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
+    rev: 1.7.6
     hooks:
     -   id: bandit
         args: ["-x", "tests/*.py", "-s", "B113"]

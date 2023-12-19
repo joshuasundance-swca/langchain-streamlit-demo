@@ -430,7 +430,7 @@ if st.session_state.llm:
                     callbacks=callbacks,
                     tags=["Streamlit Chat"],
                     verbose=True,
-                    return_intermediate_steps=True,
+                    return_intermediate_steps=False,
                 )
                 if st.session_state.provider == "Anthropic":
                     config["max_concurrency"] = 5

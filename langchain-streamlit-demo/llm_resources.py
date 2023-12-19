@@ -3,9 +3,6 @@ from tempfile import NamedTemporaryFile
 from typing import Tuple, List, Optional, Dict
 
 from langchain.agents import AgentExecutor
-from langchain.agents.openai_functions_agent.agent_token_buffer_memory import (
-    AgentTokenBufferMemory,
-)
 from langchain.agents.openai_functions_agent.base import OpenAIFunctionsAgent
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import LLMChain
@@ -57,10 +54,17 @@ def get_agent(
     )
     agent = OpenAIFunctionsAgent(llm=llm, tools=tools, prompt=prompt)
 
-    agent_memory = AgentTokenBufferMemory(
+    # agent_memory = AgentTokenBufferMemory(
+    #     chat_memory=chat_history,
+    #     memory_key=memory_key,
+    #     llm=llm,
+    # )
+    from langchain.memory import ConversationBufferMemory
+
+    agent_memory = ConversationBufferMemory(
         chat_memory=chat_history,
+        return_messages=True,
         memory_key=memory_key,
-        llm=llm,
     )
 
     agent_executor = AgentExecutor(
@@ -68,7 +72,7 @@ def get_agent(
         tools=tools,
         memory=agent_memory,
         verbose=True,
-        return_intermediate_steps=True,
+        return_intermediate_steps=False,
         callbacks=callbacks,
     )
     return (

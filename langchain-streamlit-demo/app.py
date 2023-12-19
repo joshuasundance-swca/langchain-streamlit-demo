@@ -23,6 +23,7 @@ from streamlit_feedback import streamlit_feedback
 from defaults import default_values
 from llm_resources import (
     get_agent,
+    get_doc_agent,
     get_llm,
     get_runnable,
     get_texts_and_multiretriever,
@@ -494,17 +495,29 @@ if st.session_state.llm:
                         chat_prompt,
                         prompt,
                     )
+
                     doc_chain_tool = Tool.from_function(
                         func=lambda s: st.session_state.doc_chain.invoke(
                             s,
                             # config=get_config(callbacks),
                         ),
                         name="user-document-chat",
-                        description="this assistant returns a response based on the user's custom context. "
+                        description="this assistant returns a response based on the user's custom context. ",
+                    )
+                    doc_chain_agent = get_doc_agent(
+                        [doc_chain_tool],
+                    )
+                    doc_question_tool = Tool.from_function(
+                        func=lambda s: doc_chain_agent.invoke(
+                            s,
+                        ),
+                        name="document-question-tool",
+                        description="this assistant answers a question based on the user's custom context. "
+                        "this assistant responds to fully formed questions."
                         "if the user's meaning is unclear, perhaps the answer is here. "
                         "generally speaking, try this tool before conducting web research.",
                     )
-                    TOOLS = [doc_chain_tool, research_assistant_tool] + default_tools
+                    TOOLS = [doc_question_tool, research_assistant_tool] + default_tools
 
                 st.session_state.chain = get_agent(
                     TOOLS,

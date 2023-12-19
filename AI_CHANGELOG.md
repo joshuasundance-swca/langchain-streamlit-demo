@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated Dependabot configuration](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/4e2d2fd2be93bc022093064214e372833debd235)
+Tue Dec 19 13:24:43 2023 -0500
+- Added a new group 'app' in the Dependabot configuration file to include all dependencies ('*'). This will group updates for all dependencies together.
 ## [Refactor Memory Management and Remove Intermediate Steps](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3a2b820bcfb7ef8dc4157626de454be9267e1e91)
 Tue Dec 19 09:35:23 2023 -0500
 - This commit refactors the memory management in the Streamlit app and other resources. It replaces the 'AgentTokenBufferMemory' with 'ConversationBufferMemory' for a more efficient memory usage. The 'return_messages' flag is set to 'True' in the new memory management system.

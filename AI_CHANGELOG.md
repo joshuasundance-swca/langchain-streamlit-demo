@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Removed vcs.xml and updated default agent type in llm_resources.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/71e9279d36d4c78c6b18956c598445f6caf2ced6)
+Tue Dec 19 16:10:18 2023 -0500
+- The vcs.xml file, which was used for version control settings in the IDE, has been deleted. This indicates a change in the version control system or its configuration.
+- In the llm_resources.py file, the default agent type for the get_doc_agent function has been changed from STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION to CHAT_ZERO_SHOT_REACT_DESCRIPTION. This suggests a change in how the agent responds in chat scenarios.
 ## [Updated several package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1cf958abefb5cd3408fac7c64d96ecf6f3d62a28)
 Tue Dec 19 18:26:07 2023 +0000
 - The versions of the following packages were updated: anthropic (from 0.7.8 to 0.8.0), duckduckgo-search (from 4.0.0 to 4.1.0), langchain (from 0.0.350 to 0.0.351), and langsmith (from 0.0.71 to 0.0.72).

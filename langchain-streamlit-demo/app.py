@@ -499,7 +499,7 @@ if st.session_state.llm:
                     doc_chain_tool = Tool.from_function(
                         func=lambda s: st.session_state.doc_chain.invoke(
                             s,
-                            # config=get_config(callbacks),
+                            config=get_config(callbacks),
                         ),
                         name="user-document-chat",
                         description="this assistant returns a response based on the user's custom context. ",
@@ -510,10 +510,12 @@ if st.session_state.llm:
                     doc_question_tool = Tool.from_function(
                         func=lambda s: doc_chain_agent.invoke(
                             s,
+                            config=get_config(callbacks),
                         ),
                         name="document-question-tool",
                         description="this assistant answers a question based on the user's custom context. "
                         "this assistant responds to fully formed questions."
+                        "Do not send anything besides a question. It already has context."
                         "if the user's meaning is unclear, perhaps the answer is here. "
                         "generally speaking, try this tool before conducting web research.",
                     )

@@ -1,4 +1,12 @@
 # AI CHANGELOG
+## [Updated several package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/1cf958abefb5cd3408fac7c64d96ecf6f3d62a28)
+Tue Dec 19 18:26:07 2023 +0000
+- The versions of the following packages were updated: anthropic (from 0.7.8 to 0.8.0), duckduckgo-search (from 4.0.0 to 4.1.0), langchain (from 0.0.350 to 0.0.351), and langsmith (from 0.0.71 to 0.0.72).
+## [Introduced document-agent and enhanced user-document-chat](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f88e711dc42403046604176f8eaa3ec716572cd7)
+Tue Dec 19 12:12:02 2023 -0600
+- This commit introduces the 'document-agent' tool which uses the 'doc_chain_agent' to return a response based on the user's custom context. It is recommended to use this tool when the user's question is complex, as it attempts to break it down into simpler questions.
+- The 'user-document-chat' tool has been enhanced to return a response based on the user's custom context. It is advised to use this tool before conducting web research.
+- A new function 'get_doc_agent' has been added in the 'llm_resources.py' file. This function initializes an agent with the given tools and a language model. The agent assists a chatbot with answering questions about a document. It breaks up incoming questions into multiple parts, and uses the tools provided to answer smaller questions before answering the larger question.
 ## [Updated Dependabot configuration](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/4e2d2fd2be93bc022093064214e372833debd235)
 Tue Dec 19 13:24:43 2023 -0500
 - Added a new group 'app' in the Dependabot configuration file to include all dependencies ('*'). This will group updates for all dependencies together.

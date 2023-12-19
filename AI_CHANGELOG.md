@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Enabled config callbacks and updated tool descriptions](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/aa82c149b06608f987e7f8ff3882ed4fc53ed6e6)
+Tue Dec 19 16:18:20 2023 -0600
+- The commit enables the `get_config(callbacks)` within the `doc_chain_tool` and `doc_question_tool` functions. This allows the functions to use the specified config callbacks.
+- It also updates the description of the `doc_question_tool` to clarify its usage and warn users not to send anything other than a question as it already has context.
 ## [Updated versions of pre-commit hooks](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/7c729a3108c70efd5707ec4631d55e67f2968f8e)
 Tue Dec 19 16:43:48 2023 -0500
 - This commit updates the versions of multiple pre-commit hooks. The updated hooks include 'ruff-pre-commit' (from v0.0.291 to v0.1.8), 'pre-commit-hooks' (from v4.4.0 to v4.5.0), 'black' (from 23.9.1 to 23.12.0), 'mirrors-mypy' (from v1.5.1 to v1.7.1), and 'bandit' (from 1.7.5 to 1.7.6).

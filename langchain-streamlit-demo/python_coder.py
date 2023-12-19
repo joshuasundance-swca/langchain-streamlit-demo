@@ -1,16 +1,14 @@
 """langchain python coder-- requires black, ruff, and mypy."""
 
-import argparse
 import os
 import re
 import subprocess  # nosec
 import tempfile
-from importlib.util import find_spec
 
 from langchain.agents import initialize_agent, AgentType
 from langchain.agents.tools import Tool
-from langchain.chat_models import ChatOpenAI
 from langchain.llms.base import BaseLLM
+from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate
 from langchain.pydantic_v1 import BaseModel, validator, Field, ValidationError
 
@@ -177,35 +175,17 @@ def get_agent(
     llm: BaseLLM,
     agent_type: AgentType = AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
 ):
+    agent_memory = ConversationBufferMemory(
+        return_messages=True,
+        memory_key="chat_history",
+    )
     return initialize_agent(
         tools,
         llm,
         agent=agent_type,
         verbose=True,
         handle_parsing_errors=True,
+        memory=agent_memory,
         prompt=prompt,
-        # return_intermediate_steps=True,
+        return_intermediate_steps=False,
     ) | (lambda output: output["output"])
-
-
-if __name__ == "__main__":
-    for lib in ("black", "ruff", "mypy"):
-        if find_spec(lib) is None:
-            raise ImportError(
-                "You must install black, ruff, and mypy to use this tool. "
-                "You can install them with `pip install black ruff mypy`.",
-            )
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", "-m", default="gpt-4-1106-preview")
-    parser.add_argument("instruction")
-    args = parser.parse_args()
-
-    instruction = args.instruction
-    model = args.model
-
-    llm = ChatOpenAI(model_name=model, temperature=0.0)
-    agent = get_agent(llm)
-
-    output = agent.invoke({"input": instruction}, config=dict(verbose=True))
-    print(output)

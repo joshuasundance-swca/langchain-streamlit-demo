@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Refactor Memory Management and Remove Intermediate Steps](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3a2b820bcfb7ef8dc4157626de454be9267e1e91)
+Tue Dec 19 09:35:23 2023 -0500
+- This commit refactors the memory management in the Streamlit app and other resources. It replaces the 'AgentTokenBufferMemory' with 'ConversationBufferMemory' for a more efficient memory usage. The 'return_messages' flag is set to 'True' in the new memory management system.
+- The commit also disables the return of intermediate steps in both the Streamlit app and agent execution by setting 'return_intermediate_steps' to 'False'. This change can help to improve performance by reducing unnecessary computations.
+- Furthermore, the commit simplifies the 'python_coder.py' script by removing unnecessary imports and argument parsing related to 'black', 'ruff', and 'mypy'. It also removes the main execution block, indicating that this script may now be used as a module rather than a standalone script.
+- The changes in this commit aim to improve performance and maintainability of the code.
 ## [Updated application version to 2.1.2](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/3fddfc9d34f66f92255f6a0d0878e20db401d694)
 Mon Dec 18 11:02:13 2023 -0500
 - Bumped the current version of the application in the bumpver.toml file from 2.1.1 to 2.1.2.

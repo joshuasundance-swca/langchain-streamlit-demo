@@ -431,7 +431,7 @@ if st.session_state.llm:
                     callbacks=callbacks,
                     tags=["Streamlit Chat"],
                     verbose=True,
-                    return_intermediate_steps=True,
+                    return_intermediate_steps=False,
                 )
                 if st.session_state.provider == "Anthropic":
                     config["max_concurrency"] = 5
@@ -507,17 +507,17 @@ if st.session_state.llm:
                     doc_chain_agent = get_doc_agent(
                         [doc_chain_tool],
                     )
-                    doc_agent_tool = Tool.from_function(
+                    doc_question_tool = Tool.from_function(
                         func=lambda s: doc_chain_agent.invoke(
                             s,
                         ),
-                        name="document-agent",
-                        description="this assistant returns a response based on the user's custom context. "
+                        name="document-question-tool",
+                        description="this assistant answers a question based on the user's custom context. "
+                        "this assistant responds to fully formed questions."
                         "if the user's meaning is unclear, perhaps the answer is here. "
-                        "generally speaking, try this tool before conducting web research."
-                        "it is best to send this tool a question, as it will attempt to break complex questions down into several, simpler questions.",
+                        "generally speaking, try this tool before conducting web research.",
                     )
-                    TOOLS = [doc_agent_tool, research_assistant_tool] + default_tools
+                    TOOLS = [doc_question_tool, research_assistant_tool] + default_tools
 
                 st.session_state.chain = get_agent(
                     TOOLS,

@@ -85,7 +85,7 @@ def get_agent(
 def get_doc_agent(
     tools: list[BaseTool],
     llm: Optional[BaseLLM] = None,
-    agent_type: AgentType = AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    agent_type: AgentType = AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
 ):
     if llm is None:
         llm = ChatOpenAI(

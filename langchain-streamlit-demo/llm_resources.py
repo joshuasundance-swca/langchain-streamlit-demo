@@ -2,7 +2,7 @@ import uuid
 from tempfile import NamedTemporaryFile
 from typing import Tuple, List, Optional, Dict
 
-from langchain.agents import AgentExecutor
+from langchain.agents import AgentExecutor, AgentType, initialize_agent
 from langchain.agents.openai_functions_agent.agent_token_buffer_memory import (
     AgentTokenBufferMemory,
 )
@@ -19,7 +19,7 @@ from langchain.chat_models import (
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from langchain.llms.base import BaseLLM
-from langchain.prompts import MessagesPlaceholder
+from langchain.prompts import MessagesPlaceholder, ChatPromptTemplate
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.retrievers.multi_vector import MultiVectorRetriever
@@ -70,6 +70,48 @@ def get_agent(
         verbose=True,
         return_intermediate_steps=True,
         callbacks=callbacks,
+    )
+    return (
+        {"input": RunnablePassthrough()}
+        | agent_executor
+        | (lambda output: output["output"])
+    )
+
+
+def get_doc_agent(
+    tools: list[BaseTool],
+    llm: Optional[BaseLLM] = None,
+    agent_type: AgentType = AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+):
+    if llm is None:
+        llm = ChatOpenAI(
+            model_name="gpt-4-1106-preview",
+            temperature=0.0,
+            streaming=True,
+        )
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+                You assist a chatbot with answering questions about a document.
+                If necessary, break up incoming questions into multiple parts,
+                and use the tools provided to answer smaller questions before
+                answering the larger question.
+                """,
+            ),
+            ("user", "{input}"),
+            MessagesPlaceholder(variable_name="agent_scratchpad"),
+        ],
+    )
+    agent_executor = initialize_agent(
+        tools,
+        llm,
+        agent=agent_type,
+        verbose=True,
+        memory=None,
+        handle_parsing_errors=True,
+        prompt=prompt,
     )
     return (
         {"input": RunnablePassthrough()}

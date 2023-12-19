@@ -1,4 +1,8 @@
 # AI CHANGELOG
+## [Updated versions of pre-commit hooks](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/7c729a3108c70efd5707ec4631d55e67f2968f8e)
+Tue Dec 19 16:43:48 2023 -0500
+- This commit updates the versions of multiple pre-commit hooks. The updated hooks include 'ruff-pre-commit' (from v0.0.291 to v0.1.8), 'pre-commit-hooks' (from v4.4.0 to v4.5.0), 'black' (from 23.9.1 to 23.12.0), 'mirrors-mypy' (from v1.5.1 to v1.7.1), and 'bandit' (from 1.7.5 to 1.7.6).
+- These updates ensure that the project is using the most recent and secure versions of these tools, which can help to catch more potential issues during the pre-commit phase.
 ## [Removed vcs.xml and updated default agent type in llm_resources.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/71e9279d36d4c78c6b18956c598445f6caf2ced6)
 Tue Dec 19 16:10:18 2023 -0500
 - The vcs.xml file, which was used for version control settings in the IDE, has been deleted. This indicates a change in the version control system or its configuration.

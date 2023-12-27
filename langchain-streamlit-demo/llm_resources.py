@@ -16,6 +16,7 @@ from langchain.chat_models import (
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from langchain.llms.base import BaseLLM
+from langchain.memory import ConversationBufferMemory
 from langchain.prompts import MessagesPlaceholder, ChatPromptTemplate
 from langchain.retrievers import EnsembleRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -59,7 +60,6 @@ def get_agent(
     #     memory_key=memory_key,
     #     llm=llm,
     # )
-    from langchain.memory import ConversationBufferMemory
 
     agent_memory = ConversationBufferMemory(
         chat_memory=chat_history,

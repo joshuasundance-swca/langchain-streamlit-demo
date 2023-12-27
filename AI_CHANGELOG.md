@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Added choice type to bump input in GitHub Actions workflow](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/414e3d472d9eda092b0fde7ee76d22fb033b837d)
+Tue Dec 26 23:12:25 2023 -0500
+- This commit modifies the 'bumpver.yml' file in our GitHub Actions workflow. Specifically, it adds a 'choice' type to the 'bump' input. This change ensures that the user can only select from predefined options when triggering the version bump workflow, thus minimizing the chance of errors.
 ## [Added GitHub Actions Workflow for Version Bumping](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/6a47e1364d6f23b201ed7ae277698ada08793617)
 Tue Dec 26 23:11:03 2023 -0500
 - This commit introduces a new GitHub Actions workflow named 'Bump Version'.

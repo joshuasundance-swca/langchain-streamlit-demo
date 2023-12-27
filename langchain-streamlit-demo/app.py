@@ -15,7 +15,6 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema.document import Document
 from langchain.schema.retriever import BaseRetriever
 from langchain.tools import DuckDuckGoSearchRun, WikipediaQueryRun
-from langchain.tools import Tool
 from langchain.utilities import WikipediaAPIWrapper
 from langsmith.client import Client
 from streamlit_feedback import streamlit_feedback
@@ -461,27 +460,30 @@ if st.session_state.llm:
                 )
                 st_callback = StreamlitCallbackHandler(st.container())
                 callbacks.append(st_callback)
-                research_assistant_tool = Tool.from_function(
-                    func=lambda s: research_assistant_chain.invoke(
-                        {"question": s},
-                        # config=get_config(callbacks),
-                    ),
-                    name="web-research-assistant",
-                    description="this assistant returns a comprehensive report based on web research. "
-                    "it's slow and relatively expensive, so use it sparingly. "
-                    "for quick facts, use duckduckgo instead.",
-                )
+
+                from langchain.agents.tools import tool
+                from langchain.callbacks.manager import Callbacks
+
+                @tool("web-research-assistant")
+                def research_assistant_tool(question: str, callbacks: Callbacks = None):
+                    """this assistant returns a comprehensive report based on web research.
+                    it's slow and relatively expensive, so use it sparingly.
+                    for quick facts, use duckduckgo instead.
+                    """
+                    return research_assistant_chain.invoke(
+                        dict(question=question),
+                        config=get_config(callbacks),
+                    )
 
                 python_coder_agent = get_python_agent(st.session_state.llm)
 
-                python_coder_tool = Tool.from_function(
-                    func=lambda s: python_coder_agent.invoke(
-                        {"input": s},
-                        # config=get_config(callbacks),
-                    ),
-                    name="python-coder-assistant",
-                    description="this assistant writes Python code. give it clear instructions and requirements.",
-                )
+                @tool("python-coder-assistant")
+                def python_coder_tool(input_str: str, callbacks: Callbacks = None):
+                    """this assistant writes Python code. give it clear instructions and requirements."""
+                    return python_coder_agent.invoke(
+                        dict(input=input_str),
+                        config=get_config(callbacks),
+                    )
 
                 TOOLS = [research_assistant_tool, python_coder_tool] + default_tools
 
@@ -496,29 +498,32 @@ if st.session_state.llm:
                         prompt,
                     )
 
-                    doc_chain_tool = Tool.from_function(
-                        func=lambda s: st.session_state.doc_chain.invoke(
-                            s,
+                    @tool("user-document-chat")
+                    def doc_chain_tool(input_str: str, callbacks: Callbacks = None):
+                        """this assistant returns a response based on the user's custom context."""
+                        return st.session_state.doc_chain.invoke(
+                            input_str,
                             config=get_config(callbacks),
-                        ),
-                        name="user-document-chat",
-                        description="this assistant returns a response based on the user's custom context. ",
-                    )
+                        )
+
                     doc_chain_agent = get_doc_agent(
                         [doc_chain_tool],
                     )
-                    doc_question_tool = Tool.from_function(
-                        func=lambda s: doc_chain_agent.invoke(
-                            s,
+
+                    @tool("document-question-tool")
+                    def doc_question_tool(input_str: str, callbacks: Callbacks = None):
+                        """
+                        this assistant answers a question based on the user's custom context.
+                        this assistant responds to fully formed questions.
+                        Do not send anything besides a question. It already has context.
+                        if the user's meaning is unclear, perhaps the answer is here.
+                        generally speaking, try this tool before conducting web research.
+                        """
+                        return doc_chain_agent.invoke(
+                            input_str,
                             config=get_config(callbacks),
-                        ),
-                        name="document-question-tool",
-                        description="this assistant answers a question based on the user's custom context. "
-                        "this assistant responds to fully formed questions."
-                        "Do not send anything besides a question. It already has context."
-                        "if the user's meaning is unclear, perhaps the answer is here. "
-                        "generally speaking, try this tool before conducting web research.",
-                    )
+                        )
+
                     TOOLS = [doc_question_tool, research_assistant_tool] + default_tools
 
                 st.session_state.chain = get_agent(

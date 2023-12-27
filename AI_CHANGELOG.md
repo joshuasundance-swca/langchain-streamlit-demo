@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated application version to 2.1.4](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/13a5813ecd2f6bdfbc39bd2c50bdd36c43162733)
+Wed Dec 27 16:25:25 2023 +0000
+- The application version has been updated from 2.1.3 to 2.1.4 in multiple files: bumpver.toml, resources.yaml, and app.py. This change includes updating the current_version in bumpver.toml, the Docker image tag in the Kubernetes resources file, and the __version__ attribute in the app.py file.
 ## [Updated chat input formatting in python_coder.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/39161d38df2e230a22fcc7b1eda31e486d989728)
 Wed Dec 27 11:22:28 2023 -0500
 - This commit changes the way user input is displayed in the chat history. Previously, a colon was prepended to user input. This has been removed to improve readability.

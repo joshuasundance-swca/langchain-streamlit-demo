@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Added git configuration to GitHub Actions workflow](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/090173a3ba6868f868a9b707d657b4f180537c80)
+Tue Dec 26 23:28:58 2023 -0500
+- This commit introduces changes to the GitHub Actions workflow. Specifically, it adds a git configuration step to set the user email and name to 'github-actions[bot]'. This is important as it ensures that the bot is recognized as the author of any commits made during the workflow process.
 ## [Added choice type to bump input in GitHub Actions workflow](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/414e3d472d9eda092b0fde7ee76d22fb033b837d)
 Tue Dec 26 23:12:25 2023 -0500
 - This commit modifies the 'bumpver.yml' file in our GitHub Actions workflow. Specifically, it adds a 'choice' type to the 'bump' input. This change ensures that the user can only select from predefined options when triggering the version bump workflow, thus minimizing the chance of errors.

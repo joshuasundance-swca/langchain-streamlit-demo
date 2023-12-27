@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/cd6528dd9a52049f0551411c148a7e7b0d3af0e9)
+Mon Dec 25 12:11:03 2023 +0000
+- This commit updates the versions of several packages in the requirements.txt file. The packages updated include: anthropic, black, duckduckgo-search, langchain, langsmith, mypy, openai, and pypdf. The purpose of these updates is to keep the project's dependencies up-to-date with the latest versions.
 ## [Enabled config callbacks and updated tool descriptions](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/aa82c149b06608f987e7f8ff3882ed4fc53ed6e6)
 Tue Dec 19 16:18:20 2023 -0600
 - The commit enables the `get_config(callbacks)` within the `doc_chain_tool` and `doc_question_tool` functions. This allows the functions to use the specified config callbacks.

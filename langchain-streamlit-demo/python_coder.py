@@ -67,7 +67,7 @@ def check_ruff(filepath: str):
     )
 
 
-def check_mypy(filepath: str, strict: bool = True, follow_imports: str = "skip"):
+def check_mypy(filepath: str, strict: bool = False, follow_imports: str = "skip"):
     """Run mypy on a file."""
     cmd = f"mypy {'--strict' if strict else ''} --follow-imports={follow_imports} {filepath}"
 

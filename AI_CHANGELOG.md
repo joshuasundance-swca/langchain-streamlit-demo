@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Added GitHub Actions Workflow for Version Bumping](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/6a47e1364d6f23b201ed7ae277698ada08793617)
+Tue Dec 26 23:11:03 2023 -0500
+- This commit introduces a new GitHub Actions workflow named 'Bump Version'.
+- The workflow can be manually triggered and requires an input to specify whether to bump the major, minor, or patch version of the project.
+- The job within the workflow runs on the latest Ubuntu, checks out the code, sets up Python 3.11, installs the 'bumpver' Python library, and then uses this library to bump the specified version.
+- The updated version is then committed and tagged, and the changes are pushed back to the repository.
 ## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/cd6528dd9a52049f0551411c148a7e7b0d3af0e9)
 Mon Dec 25 12:11:03 2023 +0000
 - This commit updates the versions of several packages in the requirements.txt file. The packages updated include: anthropic, black, duckduckgo-search, langchain, langsmith, mypy, openai, and pypdf. The purpose of these updates is to keep the project's dependencies up-to-date with the latest versions.

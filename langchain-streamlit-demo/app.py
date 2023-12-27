@@ -32,7 +32,7 @@ from research_assistant.chain import get_chain as get_research_assistant_chain
 from python_coder import get_agent as get_python_agent
 
 
-__version__ = "2.1.2"
+__version__ = "2.1.3"
 
 # --- Initialization ---
 st.set_page_config(

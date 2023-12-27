@@ -1,4 +1,21 @@
 # AI CHANGELOG
+## [Updated chat input formatting in python_coder.py](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/39161d38df2e230a22fcc7b1eda31e486d989728)
+Wed Dec 27 11:22:28 2023 -0500
+- This commit changes the way user input is displayed in the chat history. Previously, a colon was prepended to user input. This has been removed to improve readability.
+## [Refactor Tool creation and usage in langchain-streamlit-demo](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f4b7ac3592a6b55c09bf3b2c7692467410d63687)
+Wed Dec 27 11:21:00 2023 -0500
+- This commit refactors the way tools are created and used within the langchain-streamlit-demo. The 'Tool' class has been replaced by a 'tool' decorator, making the code more Pythonic and easier to read.
+- The 'research_assistant_tool', 'python_coder_tool', 'doc_chain_tool', and 'doc_question_tool' have all been updated to use this new decorator. This change also allows for the 'callbacks' parameter to be passed directly to the tool functions, improving flexibility.
+- The 'description' attribute of each tool has been moved inside the function as a docstring, providing context about what each tool does in a more standard Python way.
+## [Changed default value of 'strict' parameter in check_mypy function](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/238a2a143b60d9ed340de283864a99f99bd0b0bc)
+Wed Dec 27 10:54:14 2023 -0500
+- The 'strict' parameter in the 'check_mypy' function has been modified. Previously, the default value was set to 'True'. This commit changes the default value to 'False'. This change affects how mypy checks are run on a file.
+## [Extended subprocess timeouts and added no-cache option to ruff commands](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/f642d160e47dd94a51437ab57aa4757aabd013b6)
+Wed Dec 27 10:53:23 2023 -0500
+- Increased the timeout for subprocess commands from 3 seconds to 30 seconds to allow for longer processes. Added the '--no-cache' option to all 'ruff' commands to ensure that the most recent version of the file is being checked and formatted. Additionally, imported 'MessagesPlaceholder' from 'langchain.prompts' and added it to the 'ChatPromptTemplate' to include the chat history in the prompt.
+## [Added ConversationBufferMemory to agent](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/bc3a159a9e104625425de5578e0e060f12e6fe83)
+Wed Dec 27 10:40:41 2023 -0500
+- The ConversationBufferMemory was imported from the langchain.memory module and added to the agent. This change will enable the agent to store the conversation history, allowing it to respond more accurately to user inputs based on previous interactions.
 ## [Bumped application version from 2.1.2 to 2.1.3](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/4c0a3bf81f9ddf898312804522c6b3f084bfa289)
 Wed Dec 27 04:30:24 2023 +0000
 - The 'current_version' field in 'bumpver.toml' was updated from 2.1.2 to 2.1.3, indicating a new version of the application.

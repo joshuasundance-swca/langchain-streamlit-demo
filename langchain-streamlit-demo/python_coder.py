@@ -10,6 +10,7 @@ from langchain.agents.tools import Tool
 from langchain.llms.base import BaseLLM
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import MessagesPlaceholder
 from langchain.pydantic_v1 import BaseModel, validator, Field, ValidationError
 
 
@@ -29,7 +30,7 @@ def format_black(filepath: str):
         stderr=subprocess.STDOUT,
         text=True,
         shell=True,
-        timeout=3,
+        timeout=30,
         check=False,
     )
 
@@ -37,19 +38,19 @@ def format_black(filepath: str):
 def format_ruff(filepath: str):
     """Run ruff format on a file."""
     subprocess.run(  # nosec
-        f"ruff check --fix {filepath}",
+        f"ruff check --no-cache --fix {filepath}",
         shell=True,
         text=True,
-        timeout=3,
+        timeout=30,
         universal_newlines=True,
         check=False,
     )
 
     subprocess.run(  # nosec
-        f"ruff format {filepath}",
+        f"ruff format --no-cache {filepath}",
         stderr=subprocess.STDOUT,
         shell=True,
-        timeout=3,
+        timeout=30,
         text=True,
         check=False,
     )
@@ -58,15 +59,15 @@ def format_ruff(filepath: str):
 def check_ruff(filepath: str):
     """Run ruff check on a file."""
     subprocess.check_output(  # nosec
-        f"ruff check {filepath}",
+        f"ruff check --no-cache {filepath}",
         stderr=subprocess.STDOUT,
         shell=True,
-        timeout=3,
+        timeout=30,
         text=True,
     )
 
 
-def check_mypy(filepath: str, strict: bool = True, follow_imports: str = "skip"):
+def check_mypy(filepath: str, strict: bool = False, follow_imports: str = "skip"):
     """Run mypy on a file."""
     cmd = f"mypy {'--strict' if strict else ''} --follow-imports={follow_imports} {filepath}"
 
@@ -75,7 +76,7 @@ def check_mypy(filepath: str, strict: bool = True, follow_imports: str = "skip")
         stderr=subprocess.STDOUT,
         shell=True,
         text=True,
-        timeout=3,
+        timeout=30,
     )
 
 
@@ -148,9 +149,10 @@ prompt = ChatPromptTemplate.from_messages(
             "Provide complete, end-to-end Python code to meet the user's description/requirements. "
             "Always `check` your code. When you're done, you must ALWAYS use the `submit` tool.",
         ),
+        MessagesPlaceholder(variable_name="chat_history"),
         (
             "human",
-            ": {input}",
+            "{input}",
         ),
     ],
 )

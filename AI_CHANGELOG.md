@@ -1,4 +1,9 @@
 # AI CHANGELOG
+## [Bumped application version from 2.1.2 to 2.1.3](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/4c0a3bf81f9ddf898312804522c6b3f084bfa289)
+Wed Dec 27 04:30:24 2023 +0000
+- The 'current_version' field in 'bumpver.toml' was updated from 2.1.2 to 2.1.3, indicating a new version of the application.
+- In 'kubernetes/resources.yaml', the image version for 'langchain-streamlit-demo' container was updated to match the new version.
+- The '__version__' variable in 'app.py' under 'langchain-streamlit-demo' was also updated to reflect the new version.
 ## [Added git configuration to GitHub Actions workflow](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/090173a3ba6868f868a9b707d657b4f180537c80)
 Tue Dec 26 23:28:58 2023 -0500
 - This commit introduces changes to the GitHub Actions workflow. Specifically, it adds a git configuration step to set the user email and name to 'github-actions[bot]'. This is important as it ensures that the bot is recognized as the author of any commits made during the workflow process.

@@ -1,4 +1,10 @@
 # AI CHANGELOG
+## [Refactor and improve documentation for assistant tools](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/bd1f3d1c1d1c34d960051bdd37370ddba520b665)
+Wed Dec 27 19:28:06 2023 -0500
+- This commit includes several changes to improve the structure and documentation of the assistant tools used in the Streamlit app. The changes include:
+- 1. Reordering of import statements for better readability and organization.
+- 2. Refactoring of the research_assistant_tool, python_coder_tool, doc_chain_tool, and doc_question_tool functions to improve their documentation. The new documentation provides clearer instructions for use and sets more explicit expectations for the type of input these tools should receive.
+- 3. Adjustments to the order of tools in the TOOLS list to ensure the doc_question_tool is prioritized.
 ## [Updated application version to 2.1.4](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/13a5813ecd2f6bdfbc39bd2c50bdd36c43162733)
 Wed Dec 27 16:25:25 2023 +0000
 - The application version has been updated from 2.1.3 to 2.1.4 in multiple files: bumpver.toml, resources.yaml, and app.py. This change includes updating the current_version in bumpver.toml, the Docker image tag in the Kubernetes resources file, and the __version__ attribute in the app.py file.

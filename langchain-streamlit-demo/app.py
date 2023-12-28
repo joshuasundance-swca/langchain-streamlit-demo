@@ -1,4 +1,3 @@
-from langchain.agents import load_tools
 from datetime import datetime
 from typing import Tuple, List, Dict, Any, Union, Optional
 
@@ -6,8 +5,11 @@ import anthropic
 import langsmith.utils
 import openai
 import streamlit as st
+from langchain.agents import load_tools
+from langchain.agents.tools import tool
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.callbacks.base import BaseCallbackHandler
+from langchain.callbacks.manager import Callbacks
 from langchain.callbacks.tracers.langchain import LangChainTracer, wait_for_all_tracers
 from langchain.callbacks.tracers.run_collector import RunCollectorCallbackHandler
 from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
@@ -27,9 +29,8 @@ from llm_resources import (
     get_runnable,
     get_texts_and_multiretriever,
 )
-from research_assistant.chain import get_chain as get_research_assistant_chain
 from python_coder import get_agent as get_python_agent
-
+from research_assistant.chain import get_chain as get_research_assistant_chain
 
 __version__ = "2.1.4"
 
@@ -461,14 +462,11 @@ if st.session_state.llm:
                 st_callback = StreamlitCallbackHandler(st.container())
                 callbacks.append(st_callback)
 
-                from langchain.agents.tools import tool
-                from langchain.callbacks.manager import Callbacks
-
                 @tool("web-research-assistant")
                 def research_assistant_tool(question: str, callbacks: Callbacks = None):
-                    """this assistant returns a comprehensive report based on web research.
-                    it's slow and relatively expensive, so use it sparingly.
-                    for quick facts, use duckduckgo instead.
+                    """This assistant returns a comprehensive report based on web research.
+                    It's slow and relatively expensive, so use it sparingly.
+                    Consider using a different tool for quick facts or web queries.
                     """
                     return research_assistant_chain.invoke(
                         dict(question=question),
@@ -479,7 +477,10 @@ if st.session_state.llm:
 
                 @tool("python-coder-assistant")
                 def python_coder_tool(input_str: str, callbacks: Callbacks = None):
-                    """this assistant writes Python code. give it clear instructions and requirements."""
+                    """This assistant writes PYTHON code.
+                    Give it clear instructions and requirements.
+                    Do not use it for tasks other than Python.
+                    """
                     return python_coder_agent.invoke(
                         dict(input=input_str),
                         config=get_config(callbacks),
@@ -500,7 +501,7 @@ if st.session_state.llm:
 
                     @tool("user-document-chat")
                     def doc_chain_tool(input_str: str, callbacks: Callbacks = None):
-                        """this assistant returns a response based on the user's custom context."""
+                        """Always use this tool at least once. Input should be a question."""
                         return st.session_state.doc_chain.invoke(
                             input_str,
                             config=get_config(callbacks),
@@ -512,19 +513,17 @@ if st.session_state.llm:
 
                     @tool("document-question-tool")
                     def doc_question_tool(input_str: str, callbacks: Callbacks = None):
-                        """
-                        this assistant answers a question based on the user's custom context.
-                        this assistant responds to fully formed questions.
-                        Do not send anything besides a question. It already has context.
-                        if the user's meaning is unclear, perhaps the answer is here.
-                        generally speaking, try this tool before conducting web research.
+                        """This tool is an AI assistant with access to the user's uploaded document.
+                        Input should be one or more questions, requests, instructions, etc.
+                        If the user's meaning is unclear, perhaps the answer is here.
+                        Generally speaking, try this tool before conducting web research.
                         """
                         return doc_chain_agent.invoke(
                             input_str,
                             config=get_config(callbacks),
                         )
 
-                    TOOLS = [doc_question_tool, research_assistant_tool] + default_tools
+                    TOOLS = [doc_question_tool] + TOOLS
 
                 st.session_state.chain = get_agent(
                     TOOLS,

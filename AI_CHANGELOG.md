@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated langchain package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/997c45707653d2b35465402714e289b56033f1e7)
+Mon Jan 1 13:05:22 2024 +0000
+- The langchain package version in the requirements.txt file has been updated from 0.0.352 to 0.0.353.
 ## [Refactor and improve documentation for assistant tools](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/bd1f3d1c1d1c34d960051bdd37370ddba520b665)
 Wed Dec 27 19:28:06 2023 -0500
 - This commit includes several changes to improve the structure and documentation of the assistant tools used in the Streamlit app. The changes include:

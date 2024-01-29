@@ -1,18 +1,18 @@
-anthropic==0.10.0
+anthropic==0.12.0
 beautifulsoup4==4.12.3
-black==23.12.1
+black==24.1.1
 certifi>=2023.7.22 # not directly required, pinned by Snyk to avoid a vulnerability
-duckduckgo-search==4.2
+duckduckgo-search==4.3.2
 faiss-cpu==1.7.4
-langchain==0.1.1
-langsmith==0.0.83
+langchain==0.1.4
+langsmith==0.0.84
 mypy==1.8.0
-numexpr==2.8.8
+numexpr==2.9.0
 numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
-openai==1.9.0
+openai==1.10.0
 pillow>=10.2.0 # not directly required, pinned by Snyk to avoid a vulnerability
 pyarrow>=14.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
-pypdf==4.0.0
+pypdf==4.0.1
 requests>=2.31.0 # not directly required, pinned by Snyk to avoid a vulnerability
 ruff==0.1.14
 streamlit==1.30.0

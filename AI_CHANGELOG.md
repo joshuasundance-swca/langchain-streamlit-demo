@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated Python dependencies](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/511218395a883d498a66e4c136be25c110434b2a)
+Mon Jan 29 12:14:25 2024 +0000
+- The Python dependencies in the requirements.txt file have been updated. The following packages were upgraded: anthropic, black, duckduckgo-search, langchain, langsmith, numexpr, openai, and pypdf.
 ## [Updated langchain package version](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/997c45707653d2b35465402714e289b56033f1e7)
 Mon Jan 1 13:05:22 2024 +0000
 - The langchain package version in the requirements.txt file has been updated from 0.0.352 to 0.0.353.

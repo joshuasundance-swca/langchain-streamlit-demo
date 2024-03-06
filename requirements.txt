@@ -4,7 +4,7 @@ black==24.1.1
 certifi>=2023.7.22 # not directly required, pinned by Snyk to avoid a vulnerability
 duckduckgo-search==4.4
 faiss-cpu==1.7.4
-langchain==0.1.5
+langchain==0.1.11
 langsmith==0.0.86
 mypy==1.8.0
 numexpr==2.9.0

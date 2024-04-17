@@ -1,4 +1,7 @@
 # AI CHANGELOG
+## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/6993c3aefa8c3915f3c49b756dad764803983541)
+Wed Apr 17 15:07:06 2024 +0000
+- This commit updates the versions of several packages in the `requirements.txt` file. The updated packages include `anthropic` from version `0.25.1` to `0.25.3`, `langsmith` from version `0.1.47` to `0.1.48`, and `openai` from version `1.17.1` to `1.20.0`. These updates ensure that the project is using the latest and most secure versions of these dependencies.
 ## [Updated package versions in requirements.txt](https://github.com/joshuasundance-swca/langchain-streamlit-demo/commit/176b6e118435aedeef09b0a408e802fc6c989f3a)
 Wed Apr 17 11:02:57 2024 -0400
 - This commit updates the versions of several packages in the requirements.txt file. The packages updated include anthropic, black, duckduckgo-search, faiss-cpu, langchain, langsmith, mypy, numexpr, openai, pillow, pypdf, ruff, streamlit, and tiktoken. The versions of the packages were updated to their latest stable versions. This is important to ensure compatibility with other packages and to benefit from the latest features and bug fixes provided by these packages.

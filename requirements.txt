@@ -13,7 +13,7 @@ openai==1.20.0
 pillow>=10.3.0 # not directly required, pinned by Snyk to avoid a vulnerability
 pyarrow>=14.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pypdf==4.2.0
-requests>=2.31.0 # not directly required, pinned by Snyk to avoid a vulnerability
+requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
 ruff==0.3.7
 streamlit==1.33.0
 streamlit-feedback==0.1.3

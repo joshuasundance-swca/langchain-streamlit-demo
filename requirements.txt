@@ -21,3 +21,4 @@ tiktoken==0.6.0
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
 validators>=0.21.0 # not directly required, pinned by Snyk to avoid a vulnerability
 wikipedia==1.4.0
+anyio>=4.4.0 # not directly required, pinned by Snyk to avoid a vulnerability
